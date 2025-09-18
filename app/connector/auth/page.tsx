@@ -98,7 +98,8 @@ function ConnectorAuthContent() {
     setMagicError('');
     setMagicLinkSent(false);
     setStatus('sending');
-    const result = await sendMagicLink(email.trim());
+    const redirectPath = requestId ? `${window.location.origin}/connector/auth?request_id=${encodeURIComponent(requestId)}` : undefined;
+    const result = await sendMagicLink(email.trim(), { redirectTo: redirectPath });
     if (result.success) {
       setMagicLinkSent(true);
       setStatus('waiting');

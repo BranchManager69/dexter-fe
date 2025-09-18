@@ -15,7 +15,7 @@ interface AuthContextType {
   loading: boolean;
   error: string | null;
   signOut: () => Promise<void>;
-  sendMagicLink: (email: string) => Promise<{ success: boolean; message: string }>;
+  sendMagicLink: (email: string, options?: { redirectTo?: string }) => Promise<{ success: boolean; message: string }>;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -88,7 +88,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setSession(null);
   };
 
-  const sendMagicLink = async (email: string): Promise<{ success: boolean; message: string }> => {
+  const sendMagicLink = async (email: string, options?: { redirectTo?: string }): Promise<{ success: boolean; message: string }> => {
     if (!supabase) return { success: false, message: 'Authentication not initialized' };
 
     const trimmed = email.trim();
@@ -97,7 +97,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     try {
-      const redirectTo = typeof window !== 'undefined' ? `${window.location.origin}/link` : undefined;
+      const redirectTo = options?.redirectTo || (typeof window !== 'undefined' ? `${window.location.origin}/link` : undefined);
       const { error } = await supabase.auth.signInWithOtp({
         email: trimmed,
         options: { emailRedirectTo: redirectTo, shouldCreateUser: true },

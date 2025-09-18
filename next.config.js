@@ -9,6 +9,12 @@ const nextConfig = {
   experimental: {
     serverActions: { allowedOrigins: ['*'] }
   },
+  async redirects() {
+    return [
+      { source: '/authorize', destination: '/mcp/authorize', permanent: false },
+    ];
+  },
+
   async rewrites() {
     return [
       { source: '/auth/config', destination: `${API_ORIGIN}/auth/config` },
