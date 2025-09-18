@@ -3,6 +3,7 @@
 import { Suspense, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useAuth } from '../../auth-context';
+import { resolveEmailProvider } from '../../../lib/emailProviders';
 import styles from './styles.module.css';
 
 type AuthRequestInfo = {
@@ -27,6 +28,7 @@ function ConnectorAuthContent() {
   const [exchangeAttempted, setExchangeAttempted] = useState(false);
   const [redirectUrl, setRedirectUrl] = useState<string | null>(null);
   const [copyState, setCopyState] = useState<'idle' | 'copied' | 'error'>('idle');
+  const providerInfo = useMemo(() => resolveEmailProvider(email), [email]);
 
   useEffect(() => {
     if (!requestId) {
@@ -246,8 +248,22 @@ function ConnectorAuthContent() {
           {status === 'sending' ? 'Sending…' : 'Send link'}
         </button>
       </div>
-      {magicLinkSent && <p className={styles['status-text']}>Magic link sent! Check your inbox and open the link in this browser.</p>}
-      {magicError && <p className={`${styles['status-text']} ${styles['message--error']}`}>{magicError}</p>}
+      {magicLinkSent && (
+        <div className={styles['copy-block']}>
+          <p className={styles['status-text']}>Magic link sent! Check your inbox and open the link in this browser.</p>
+          {providerInfo && (
+            <a
+              className={styles['inbox-hint']}
+              href={providerInfo.inboxUrl}
+              target="_blank"
+              rel="noreferrer"
+            >
+              Open {providerInfo.label}
+            </a>
+          )}
+        </div>
+      )}
+      {magicError && <p className={`${styles['status-text']} ${styles['status-error']}`}>{magicError}</p>}
     </div>
   );
 

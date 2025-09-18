@@ -5,43 +5,7 @@ import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import { SITE, VERSION_TAG } from '../lib/site';
 import { useAuth } from './auth-context';
-
-type ProviderKey = 'gmail' | 'outlook' | 'yahoo' | 'icloud' | 'proton';
-
-const providerMap: Record<string, ProviderKey> = {
-  'gmail.com': 'gmail',
-  'googlemail.com': 'gmail',
-  'outlook.com': 'outlook',
-  'hotmail.com': 'outlook',
-  'live.com': 'outlook',
-  'msn.com': 'outlook',
-  'yahoo.com': 'yahoo',
-  'yahoo.co.uk': 'yahoo',
-  'yahoo.fr': 'yahoo',
-  'icloud.com': 'icloud',
-  'me.com': 'icloud',
-  'mac.com': 'icloud',
-  'protonmail.com': 'proton',
-  'proton.me': 'proton',
-  'pm.me': 'proton',
-};
-
-const inboxUrls: Record<ProviderKey, string> = {
-  gmail: 'https://mail.google.com',
-  outlook: 'https://outlook.live.com/mail',
-  yahoo: 'https://mail.yahoo.com',
-  icloud: 'https://www.icloud.com/mail',
-  proton: 'https://mail.proton.me',
-};
-
-function detectEmailProvider(email: string): ProviderKey | '' {
-  const domain = email.split('@')[1]?.toLowerCase() ?? '';
-  return providerMap[domain] ?? '';
-}
-
-function getInboxUrl(provider: ProviderKey): string {
-  return inboxUrls[provider];
-}
+import { resolveEmailProvider } from '../lib/emailProviders';
 
 export function Header() {
   const { session, loading, signOut, sendMagicLink } = useAuth();
@@ -52,8 +16,8 @@ export function Header() {
   const [magicLinkBusy, setMagicLinkBusy] = useState(false);
   const [magicLinkSent, setMagicLinkSent] = useState(false);
 
-  const userEmailProvider = detectEmailProvider(email);
-  const inboxUrl = userEmailProvider ? getInboxUrl(userEmailProvider) : '';
+  const providerInfo = resolveEmailProvider(email);
+  const inboxUrl = providerInfo?.inboxUrl ?? '';
 
   const handleSendMagicLink = async () => {
     if (!email.trim()) {
@@ -144,9 +108,9 @@ export function Header() {
                     </button>
                   </div>
 
-                  {magicLinkSent && userEmailProvider && inboxUrl && (
+                  {magicLinkSent && providerInfo && inboxUrl && (
                     <div className="helper-text">
-                      <span>Open your {userEmailProvider} inbox</span>{' '}
+                      <span>Open your {providerInfo.label} inbox</span>{' '}
                       <a href={inboxUrl} target="_blank" rel="noreferrer" style={{ color: 'inherit' }}>
                         ({inboxUrl.replace('https://', '')})
                       </a>

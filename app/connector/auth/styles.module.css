@@ -194,6 +194,23 @@
   color: var(--color-text-secondary);
 }
 
+.status-error {
+  color: #fca5a5;
+}
+
+.inbox-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  color: var(--color-accent-strong);
+  text-decoration: none;
+}
+
+.inbox-hint:hover {
+  color: var(--color-text-primary);
+}
+
 .highlight {
   color: var(--color-accent-strong);
 }
