@@ -320,7 +320,7 @@ function ConnectorAuthContent() {
       </div>
       {siteKey && (
         <TurnstileWidget
-          key={turnstileKey}
+          refreshKey={turnstileKey}
           siteKey={siteKey}
           onToken={setCaptchaToken}
           className={styles['turnstile-container']}

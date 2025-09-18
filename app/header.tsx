@@ -175,7 +175,7 @@ export function Header() {
                   {siteKey && (
                     <div className="form-field">
                       <TurnstileWidget
-                        key={turnstileKey}
+                        refreshKey={turnstileKey}
                         siteKey={siteKey}
                         onToken={setCaptchaToken}
                         className="turnstile-embed"

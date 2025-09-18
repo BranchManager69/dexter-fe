@@ -9,9 +9,10 @@ export type TurnstileWidgetProps = {
   action?: string;
   cData?: string;
   className?: string;
+  refreshKey?: number;
 };
 
-export function TurnstileWidget({ siteKey, onToken, action, cData, className }: TurnstileWidgetProps) {
+export function TurnstileWidget({ siteKey, onToken, action, cData, className, refreshKey }: TurnstileWidgetProps) {
   useEffect(() => {
     if (!siteKey) {
       onToken(null);
@@ -22,8 +23,8 @@ export function TurnstileWidget({ siteKey, onToken, action, cData, className }: 
 
   return (
     <Turnstile
-      key={siteKey}
-      options={{ action, cData }}
+      key={`${siteKey}:${refreshKey ?? 0}`}
+      options={{ action, cData, theme: 'dark' }}
       siteKey={siteKey}
       className={className}
       onSuccess={(token) => onToken(token)}
