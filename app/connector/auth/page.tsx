@@ -15,7 +15,7 @@ function ConnectorAuthContent() {
   const searchParams = useSearchParams();
   const requestId = searchParams.get('request_id');
 
-  const { session, loading, error, sendMagicLink } = useAuth();
+  const { supabase, session, loading, error, sendMagicLink } = useAuth();
   const [email, setEmail] = useState('');
   const [requestInfo, setRequestInfo] = useState<AuthRequestInfo | null>(null);
   const [status, setStatus] = useState<'init' | 'fetching' | 'waiting' | 'sending' | 'exchanging' | 'redirecting' | 'error'>('init');
@@ -23,6 +23,8 @@ function ConnectorAuthContent() {
   const [magicLinkSent, setMagicLinkSent] = useState(false);
   const [magicError, setMagicError] = useState<string>('');
   const [exchangeError, setExchangeError] = useState<string>('');
+  const [exchangeAttempted, setExchangeAttempted] = useState(false);
+  const [redirectUrl, setRedirectUrl] = useState<string | null>(null);
 
   useEffect(() => {
     if (!requestId) {
@@ -47,17 +49,50 @@ function ConnectorAuthContent() {
   }, [requestId]);
 
   useEffect(() => {
-    if (!requestId || !requestInfo || !session) return;
-    const refreshToken = session.refresh_token;
-    if (!refreshToken) {
-      setExchangeError('Active Supabase session missing refresh token. Please sign out and sign in again.');
-      return;
-    }
+    setExchangeAttempted(false);
+  }, [requestId]);
+
+  useEffect(() => {
+    if (!requestId || !requestInfo || !session || exchangeAttempted) return;
+    const currentSession = session;
     let cancelled = false;
     async function exchange() {
       try {
         setExchangeError('');
         setStatus('exchanging');
+        setExchangeAttempted(true);
+
+        let workingSession = currentSession;
+        let refreshToken = workingSession.refresh_token || null;
+
+        if (supabase) {
+          try {
+            const { data, error } = await supabase.auth.getSession();
+            if (!cancelled && !error && data?.session) {
+              workingSession = data.session;
+              refreshToken = data.session.refresh_token ?? refreshToken;
+            }
+          } catch (getErr) {
+            console.warn('[connector/oauth] getSession failed', getErr);
+          }
+
+          if (!refreshToken) {
+            try {
+              const { data, error } = await supabase.auth.refreshSession();
+              if (!cancelled && !error && data?.session?.refresh_token) {
+                workingSession = data.session;
+                refreshToken = data.session.refresh_token;
+              }
+            } catch (refreshErr) {
+              console.warn('[connector/oauth] refreshSession failed', refreshErr);
+            }
+          }
+        }
+
+        if (!refreshToken) {
+          throw new Error('Active Supabase session is missing a refresh token. Please sign out and try again.');
+        }
+
         const resp = await fetch('/api/connector/oauth/exchange', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -74,12 +109,26 @@ function ConnectorAuthContent() {
         const redirect = new URL(data.redirect_uri);
         redirect.searchParams.set('code', data.code);
         if (data.state) redirect.searchParams.set('state', data.state);
+        const targetUrl = redirect.toString();
+        setRedirectUrl(targetUrl);
         setStatus('redirecting');
-        if (!cancelled) window.location.replace(redirect.toString());
+        try {
+          window.location.href = targetUrl;
+          // Fallback for stubborn clients that ignore location changes
+          setTimeout(() => {
+            if (!cancelled) {
+              window.open(targetUrl, '_self');
+            }
+          }, 750);
+        } catch (navErr) {
+          console.warn('[connector/oauth] navigation failed', navErr);
+          window.open(targetUrl, '_self');
+        }
       } catch (err: any) {
         if (!cancelled) {
           setExchangeError(err?.message || 'Unable to complete authorization.');
           setStatus('error');
+          setExchangeAttempted(false);
         }
       }
     }
@@ -87,7 +136,7 @@ function ConnectorAuthContent() {
     return () => {
       cancelled = true;
     };
-  }, [requestId, requestInfo, session]);
+  }, [requestId, requestInfo, session, supabase, exchangeAttempted]);
 
   const header = useMemo(() => {
     if (requestInfo?.scope?.includes('voice')) return 'Connect Dexter Voice';
@@ -179,6 +228,18 @@ function ConnectorAuthContent() {
         )}
         {exchangeError && (
           <p style={{ color: '#f37f97', marginBottom: 16 }}>{exchangeError}</p>
+        )}
+        {status === 'redirecting' && redirectUrl && (
+          <p style={{ color: '#7aa2f7', marginBottom: 16 }}>
+            Redirecting… If nothing happens,{' '}
+            <a
+              href={redirectUrl}
+              style={{ color: '#9fb2ff', textDecoration: 'underline' }}
+            >
+              click here to continue
+            </a>
+            .
+          </p>
         )}
 
         {!session && !loading && renderLoginForm()}
