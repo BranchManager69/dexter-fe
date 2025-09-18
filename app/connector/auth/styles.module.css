@@ -189,6 +189,12 @@
   box-shadow: none;
 }
 
+.turnstile-container {
+  margin-top: var(--space-3);
+  display: flex;
+  justify-content: flex-start;
+}
+
 .login-row {
   display: flex;
   flex-direction: column;
@@ -280,6 +286,10 @@
 
   .link-chip {
     flex: 1;
+  }
+
+  .turnstile-container {
+    justify-content: flex-start;
   }
 }
 

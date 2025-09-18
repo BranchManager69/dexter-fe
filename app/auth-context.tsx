@@ -15,9 +15,9 @@ interface AuthContextType {
   loading: boolean;
   error: string | null;
   signOut: () => Promise<void>;
-  sendMagicLink: (email: string, options?: { redirectTo?: string }) => Promise<{ success: boolean; message: string }>;
-  signInWithTwitter: (options?: { redirectTo?: string }) => Promise<{ success: boolean; message: string }>;
-  signInWithSolanaWallet: (options?: { redirectTo?: string }) => Promise<{ success: boolean; message: string }>;
+  sendMagicLink: (email: string, options?: { redirectTo?: string; captchaToken?: string }) => Promise<{ success: boolean; message: string }>;
+  signInWithTwitter: (options?: { redirectTo?: string; captchaToken?: string }) => Promise<{ success: boolean; message: string }>;
+  signInWithSolanaWallet: (options?: { redirectTo?: string; captchaToken?: string }) => Promise<{ success: boolean; message: string }>;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -92,7 +92,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setSession(null);
   };
 
-  const sendMagicLink = async (email: string, options?: { redirectTo?: string }): Promise<{ success: boolean; message: string }> => {
+  const sendMagicLink = async (email: string, options?: { redirectTo?: string; captchaToken?: string }): Promise<{ success: boolean; message: string }> => {
     if (!supabase) return { success: false, message: 'Authentication not initialized' };
 
     const trimmed = email.trim();
@@ -101,11 +101,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     try {
-      const redirectTo = options?.redirectTo || (typeof window !== 'undefined' ? `${window.location.origin}/link` : undefined);
+      const redirectTo = options?.redirectTo || (typeof window !== 'undefined' ? `${window.location.origin}/` : undefined);
       const { error } = await supabase.auth.signInWithOtp({
         email: trimmed,
         options: { emailRedirectTo: redirectTo, shouldCreateUser: true },
-      });
+        captchaToken: options?.captchaToken,
+      } as any);
       if (error) throw error;
       return { success: true, message: 'Check your email for the sign-in link.' };
     } catch (err: any) {
@@ -119,14 +120,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return undefined;
   };
 
-  const signInWithTwitter = async (options?: { redirectTo?: string }) => {
+  const signInWithTwitter = async (options?: { redirectTo?: string; captchaToken?: string }) => {
     if (!supabase) return { success: false, message: 'Authentication not initialized' };
     try {
       const redirectTo = resolveRedirectTo(options?.redirectTo);
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'twitter',
-        options: { redirectTo, skipBrowserRedirect: true },
-      });
+        options: { redirectTo, skipBrowserRedirect: true, captchaToken: options?.captchaToken },
+      } as any);
       if (error) throw error;
       if (data?.url) {
         if (typeof window !== 'undefined') {
@@ -140,7 +141,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const signInWithSolanaWallet = async (options?: { redirectTo?: string }) => {
+  const signInWithSolanaWallet = async (options?: { redirectTo?: string; captchaToken?: string }) => {
     if (!supabase) return { success: false, message: 'Authentication not initialized' };
     try {
       const redirectTo = resolveRedirectTo(options?.redirectTo);
@@ -150,6 +151,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           redirectTo,
           skipBrowserRedirect: true,
           additionalQueryParams: { chain: 'solana' } as any,
+          captchaToken: options?.captchaToken,
         },
       } as any);
       if (error) throw error;

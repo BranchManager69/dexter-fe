@@ -2,10 +2,11 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { SITE, VERSION_TAG } from '../lib/site';
 import { useAuth } from './auth-context';
 import { resolveEmailProvider } from '../lib/emailProviders';
+import { TurnstileWidget } from './components/TurnstileWidget';
 
 export function Header() {
   const { session, loading, signOut, sendMagicLink, signInWithTwitter, signInWithSolanaWallet } = useAuth();
@@ -16,6 +17,9 @@ export function Header() {
   const [magicLinkBusy, setMagicLinkBusy] = useState(false);
   const [magicLinkSent, setMagicLinkSent] = useState(false);
   const [oauthBusy, setOauthBusy] = useState<'twitter' | 'solana' | null>(null);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const [turnstileKey, setTurnstileKey] = useState(0);
+  const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || '';
 
   const providerInfo = resolveEmailProvider(email);
   const inboxUrl = providerInfo?.inboxUrl ?? '';
@@ -25,11 +29,15 @@ export function Header() {
       setAuthMessage('Enter your email.');
       return;
     }
+    if (siteKey && !captchaToken) {
+      setAuthMessage('Complete the verification challenge to continue.');
+      return;
+    }
     setMagicLinkBusy(true);
     setMagicLinkSent(false);
     setAuthMessage('');
 
-    const result = await sendMagicLink(email);
+    const result = await sendMagicLink(email, { captchaToken: captchaToken || undefined });
     if (result.success) {
       setMagicLinkSent(true);
       setAuthMessage('Check your inbox for the sign-in link.');
@@ -38,26 +46,46 @@ export function Header() {
     }
 
     setMagicLinkBusy(false);
+    if (siteKey) {
+      setCaptchaToken(null);
+      setTurnstileKey((key) => key + 1);
+    }
   };
 
   const handleTwitterLogin = async () => {
     setAuthMessage('');
+    if (siteKey && !captchaToken) {
+      setAuthMessage('Complete the verification challenge to continue.');
+      return;
+    }
     setOauthBusy('twitter');
-    const result = await signInWithTwitter();
+    const result = await signInWithTwitter({ captchaToken: captchaToken || undefined });
     if (!result.success && result.message) {
       setAuthMessage(result.message);
     }
     setOauthBusy(null);
+    if (siteKey) {
+      setCaptchaToken(null);
+      setTurnstileKey((key) => key + 1);
+    }
   };
 
   const handleSolanaLogin = async () => {
     setAuthMessage('');
+    if (siteKey && !captchaToken) {
+      setAuthMessage('Complete the verification challenge to continue.');
+      return;
+    }
     setOauthBusy('solana');
-    const result = await signInWithSolanaWallet();
+    const result = await signInWithSolanaWallet({ captchaToken: captchaToken || undefined });
     if (!result.success && result.message) {
       setAuthMessage(result.message);
     }
     setOauthBusy(null);
+    if (siteKey) {
+      setCaptchaToken(null);
+      setTurnstileKey((key) => key + 1);
+    }
   };
 
   const handleSignOut = async () => {
@@ -66,7 +94,18 @@ export function Header() {
     setEmail('');
     setAuthMessage('');
     setMagicLinkSent(false);
+    if (siteKey) {
+      setCaptchaToken(null);
+      setTurnstileKey((key) => key + 1);
+    }
   };
+
+  useEffect(() => {
+    if (!showAuthModal && siteKey) {
+      setCaptchaToken(null);
+      setTurnstileKey((key) => key + 1);
+    }
+  }, [showAuthModal, siteKey]);
 
   const navClass = (href: string) => {
     if (!pathname) return 'nav-link';
@@ -132,6 +171,17 @@ export function Header() {
                   </div>
 
                   {authMessage && <div className="helper-text">{authMessage}</div>}
+
+                  {siteKey && (
+                    <div className="form-field">
+                      <TurnstileWidget
+                        key={turnstileKey}
+                        siteKey={siteKey}
+                        onToken={setCaptchaToken}
+                        className="turnstile-embed"
+                      />
+                    </div>
+                  )}
 
                   <div className="auth-popover__actions">
                     <button

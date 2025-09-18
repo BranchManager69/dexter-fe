@@ -3,6 +3,7 @@
 import { Suspense, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useAuth } from '../../auth-context';
+import { TurnstileWidget } from '../../components/TurnstileWidget';
 import { resolveEmailProvider } from '../../../lib/emailProviders';
 import styles from './styles.module.css';
 
@@ -29,6 +30,9 @@ function ConnectorAuthContent() {
   const [redirectUrl, setRedirectUrl] = useState<string | null>(null);
   const [copyState, setCopyState] = useState<'idle' | 'copied' | 'error'>('idle');
   const [oauthBusy, setOauthBusy] = useState<'twitter' | 'solana' | null>(null);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const [turnstileKey, setTurnstileKey] = useState(0);
+  const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || '';
   const providerInfo = useMemo(() => resolveEmailProvider(email), [email]);
 
   useEffect(() => {
@@ -213,28 +217,41 @@ function ConnectorAuthContent() {
   };
 
   const handleSendMagicLink = async () => {
+    if (siteKey && !captchaToken) {
+      setMagicError('Complete the verification challenge to continue.');
+      setStatus('waiting');
+      return;
+    }
     setMagicError('');
     setMagicLinkSent(false);
     setStatus('sending');
     const redirectPath = requestId ? `${window.location.origin}/connector/auth?request_id=${encodeURIComponent(requestId)}` : undefined;
-    const result = await sendMagicLink(email.trim(), { redirectTo: redirectPath });
+    const result = await sendMagicLink(email.trim(), { redirectTo: redirectPath, captchaToken: captchaToken || undefined });
     if (result.success) {
       setMagicLinkSent(true);
-      setStatus('waiting');
     } else {
       setMagicError(result.message);
-      setStatus('waiting');
+    }
+    setStatus('waiting');
+    if (siteKey) {
+      setCaptchaToken(null);
+      setTurnstileKey((key) => key + 1);
     }
   };
 
   const redirectPathForRequest = () => (requestId ? `${window.location.origin}/connector/auth?request_id=${encodeURIComponent(requestId)}` : undefined);
 
   const handleTwitterLogin = async () => {
+    if (siteKey && !captchaToken) {
+      setMagicError('Complete the verification challenge to continue.');
+      setStatus('waiting');
+      return;
+    }
     setMagicError('');
     setMagicLinkSent(false);
     setOauthBusy('twitter');
     try {
-      const result = await signInWithTwitter({ redirectTo: redirectPathForRequest() });
+      const result = await signInWithTwitter({ redirectTo: redirectPathForRequest(), captchaToken: captchaToken || undefined });
       if (!result.success && result.message) {
         setMagicError(result.message);
         setStatus('waiting');
@@ -244,15 +261,24 @@ function ConnectorAuthContent() {
       setStatus('waiting');
     } finally {
       setOauthBusy(null);
+      if (siteKey) {
+        setCaptchaToken(null);
+        setTurnstileKey((key) => key + 1);
+      }
     }
   };
 
   const handleSolanaLogin = async () => {
+    if (siteKey && !captchaToken) {
+      setMagicError('Complete the verification challenge to continue.');
+      setStatus('waiting');
+      return;
+    }
     setMagicError('');
     setMagicLinkSent(false);
     setOauthBusy('solana');
     try {
-      const result = await signInWithSolanaWallet({ redirectTo: redirectPathForRequest() });
+      const result = await signInWithSolanaWallet({ redirectTo: redirectPathForRequest(), captchaToken: captchaToken || undefined });
       if (!result.success && result.message) {
         setMagicError(result.message);
         setStatus('waiting');
@@ -262,6 +288,10 @@ function ConnectorAuthContent() {
       setStatus('waiting');
     } finally {
       setOauthBusy(null);
+      if (siteKey) {
+        setCaptchaToken(null);
+        setTurnstileKey((key) => key + 1);
+      }
     }
   };
 
@@ -288,6 +318,14 @@ function ConnectorAuthContent() {
           {oauthBusy === 'solana' ? 'Connecting…' : 'Sign in with Solana wallet'}
         </button>
       </div>
+      {siteKey && (
+        <TurnstileWidget
+          key={turnstileKey}
+          siteKey={siteKey}
+          onToken={setCaptchaToken}
+          className={styles['turnstile-container']}
+        />
+      )}
       <div className={styles['login-row']}>
         <input
           type="email"

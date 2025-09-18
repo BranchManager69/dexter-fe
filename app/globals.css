@@ -209,6 +209,12 @@ textarea {
   color: rgba(226, 231, 255, 0.65);
 }
 
+.turnstile-embed {
+  margin-top: 12px;
+  display: flex;
+  justify-content: flex-start;
+}
+
 .text-muted {
   color: var(--color-text-secondary);
 }
