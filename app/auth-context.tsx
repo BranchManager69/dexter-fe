@@ -115,7 +115,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const resolveRedirectTo = (explicit?: string) => {
     if (explicit) return explicit;
-    if (typeof window !== 'undefined') return `${window.location.origin}/link`;
+    if (typeof window !== 'undefined') return `${window.location.origin}/`;
     return undefined;
   };
 
