@@ -98,7 +98,7 @@ export function Header() {
           {!loading && !session && (
             <>
               <button className="button button--ghost" onClick={() => setShowAuthModal((open) => !open)}>
-                Request Access
+                Log In
               </button>
               {showAuthModal && (
                 <div className="auth-popover">
