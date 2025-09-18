@@ -18,13 +18,14 @@ function ConnectorAuthContent() {
   const { supabase, session, loading, error, sendMagicLink } = useAuth();
   const [email, setEmail] = useState('');
   const [requestInfo, setRequestInfo] = useState<AuthRequestInfo | null>(null);
-  const [status, setStatus] = useState<'init' | 'fetching' | 'waiting' | 'sending' | 'exchanging' | 'redirecting' | 'error'>('init');
+  const [status, setStatus] = useState<'init' | 'fetching' | 'waiting' | 'sending' | 'exchanging' | 'redirecting' | 'manual' | 'error'>('init');
   const [message, setMessage] = useState<string>('');
   const [magicLinkSent, setMagicLinkSent] = useState(false);
   const [magicError, setMagicError] = useState<string>('');
   const [exchangeError, setExchangeError] = useState<string>('');
   const [exchangeAttempted, setExchangeAttempted] = useState(false);
   const [redirectUrl, setRedirectUrl] = useState<string | null>(null);
+  const [copyState, setCopyState] = useState<'idle' | 'copied' | 'error'>('idle');
 
   useEffect(() => {
     if (!requestId) {
@@ -106,23 +107,37 @@ function ConnectorAuthContent() {
           throw new Error(data?.error || 'exchange_failed');
         }
         const data = await resp.json();
-        const redirect = new URL(data.redirect_uri);
-        redirect.searchParams.set('code', data.code);
-        if (data.state) redirect.searchParams.set('state', data.state);
-        const targetUrl = redirect.toString();
+        const targetUrl = (typeof data.redirect_url === 'string' && data.redirect_url) || (() => {
+          const fallback = new URL(data.redirect_uri);
+          fallback.searchParams.set('code', data.code);
+          if (data.state) fallback.searchParams.set('state', data.state);
+          return fallback.toString();
+        })();
+        const mobileUrl = typeof data.mobile_redirect_url === 'string' && data.mobile_redirect_url ? data.mobile_redirect_url : null;
         setRedirectUrl(targetUrl);
-        setStatus('redirecting');
-        try {
-          window.location.href = targetUrl;
-          // Fallback for stubborn clients that ignore location changes
+
+        if (mobileUrl) {
+          setStatus('redirecting');
+          try {
+            window.location.href = mobileUrl;
+            setTimeout(() => {
+              if (!cancelled) {
+                window.open(mobileUrl, '_self');
+              }
+            }, 600);
+          } catch (navErr) {
+            console.warn('[connector/oauth] mobile navigation failed', navErr);
+            window.open(mobileUrl, '_self');
+          }
+
+          // Secondary fallback to the official web callback
           setTimeout(() => {
             if (!cancelled) {
               window.open(targetUrl, '_self');
             }
-          }, 750);
-        } catch (navErr) {
-          console.warn('[connector/oauth] navigation failed', navErr);
-          window.open(targetUrl, '_self');
+          }, 2000);
+        } else {
+          setStatus('manual');
         }
       } catch (err: any) {
         if (!cancelled) {
@@ -142,6 +157,56 @@ function ConnectorAuthContent() {
     if (requestInfo?.scope?.includes('voice')) return 'Connect Dexter Voice';
     return 'Authorize Dexter Connector';
   }, [requestInfo]);
+
+  const connectorName = useMemo(() => {
+    if (!requestInfo) return 'Connector';
+    const { client_id: clientId, redirect_uri: redirectUri } = requestInfo;
+    if (clientId === 'cid_59e99d1247b444bca4631382ecff3e36') return 'Claude';
+    if (clientId === 'cid_a859560609a6448aa2f3a1c29f6ab496') return 'ChatGPT';
+    try {
+      const host = new URL(redirectUri).hostname;
+      if (host.includes('claude')) return 'Claude';
+      if (host.includes('openai') || host.includes('chatgpt')) return 'ChatGPT';
+      return host;
+    } catch {
+      return 'Connector';
+    }
+  }, [requestInfo]);
+
+  const handleCopyLink = async () => {
+    if (!redirectUrl) return;
+    if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
+      try {
+        await navigator.clipboard.writeText(redirectUrl);
+        setCopyState('copied');
+        setTimeout(() => setCopyState('idle'), 2000);
+        return;
+      } catch (err) {
+        console.warn('[connector/oauth] clipboard copy failed', err);
+      }
+    }
+    try {
+      const textArea = document.createElement('textarea');
+      textArea.value = redirectUrl;
+      textArea.style.position = 'fixed';
+      textArea.style.opacity = '0';
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      setCopyState('copied');
+      setTimeout(() => setCopyState('idle'), 2000);
+    } catch (err) {
+      console.warn('[connector/oauth] legacy clipboard copy failed', err);
+      setCopyState('error');
+      setTimeout(() => setCopyState('idle'), 2000);
+    }
+  };
+
+  const handleOpenLink = () => {
+    if (!redirectUrl) return;
+    window.open(redirectUrl, '_blank', 'noopener,noreferrer');
+  };
 
   const handleSendMagicLink = async () => {
     setMagicError('');
@@ -242,11 +307,72 @@ function ConnectorAuthContent() {
           </p>
         )}
 
+        {status === 'manual' && redirectUrl && (
+          <div style={{
+            marginTop: 24,
+            background: 'rgba(8, 10, 14, 0.85)',
+            borderRadius: 12,
+            padding: 20,
+            border: '1px solid rgba(102,126,234,0.3)',
+          }}>
+            <h2 style={{ marginTop: 0, marginBottom: 12 }}>Finish in {connectorName}</h2>
+            <p style={{ marginTop: 0, marginBottom: 16, lineHeight: 1.5, color: '#9fb2c8' }}>
+              We couldn’t open {connectorName} automatically. Tap below to finish connecting, then return to the app to
+              continue.
+            </p>
+            <button
+              onClick={handleOpenLink}
+              style={{
+                padding: '12px 18px',
+                borderRadius: 10,
+                border: 'none',
+                background: '#7aa2f7',
+                color: '#07080c',
+                fontWeight: 600,
+                cursor: 'pointer',
+                width: '100%',
+              }}
+            >
+              Open {connectorName}
+            </button>
+            <div style={{ marginTop: 16 }}>
+              <p style={{ marginBottom: 8, color: '#9fb2c8' }}>Need to paste it manually?</p>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                <code style={{
+                  flex: 1,
+                  fontSize: 12,
+                  lineHeight: 1.4,
+                  background: '#0b0c10',
+                  padding: '8px 10px',
+                  borderRadius: 8,
+                  border: '1px solid rgba(102,126,234,0.25)',
+                  overflowWrap: 'anywhere',
+                }}>
+                  {redirectUrl}
+                </code>
+                <button
+                  onClick={handleCopyLink}
+                  style={{
+                    padding: '8px 12px',
+                    borderRadius: 8,
+                    border: '1px solid rgba(102,126,234,0.45)',
+                    background: 'rgba(12, 14, 20, 0.9)',
+                    color: '#e6edf3',
+                    cursor: 'pointer',
+                  }}
+                >
+                  {copyState === 'copied' ? 'Copied!' : copyState === 'error' ? 'Copy failed' : 'Copy link'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {!session && !loading && renderLoginForm()}
         {loading && (
           <p style={{ color: '#9fb2c8' }}>Loading authentication…</p>
         )}
-        {session && requestInfo && (
+        {session && requestInfo && status !== 'manual' && (
           <div style={{ marginTop: 16 }}>
             <p style={{ color: '#7aa2f7' }}>
               Signed in as <strong>{session.user?.email}</strong>. Completing authorization…
