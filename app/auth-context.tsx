@@ -16,6 +16,8 @@ interface AuthContextType {
   error: string | null;
   signOut: () => Promise<void>;
   sendMagicLink: (email: string, options?: { redirectTo?: string }) => Promise<{ success: boolean; message: string }>;
+  signInWithTwitter: (options?: { redirectTo?: string }) => Promise<{ success: boolean; message: string }>;
+  signInWithSolanaWallet: (options?: { redirectTo?: string }) => Promise<{ success: boolean; message: string }>;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -25,6 +27,8 @@ const AuthContext = createContext<AuthContextType>({
   error: null,
   signOut: async () => {},
   sendMagicLink: async () => ({ success: false, message: 'Not initialized' }),
+  signInWithTwitter: async () => ({ success: false, message: 'Not initialized' }),
+  signInWithSolanaWallet: async () => ({ success: false, message: 'Not initialized' }),
 });
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -109,8 +113,60 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const resolveRedirectTo = (explicit?: string) => {
+    if (explicit) return explicit;
+    if (typeof window !== 'undefined') return `${window.location.origin}/link`;
+    return undefined;
+  };
+
+  const signInWithTwitter = async (options?: { redirectTo?: string }) => {
+    if (!supabase) return { success: false, message: 'Authentication not initialized' };
+    try {
+      const redirectTo = resolveRedirectTo(options?.redirectTo);
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'twitter',
+        options: { redirectTo, skipBrowserRedirect: true },
+      });
+      if (error) throw error;
+      if (data?.url) {
+        if (typeof window !== 'undefined') {
+          window.location.assign(data.url);
+        }
+        return { success: true, message: '' };
+      }
+      return { success: false, message: 'Twitter login did not return a redirect URL.' };
+    } catch (err: any) {
+      return { success: false, message: err?.message || 'Unable to sign in with Twitter.' };
+    }
+  };
+
+  const signInWithSolanaWallet = async (options?: { redirectTo?: string }) => {
+    if (!supabase) return { success: false, message: 'Authentication not initialized' };
+    try {
+      const redirectTo = resolveRedirectTo(options?.redirectTo);
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'wallet' as any,
+        options: {
+          redirectTo,
+          skipBrowserRedirect: true,
+          additionalQueryParams: { chain: 'solana' } as any,
+        },
+      } as any);
+      if (error) throw error;
+      if (data?.url) {
+        if (typeof window !== 'undefined') {
+          window.location.assign(data.url);
+        }
+        return { success: true, message: '' };
+      }
+      return { success: false, message: 'Wallet login did not return a redirect URL.' };
+    } catch (err: any) {
+      return { success: false, message: err?.message || 'Unable to sign in with Solana wallet.' };
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ supabase, session, loading, error, signOut, sendMagicLink }}>
+    <AuthContext.Provider value={{ supabase, session, loading, error, signOut, sendMagicLink, signInWithTwitter, signInWithSolanaWallet }}>
       {children}
     </AuthContext.Provider>
   );

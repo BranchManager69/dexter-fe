@@ -8,13 +8,14 @@ import { useAuth } from './auth-context';
 import { resolveEmailProvider } from '../lib/emailProviders';
 
 export function Header() {
-  const { session, loading, signOut, sendMagicLink } = useAuth();
+  const { session, loading, signOut, sendMagicLink, signInWithTwitter, signInWithSolanaWallet } = useAuth();
   const pathname = usePathname();
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [email, setEmail] = useState('');
   const [authMessage, setAuthMessage] = useState('');
   const [magicLinkBusy, setMagicLinkBusy] = useState(false);
   const [magicLinkSent, setMagicLinkSent] = useState(false);
+  const [oauthBusy, setOauthBusy] = useState(false);
 
   const providerInfo = resolveEmailProvider(email);
   const inboxUrl = providerInfo?.inboxUrl ?? '';
@@ -37,6 +38,26 @@ export function Header() {
     }
 
     setMagicLinkBusy(false);
+  };
+
+  const handleTwitterLogin = async () => {
+    setAuthMessage('');
+    setOauthBusy(true);
+    const result = await signInWithTwitter();
+    if (!result.success && result.message) {
+      setAuthMessage(result.message);
+    }
+    setOauthBusy(false);
+  };
+
+  const handleSolanaLogin = async () => {
+    setAuthMessage('');
+    setOauthBusy(true);
+    const result = await signInWithSolanaWallet();
+    if (!result.success && result.message) {
+      setAuthMessage(result.message);
+    }
+    setOauthBusy(false);
   };
 
   const handleSignOut = async () => {
@@ -81,6 +102,23 @@ export function Header() {
               </button>
               {showAuthModal && (
                 <div className="auth-popover">
+                  <div className="form-field" style={{ gap: '8px' }}>
+                    <button
+                      className="button button--primary"
+                      onClick={handleTwitterLogin}
+                      disabled={oauthBusy}
+                    >
+                      {oauthBusy ? 'Starting…' : 'Continue with Twitter'}
+                    </button>
+                    <button
+                      className="button button--ghost"
+                      onClick={handleSolanaLogin}
+                      disabled={oauthBusy}
+                    >
+                      {oauthBusy ? 'Starting…' : 'Sign in with Solana wallet'}
+                    </button>
+                  </div>
+
                   <div className="form-field">
                     <label htmlFor="auth-email" className="form-label">Email</label>
                     <input
