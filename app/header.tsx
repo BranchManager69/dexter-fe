@@ -15,7 +15,7 @@ export function Header() {
   const [authMessage, setAuthMessage] = useState('');
   const [magicLinkBusy, setMagicLinkBusy] = useState(false);
   const [magicLinkSent, setMagicLinkSent] = useState(false);
-  const [oauthBusy, setOauthBusy] = useState(false);
+  const [oauthBusy, setOauthBusy] = useState<'twitter' | 'solana' | null>(null);
 
   const providerInfo = resolveEmailProvider(email);
   const inboxUrl = providerInfo?.inboxUrl ?? '';
@@ -42,22 +42,22 @@ export function Header() {
 
   const handleTwitterLogin = async () => {
     setAuthMessage('');
-    setOauthBusy(true);
+    setOauthBusy('twitter');
     const result = await signInWithTwitter();
     if (!result.success && result.message) {
       setAuthMessage(result.message);
     }
-    setOauthBusy(false);
+    setOauthBusy(null);
   };
 
   const handleSolanaLogin = async () => {
     setAuthMessage('');
-    setOauthBusy(true);
+    setOauthBusy('solana');
     const result = await signInWithSolanaWallet();
     if (!result.success && result.message) {
       setAuthMessage(result.message);
     }
-    setOauthBusy(false);
+    setOauthBusy(null);
   };
 
   const handleSignOut = async () => {
@@ -106,16 +106,16 @@ export function Header() {
                     <button
                       className="button button--primary"
                       onClick={handleTwitterLogin}
-                      disabled={oauthBusy}
+                      disabled={!!oauthBusy}
                     >
-                      {oauthBusy ? 'Starting…' : 'Continue with Twitter'}
+                      {oauthBusy === 'twitter' ? 'Starting…' : 'Continue with Twitter'}
                     </button>
                     <button
                       className="button button--ghost"
                       onClick={handleSolanaLogin}
-                      disabled={oauthBusy}
+                      disabled={!!oauthBusy}
                     >
-                      {oauthBusy ? 'Starting…' : 'Sign in with Solana wallet'}
+                      {oauthBusy === 'solana' ? 'Starting…' : 'Sign in with Solana wallet'}
                     </button>
                   </div>
 

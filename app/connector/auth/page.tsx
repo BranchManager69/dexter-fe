@@ -17,7 +17,7 @@ function ConnectorAuthContent() {
   const searchParams = useSearchParams();
   const requestId = searchParams.get('request_id');
 
-  const { supabase, session, loading, error, sendMagicLink } = useAuth();
+  const { supabase, session, loading, error, sendMagicLink, signInWithTwitter, signInWithSolanaWallet } = useAuth();
   const [email, setEmail] = useState('');
   const [requestInfo, setRequestInfo] = useState<AuthRequestInfo | null>(null);
   const [status, setStatus] = useState<'init' | 'fetching' | 'waiting' | 'sending' | 'exchanging' | 'redirecting' | 'manual' | 'error'>('init');
@@ -28,6 +28,7 @@ function ConnectorAuthContent() {
   const [exchangeAttempted, setExchangeAttempted] = useState(false);
   const [redirectUrl, setRedirectUrl] = useState<string | null>(null);
   const [copyState, setCopyState] = useState<'idle' | 'copied' | 'error'>('idle');
+  const [oauthBusy, setOauthBusy] = useState<'twitter' | 'solana' | null>(null);
   const providerInfo = useMemo(() => resolveEmailProvider(email), [email]);
 
   useEffect(() => {
@@ -226,11 +227,67 @@ function ConnectorAuthContent() {
     }
   };
 
+  const redirectPathForRequest = () => (requestId ? `${window.location.origin}/connector/auth?request_id=${encodeURIComponent(requestId)}` : undefined);
+
+  const handleTwitterLogin = async () => {
+    setMagicError('');
+    setMagicLinkSent(false);
+    setOauthBusy('twitter');
+    try {
+      const result = await signInWithTwitter({ redirectTo: redirectPathForRequest() });
+      if (!result.success && result.message) {
+        setMagicError(result.message);
+        setStatus('waiting');
+      }
+    } catch (err: any) {
+      setMagicError(err?.message || 'Unable to sign in with Twitter.');
+      setStatus('waiting');
+    } finally {
+      setOauthBusy(null);
+    }
+  };
+
+  const handleSolanaLogin = async () => {
+    setMagicError('');
+    setMagicLinkSent(false);
+    setOauthBusy('solana');
+    try {
+      const result = await signInWithSolanaWallet({ redirectTo: redirectPathForRequest() });
+      if (!result.success && result.message) {
+        setMagicError(result.message);
+        setStatus('waiting');
+      }
+    } catch (err: any) {
+      setMagicError(err?.message || 'Unable to sign in with Solana wallet.');
+      setStatus('waiting');
+    } finally {
+      setOauthBusy(null);
+    }
+  };
+
   const renderLoginForm = () => (
     <div className={styles['login-form']}>
       <p className={styles['login-copy']}>
-        Enter the email associated with your Dexter account and we’ll send a sign-in link. Open it in the same browser and come back here.
+        Sign in with Twitter, your Solana wallet, or use a magic link to continue.
       </p>
+      <div className={styles['provider-buttons']}>
+        <button
+          type="button"
+          onClick={handleTwitterLogin}
+          disabled={!!oauthBusy || status === 'sending'}
+          className={`${styles['provider-btn']} ${styles['provider-btn--twitter']}`}
+        >
+          {oauthBusy === 'twitter' ? 'Connecting…' : 'Continue with Twitter'}
+        </button>
+        <button
+          type="button"
+          onClick={handleSolanaLogin}
+          disabled={!!oauthBusy || status === 'sending'}
+          className={`${styles['provider-btn']} ${styles['provider-btn--wallet']}`}
+        >
+          {oauthBusy === 'solana' ? 'Connecting…' : 'Sign in with Solana wallet'}
+        </button>
+      </div>
       <div className={styles['login-row']}>
         <input
           type="email"
@@ -242,10 +299,10 @@ function ConnectorAuthContent() {
         <button
           type="button"
           onClick={handleSendMagicLink}
-          disabled={!email.trim() || status === 'sending'}
+          disabled={!email.trim() || status === 'sending' || !!oauthBusy}
           className={styles['send-btn']}
         >
-          {status === 'sending' ? 'Sending…' : 'Send link'}
+          {status === 'sending' ? 'Sending…' : 'Send magic link'}
         </button>
       </div>
       {magicLinkSent && (
