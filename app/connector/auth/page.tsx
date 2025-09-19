@@ -25,6 +25,10 @@ function ConnectorAuthContent() {
   const [message, setMessage] = useState<string>('');
   const [magicLinkSent, setMagicLinkSent] = useState(false);
   const [magicError, setMagicError] = useState<string>('');
+  const [code, setCode] = useState('');
+  const [verifyingCode, setVerifyingCode] = useState(false);
+  const [codeStatus, setCodeStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [codeMessage, setCodeMessage] = useState('');
   const [exchangeError, setExchangeError] = useState<string>('');
   const [exchangeAttempted, setExchangeAttempted] = useState(false);
   const [redirectUrl, setRedirectUrl] = useState<string | null>(null);
@@ -223,12 +227,15 @@ function ConnectorAuthContent() {
       return;
     }
     setMagicError('');
+    setCodeStatus('idle');
+    setCodeMessage('');
     setMagicLinkSent(false);
     setStatus('sending');
     const redirectPath = requestId ? `${window.location.origin}/connector/auth?request_id=${encodeURIComponent(requestId)}` : undefined;
     const result = await sendMagicLink(email.trim(), { redirectTo: redirectPath, captchaToken: captchaToken || undefined });
     if (result.success) {
       setMagicLinkSent(true);
+      setCodeMessage('Check your inbox for the six-digit code and enter it below to finish signing in.');
     } else {
       setMagicError(result.message);
     }
@@ -240,6 +247,55 @@ function ConnectorAuthContent() {
   };
 
   const redirectPathForRequest = () => (requestId ? `${window.location.origin}/connector/auth?request_id=${encodeURIComponent(requestId)}` : undefined);
+
+  const handleVerifyCode = async () => {
+    if (!supabase) {
+      setCodeStatus('error');
+      setCodeMessage('Authentication not initialized. Refresh and try again.');
+      return;
+    }
+
+    const trimmedEmail = email.trim().toLowerCase();
+    if (!trimmedEmail) {
+      setCodeStatus('error');
+      setCodeMessage('Enter the email you used above before verifying the code.');
+      return;
+    }
+
+    const numericCode = code.replace(/[^0-9]/g, '');
+    if (numericCode.length !== 6) {
+      setCodeStatus('error');
+      setCodeMessage('Enter the six-digit code from your email.');
+      return;
+    }
+
+    try {
+      setVerifyingCode(true);
+      setCodeStatus('idle');
+      setCodeMessage('Verifying code…');
+      const { error: verifyError } = await supabase.auth.verifyOtp({
+        email: trimmedEmail,
+        token: numericCode,
+        type: 'email',
+      } as any);
+
+      if (verifyError) {
+        throw verifyError;
+      }
+
+      setCodeStatus('success');
+      setCodeMessage('Code accepted! Returning you to the connector…');
+      setMagicLinkSent(true);
+      setStatus('waiting');
+      setCode(numericCode);
+    } catch (err: any) {
+      const message = err?.message || 'Unable to verify the code. Double-check and try again.';
+      setCodeStatus('error');
+      setCodeMessage(message);
+    } finally {
+      setVerifyingCode(false);
+    }
+  };
 
   const handleTwitterLogin = async () => {
     if (siteKey && !captchaToken) {
@@ -298,7 +354,7 @@ function ConnectorAuthContent() {
   const renderLoginForm = () => (
     <div className={styles['login-form']}>
       <p className={styles['login-copy']}>
-        Sign in with Twitter, your Solana wallet, or use a magic link to continue.
+        Send a magic link to your inbox, then enter the six-digit code below to finish connecting. The link works too, but the code keeps everything inside this window (perfect for Claude and ChatGPT).
       </p>
       <div className={styles['provider-buttons']}>
         <button
@@ -345,7 +401,9 @@ function ConnectorAuthContent() {
       </div>
       {magicLinkSent && (
         <div className={styles['copy-block']}>
-          <p className={styles['status-text']}>Magic link sent! Check your inbox and open the link in this browser.</p>
+          <p className={styles['status-text']}>
+            Magic link sent! Enter the six-digit code from that email below or open the link in this browser.
+          </p>
           {providerInfo && (
             <a
               className={styles['inbox-hint']}
@@ -359,6 +417,52 @@ function ConnectorAuthContent() {
         </div>
       )}
       {magicError && <p className={`${styles['status-text']} ${styles['status-error']}`}>{magicError}</p>}
+      <div className={styles['code-panel']}>
+        <div className={styles['code-header']}>
+          <h3 className={styles['code-title']}>Have the code?</h3>
+          <p className={styles['code-copy']}>
+            Enter the six digits from your email to complete sign-in without leaving this window.
+          </p>
+        </div>
+        <div className={styles['code-row']}>
+          <input
+            type="text"
+            inputMode="numeric"
+            pattern="[0-9]*"
+            maxLength={6}
+            placeholder="123456"
+            value={code}
+            onChange={(event) => setCode(event.target.value.replace(/[^0-9]/g, ''))}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter') {
+                event.preventDefault();
+                handleVerifyCode();
+              }
+            }}
+            className={styles['code-input']}
+            aria-label="Six digit verification code"
+          />
+          <button
+            type="button"
+            onClick={handleVerifyCode}
+            disabled={verifyingCode || !email.trim() || code.replace(/[^0-9]/g, '').length < 6}
+            className={styles['code-btn']}
+          >
+            {verifyingCode ? 'Verifying…' : 'Verify code'}
+          </button>
+        </div>
+        {codeMessage && (
+          <p
+            className={
+              codeStatus === 'error'
+                ? `${styles['status-text']} ${styles['status-error']}`
+                : `${styles['status-text']} ${styles['status-success']}`
+            }
+          >
+            {codeMessage}
+          </p>
+        )}
+      </div>
     </div>
   );
 
