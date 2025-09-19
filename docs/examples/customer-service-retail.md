@@ -11,12 +11,14 @@ This repository now vendors the official OpenAI **Customer Service Retail** scen
 ## How to run the example locally
 1. `cd examples/openai-realtime-agents`
 2. Install deps: `npm install`
-3. Provide credentials: copy `.env.sample` to `.env` (or export) and set the variables:
+3. Provide credentials: copy `.env.sample` to `.env` (or export) and set at least:
    - `OPENAI_API_KEY`
-   - `NEXT_PUBLIC_OPENAI_REALTIME_MODEL` (defaults to `gpt-realtime`)
+   - `NEXT_PUBLIC_OPENAI_REALTIME_MODEL`
    - `NEXT_PUBLIC_OPENAI_TRANSCRIPTION_MODEL`
    - `NEXT_PUBLIC_OPENAI_SUPERVISOR_MODEL`
    - `NEXT_PUBLIC_OPENAI_GUARDRAIL_MODEL`
+
+   The sample file also lists additional model aliases (general, reasoning, writing, image, audio, etc.) that share the same central loader. Populate any you plan to use; leave the defaults intact otherwise.
 4. Launch: `npm run dev`
 5. Open http://localhost:3000 and pick **Customer Service Retail** from the Scenario dropdown in the top-right to load the multi-agent flow.
 
