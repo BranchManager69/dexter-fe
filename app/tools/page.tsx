@@ -25,7 +25,7 @@ export default function ToolsPage() {
       try {
         setLoading(true);
         setError(null);
-        const r = await fetch('/api/tools');
+        const r = await fetch('/api/tools', { credentials: 'include' });
         const ct = r.headers.get('content-type') || '';
         const text = await r.text();
         if (!r.ok) {
@@ -130,4 +130,3 @@ function SchemaBlock({ title, value }: { title: string; value: any }) {
 function safeStringify(v: any) {
   try { return JSON.stringify(v, null, 2); } catch { return String(v); }
 }
-

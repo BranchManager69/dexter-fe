@@ -17,6 +17,8 @@ This repository now vendors the official OpenAI **Customer Service Retail** scen
    - `NEXT_PUBLIC_OPENAI_TRANSCRIPTION_MODEL`
    - `NEXT_PUBLIC_OPENAI_SUPERVISOR_MODEL`
    - `NEXT_PUBLIC_OPENAI_GUARDRAIL_MODEL`
+   - `NEXT_PUBLIC_DEXTER_API_ORIGIN` (defaults to `https://api.dexter.cash`)
+   - `NEXT_PUBLIC_TOKEN_AI_MCP_TOKEN` (optional shared bearer; leave blank to rely on session cookies)
 
    The sample file also lists additional model aliases (general, reasoning, writing, image, audio, etc.) that share the same central loader. Populate any you plan to use; leave the defaults intact otherwise.
 4. Launch: `npm run dev`
