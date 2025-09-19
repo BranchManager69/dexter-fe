@@ -11,14 +11,19 @@ This repository now vendors the official OpenAI **Customer Service Retail** scen
 ## How to run the example locally
 1. `cd examples/openai-realtime-agents`
 2. Install deps: `npm install`
-3. Provide credentials: copy `.env.sample` to `.env` (or export) and set `OPENAI_API_KEY=...`
+3. Provide credentials: copy `.env.sample` to `.env` (or export) and set the variables:
+   - `OPENAI_API_KEY`
+   - `NEXT_PUBLIC_OPENAI_REALTIME_MODEL` (defaults to `gpt-realtime`)
+   - `NEXT_PUBLIC_OPENAI_TRANSCRIPTION_MODEL`
+   - `NEXT_PUBLIC_OPENAI_SUPERVISOR_MODEL`
+   - `NEXT_PUBLIC_OPENAI_GUARDRAIL_MODEL`
 4. Launch: `npm run dev`
 5. Open http://localhost:3000 and pick **Customer Service Retail** from the Scenario dropdown in the top-right to load the multi-agent flow.
 
 The demo app is an isolated Next.js project, so it will not interfere with the main `dexter-fe` build.
 
 ## Swapping to the newest realtime voice model
-Each specialist agent declares its `model` in `src/app/agentConfigs/customerServiceRetail/*.ts` (authentication, returns, sales, simulatedHuman). Update those strings to the realtime model you want to evaluate (e.g. `gpt-4o-realtime-preview-2024-12-17`). No other code changes are required before you validate audio quality differences.
+The realtime, transcription, supervisor, and guardrail models are all driven from the `.env` file now. Adjust the `NEXT_PUBLIC_*_MODEL` values to try a different release (for example, set `NEXT_PUBLIC_OPENAI_REALTIME_MODEL=gpt-realtime-preview-2025-09-01`). No code changes are required before you A/B the voice quality.
 
 ## Hooking in MCP or custom tools (Phase 2 notes)
 - The existing tool stubs live in `src/app/api/tools/` and are wired via the agent configs' `tools` arrays.
