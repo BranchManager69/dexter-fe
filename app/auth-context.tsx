@@ -104,8 +104,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const redirectTo = options?.redirectTo || (typeof window !== 'undefined' ? `${window.location.origin}/` : undefined);
       const { error } = await supabase.auth.signInWithOtp({
         email: trimmed,
-        options: { emailRedirectTo: redirectTo, shouldCreateUser: true },
-        captchaToken: options?.captchaToken,
+        options: {
+          emailRedirectTo: redirectTo,
+          shouldCreateUser: true,
+          captchaToken: options?.captchaToken,
+        },
       } as any);
       if (error) throw error;
       return { success: true, message: 'Check your email for the sign-in link.' };
