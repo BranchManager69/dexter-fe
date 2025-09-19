@@ -31,6 +31,19 @@ and delegates tool orchestration to the API + MCP services.
 - **MCP-aware client** – delegates tool execution through the API so the browser never stores tool secrets or keys.
 - **Lean Next.js footprint** – TypeScript + App Router with minimal dependencies; easy to fork for custom surfaces.
 
+## Preview
+
+<p align="center">
+  <video src="https://docs.dexter.cash/previews/dexter-fe.webm"
+         poster="https://docs.dexter.cash/previews/dexter-fe.png"
+         width="960"
+         autoplay
+         loop
+         muted
+         playsinline>
+  </video>
+</p>
+
 ## Dexter Stack
 
 | Repo | Role |
