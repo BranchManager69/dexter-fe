@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { useAuth } from '../auth-context';
 
 type McpTool = {
   name?: string;
@@ -12,6 +13,7 @@ type McpTool = {
 };
 
 export default function ToolsPage() {
+  const { session, loading: authLoading } = useAuth();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [raw, setRaw] = useState<any>(null);
@@ -21,11 +23,25 @@ export default function ToolsPage() {
 
   useEffect(() => {
     let alive = true;
+    if (authLoading) return;
+    if (!session) {
+      setLoading(false);
+      setTools([]);
+      setError('Sign in to view MCP tools.');
+      return;
+    }
+
     (async () => {
       try {
         setLoading(true);
         setError(null);
-        const r = await fetch('/api/tools', { credentials: 'include' });
+        const r = await fetch('/api/tools', {
+          credentials: 'include',
+          cache: 'no-store',
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+          },
+        });
         const ct = r.headers.get('content-type') || '';
         const text = await r.text();
         if (!r.ok) {
@@ -49,7 +65,7 @@ export default function ToolsPage() {
       }
     })();
     return () => { alive = false; };
-  }, []);
+  }, [session, authLoading]);
 
   const filtered = useMemo(() => {
     const q = filter.trim().toLowerCase();

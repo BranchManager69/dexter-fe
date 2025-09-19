@@ -8,7 +8,10 @@ export async function GET(request: Request) {
     const upstreamUrl = `${API_ORIGIN}/tools`;
     const headers: Record<string, string> = {};
 
-    if (MCP_TOKEN) {
+    const incomingAuth = request.headers.get('authorization');
+    if (incomingAuth) {
+      headers['Authorization'] = incomingAuth;
+    } else if (MCP_TOKEN) {
       headers['Authorization'] = `Bearer ${MCP_TOKEN}`;
     }
 
