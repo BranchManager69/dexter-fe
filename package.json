@@ -7,10 +7,7 @@
     "dev": "next dev -p 3017",
     "build": "next build",
     "start": "next start -p 3017",
-    "harness": "node ./cli/realtime-harness/run.mjs",
-    "agents:dev": "npm --prefix examples/openai-realtime-agents run pm2:dev",
-    "agents:prod": "npm --prefix examples/openai-realtime-agents run pm2:prod",
-    "agents:deploy": "npm --prefix examples/openai-realtime-agents run deploy"
+    "harness": "node ./cli/realtime-harness/run.mjs"
   },
   "dependencies": {
     "@marsidev/react-turnstile": "^1.3.1",

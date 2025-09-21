@@ -1,15 +1,15 @@
 # Customer Service Retail Realtime Example
 
-This repository now vendors the official OpenAI **Customer Service Retail** scenario from the `openai-realtime-agents` demo so we can iterate from a known-good starting point.
+This walkthrough points to the official OpenAI **Customer Service Retail** scenario now housed in the standalone `dexter-agents` project (sibling repo) so we can iterate from a known-good starting point.
 
 ## Source snapshot
-- Location: `examples/openai-realtime-agents`
+- Location: `../dexter-agents`
 - Upstream repo: https://github.com/openai/openai-realtime-agents
 - Commit: `137f89ea3651c87804d2c42527c8787377ab7dc6` (captured on clone)
 - Scenario files of interest: `src/app/agentConfigs/customerServiceRetail/`
 
 ## How to run the example locally
-1. `cd examples/openai-realtime-agents`
+1. `cd ../dexter-agents`
 2. Install deps: `npm install`
 3. Provide credentials: copy `.env.sample` to `.env` (or export) and set at least:
    - `OPENAI_API_KEY`
