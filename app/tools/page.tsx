@@ -1,7 +1,8 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState, type CSSProperties } from 'react';
 import { useAuth } from '../auth-context';
+import { Collapsible } from '../components/Collapsible';
 
 type McpTool = {
   name?: string;
@@ -12,9 +13,15 @@ type McpTool = {
   output_schema?: any;
   inputSchema?: any;
   outputSchema?: any;
-  parameters?: any; // alternative field name in some MCP servers
+  parameters?: any;
   category?: string;
   access?: string;
+  _meta?: {
+    category?: string;
+    access?: string;
+    tags?: string[];
+    icon?: string;
+  };
 };
 
 type AccessLevel = 'guest' | 'pro' | 'holders';
@@ -29,6 +36,8 @@ type CatalogTool = {
   access: AccessLevel;
   input: any;
   output: any;
+  tags: string[];
+  icon: string;
 };
 
 type CatalogGroup = {
@@ -41,14 +50,10 @@ const CATEGORY_LABEL_OVERRIDES: Record<string, string> = {
   pumpstream: 'Pump.fun & Streams',
   wallets: 'Wallet Ops',
   auth: 'Diagnostics',
-};
-
-const ACCESS_OVERRIDES: Record<string, AccessLevel> = {
-  pumpstream_live_summary: 'pro',
-  resolve_wallet: 'pro',
-  list_my_wallets: 'pro',
-  set_session_wallet_override: 'holders',
-  auth_info: 'holders',
+  'knowledge-base': 'Knowledge Base',
+  analytics: 'Analytics',
+  'solana.trading': 'Solana · Trading',
+  'solana.portfolio': 'Solana · Portfolio',
 };
 
 const ACCESS_LABELS: Record<AccessLevel, string> = {
@@ -57,20 +62,59 @@ const ACCESS_LABELS: Record<AccessLevel, string> = {
   holders: 'Holders',
 };
 
+const ACCESS_MAP: Record<string, AccessLevel> = {
+  public: 'guest',
+  free: 'guest',
+  demo: 'guest',
+  open: 'guest',
+  pro: 'pro',
+  paid: 'pro',
+  managed: 'pro',
+  internal: 'holders',
+  holder: 'holders',
+  holders: 'holders',
+  premium: 'holders',
+};
+
 const ACCESS_BADGE_STYLES: Record<AccessLevel, { background: string; border: string; color: string }> = {
   guest: { background: 'rgba(123, 139, 255, 0.12)', border: '1px solid rgba(123, 139, 255, 0.32)', color: '#cdd5ff' },
   pro: { background: 'linear-gradient(135deg, rgba(255, 200, 87, 0.28), rgba(255, 200, 87, 0.12))', border: '1px solid rgba(255, 200, 87, 0.4)', color: '#ffdc90' },
   holders: { background: 'linear-gradient(135deg, rgba(107, 212, 252, 0.28), rgba(123, 139, 255, 0.22))', border: '1px solid rgba(107, 212, 252, 0.5)', color: '#ade6ff' },
 };
 
+const TAG_STYLE: CSSProperties = {
+  fontSize: 11,
+  letterSpacing: '.12em',
+  textTransform: 'uppercase',
+  padding: '3px 8px',
+  borderRadius: 999,
+  border: '1px solid rgba(123, 139, 255, 0.25)',
+  background: 'rgba(123, 139, 255, 0.12)',
+  color: '#cdd5ff',
+};
+
+const DEFAULT_ICON = '/assets/logos/logo_orange.png';
+
 function titleCase(input: string) {
   if (!input) return 'General';
   return input
     .replace(/[_\-]+/g, ' ')
-    .replace(/\b\w/g, (char) => char.toUpperCase());
+    .replace(/\b\w/g, char => char.toUpperCase());
+}
+
+function formatCategoryLabel(raw: string) {
+  const parts = raw.split(/[.\-/]/).filter(Boolean);
+  if (!parts.length) return titleCase(raw);
+  return parts.map(titleCase).join(' · ');
 }
 
 function deriveCategory(tool: McpTool) {
+  const metaCategory = tool._meta?.category;
+  if (metaCategory) {
+    const key = metaCategory.toLowerCase();
+    const label = CATEGORY_LABEL_OVERRIDES[key] ?? formatCategoryLabel(metaCategory);
+    return { key, label };
+  }
   if (tool.category) {
     const key = tool.category.toLowerCase();
     return { key, label: CATEGORY_LABEL_OVERRIDES[key] ?? titleCase(tool.category) };
@@ -85,16 +129,19 @@ function deriveCategory(tool: McpTool) {
 function normaliseAccess(value?: string): AccessLevel | null {
   if (!value) return null;
   const normalised = value.toLowerCase();
+  if (ACCESS_MAP[normalised]) return ACCESS_MAP[normalised];
   if (normalised.includes('holder')) return 'holders';
   if (normalised.includes('pro')) return 'pro';
-  if (normalised.includes('guest') || normalised.includes('demo') || normalised.includes('public')) return 'guest';
+  if (normalised.includes('guest') || normalised.includes('demo') || normalised.includes('public') || normalised.includes('free')) return 'guest';
   return null;
 }
 
 function deriveAccess(tool: McpTool): AccessLevel {
-  const name = tool.name ?? '';
-  const override = ACCESS_OVERRIDES[name];
-  if (override) return override;
+  const metaAccess = tool._meta?.access;
+  if (metaAccess) {
+    const mapped = ACCESS_MAP[metaAccess.toLowerCase()];
+    if (mapped) return mapped;
+  }
   const explicit = normaliseAccess(tool.access);
   return explicit ?? 'guest';
 }
@@ -113,6 +160,8 @@ function toCatalogTool(tool: McpTool, index: number): CatalogTool {
     access,
     input: (tool as any).inputSchema ?? tool.input_schema ?? tool.parameters ?? null,
     output: (tool as any).outputSchema ?? tool.output_schema ?? null,
+    tags: tool._meta?.tags ?? [],
+    icon: tool._meta?.icon || DEFAULT_ICON,
   };
 }
 
@@ -123,7 +172,6 @@ export default function ToolsPage() {
   const [raw, setRaw] = useState<any>(null);
   const [tools, setTools] = useState<McpTool[]>([]);
   const [filter, setFilter] = useState('');
-  const [showRaw, setShowRaw] = useState(false);
   const [mode, setMode] = useState<'user' | 'demo' | null>(null);
 
   const fetchTools = useCallback(
@@ -194,92 +242,166 @@ export default function ToolsPage() {
 
   const groupedCatalog = useMemo<CatalogGroup[]>(() => {
     const map = new Map<string, CatalogGroup>();
-    filteredCatalog.forEach((tool) => {
+    filteredCatalog.forEach(tool => {
       if (!map.has(tool.categoryKey)) {
         map.set(tool.categoryKey, { key: tool.categoryKey, label: tool.categoryLabel, tools: [] });
       }
       map.get(tool.categoryKey)!.tools.push(tool);
     });
-    return Array.from(map.values()).sort((a, b) => a.label.localeCompare(b.label));
+    return Array.from(map.values())
+      .map(group => ({
+        ...group,
+        tools: group.tools.slice().sort((a, b) => a.displayName.localeCompare(b.displayName)),
+      }))
+      .sort((a, b) => a.label.localeCompare(b.label));
   }, [filteredCatalog]);
 
   return (
     <div>
-      <h1>MCP Tools</h1>
-      <p style={{opacity:.8}}>Fetched from /api/tools (proxied to dexter-mcp). Shows name, description, and schemas for quick visibility.</p>
-
-      <div style={{display:'flex', gap:8, alignItems:'center', flexWrap:'wrap', margin:'8px 0'}}>
-        <span style={{opacity:.7}}>
-          Viewing: {mode === 'user' ? 'your authenticated tool catalog' : mode === 'demo' ? 'demo tool catalog (shared bearer)' : '—'}
-        </span>
-        <div style={{marginLeft:'auto', display:'flex', gap:8}}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 16, flexWrap: 'wrap', marginBottom: 16 }}>
+        <div style={{ flex: '1 1 320px' }}>
+          <h1 style={{ marginBottom: 4 }}>MCP Tools</h1>
+          <p style={{ opacity: 0.8, margin: 0 }}>Explore the live Dexter catalog. Filter, inspect schemas, and jump between personal and demo inventories.</p>
+        </div>
+        <div style={{ display: 'flex', gap: 8, marginLeft: 'auto', flexShrink: 0 }}>
           {session && mode !== 'user' && (
-            <button onClick={() => fetchTools('user', session.access_token)} style={{padding:'8px 12px'}}>
+            <button
+              onClick={() => fetchTools('user', session.access_token)}
+              style={{
+                padding: '8px 12px',
+                borderRadius: 6,
+                border: '1px solid #2c3242',
+                background: '#1b2136',
+                color: '#cdd5ff',
+                fontSize: 12,
+                letterSpacing: '.12em',
+                textTransform: 'uppercase',
+              }}
+            >
               View my tools
             </button>
           )}
           {mode !== 'demo' && (
-            <button onClick={() => fetchTools('demo')} style={{padding:'8px 12px'}}>
+            <button
+              onClick={() => fetchTools('demo')}
+              style={{
+                padding: '8px 12px',
+                borderRadius: 6,
+                border: '1px solid #2c3242',
+                background: '#1b2136',
+                color: '#cdd5ff',
+                fontSize: 12,
+                letterSpacing: '.12em',
+                textTransform: 'uppercase',
+              }}
+            >
               View demo tools
             </button>
           )}
         </div>
       </div>
 
-      {mode === 'demo' && !session && (
-        <div style={{margin:'8px 0', padding:8, borderRadius:4, background:'#0b0c10', border:'1px solid #2c3242', color:'#9fb2c8'}}>
-          You are browsing the demo catalog. Sign in to see tools tailored to your account and wallet access.
+      {mode === 'demo' && (
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 12,
+            margin: '8px 0 16px',
+            padding: '12px 14px',
+            borderRadius: 8,
+            background: 'linear-gradient(135deg, rgba(123, 139, 255, 0.18), rgba(107, 212, 252, 0.12))',
+            border: '1px solid rgba(123, 139, 255, 0.42)',
+            color: '#cdd5ff',
+          }}
+        >
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <span style={{ fontSize: 12, letterSpacing: '.18em', textTransform: 'uppercase' }}>Demo catalog</span>
+            <span>You're viewing the shared demo inventory. Sign in to load wallet-scoped tools and premium bundles.</span>
+          </div>
         </div>
       )}
 
-      <div style={{display:'flex', gap:8, alignItems:'center', margin:'8px 0'}}>
+      <div style={{ display: 'flex', alignItems: 'center', margin: '8px 0' }}>
         <input
           placeholder="Filter by name or description"
           value={filter}
           onChange={e => setFilter(e.target.value)}
-          style={{flex:'1 1 auto', padding:'8px', background:'#0b0c10', color:'#e6edf3', border:'1px solid #2c3242', borderRadius:4}}
+          style={{ flex: '1 1 auto', padding: '8px', background: '#0b0c10', color: '#e6edf3', border: '1px solid #2c3242', borderRadius: 4 }}
         />
-        <button onClick={() => setShowRaw(v => !v)} style={{padding:'8px 12px'}}>{showRaw ? 'Hide Raw' : 'Show Raw'}</button>
       </div>
 
       {loading && <div>Loading…</div>}
       {error && (
-        <div style={{color:'#ff9f9f', border:'1px solid #5a2323', background:'#2b0e0e', padding:8, borderRadius:4, margin:'8px 0'}}>
-          <div style={{fontWeight:600}}>Error</div>
-          <div style={{whiteSpace:'pre-wrap'}}>{error}</div>
-          <div style={{marginTop:6, opacity:.8}}>If you see 401/403, ensure TOKEN_AI_MCP_TOKEN is configured on the API.</div>
+        <div style={{ color: '#ff9f9f', border: '1px solid #5a2323', background: '#2b0e0e', padding: 8, borderRadius: 4, margin: '8px 0' }}>
+          <div style={{ fontWeight: 600 }}>Error</div>
+          <div style={{ whiteSpace: 'pre-wrap' }}>{error}</div>
+          <div style={{ marginTop: 6, opacity: 0.8 }}>If you see 401/403, ensure TOKEN_AI_MCP_TOKEN is configured on the API.</div>
         </div>
       )}
 
-      {!loading && !error && filteredCatalog.length === 0 && (
-        <div style={{opacity:.8}}>No tools found.</div>
-      )}
+      {!loading && !error && filteredCatalog.length === 0 && <div style={{ opacity: 0.8 }}>No tools found.</div>}
 
-      <div style={{display:'flex', flexDirection:'column', gap:16}}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
         {groupedCatalog.map(group => (
-          <section key={group.key} style={{border:'1px solid #2c3242', borderRadius:8, padding:16, background:'#05060d'}}>
-            <div style={{display:'flex', justifyContent:'space-between', alignItems:'baseline', marginBottom:12}}>
-              <div style={{display:'flex', flexDirection:'column', gap:4}}>
-                <span style={{fontSize:12, letterSpacing:'.24em', textTransform:'uppercase', color:'rgba(226, 231, 255, 0.5)'}}>{group.label}</span>
-                <strong style={{fontSize:18}}>{group.tools.length} tool{group.tools.length === 1 ? '' : 's'}</strong>
-              </div>
-              <span style={{fontSize:12, opacity:.7}}>Auto-derived from tool prefixes</span>
+          <section key={group.key} style={{ border: '1px solid #2c3242', borderRadius: 8, padding: 16, background: '#05060d' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <span style={{ fontSize: 16, letterSpacing: '.16em', textTransform: 'uppercase', color: '#dde6ff' }}>{group.label}</span>
+              <span style={{ fontSize: 12, opacity: 0.7, minWidth: 80, textAlign: 'right' }}>{group.tools.length} tool{group.tools.length === 1 ? '' : 's'}</span>
             </div>
-            <div style={{display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(320px, 1fr))', gap:12}}>
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
+                gap: 12,
+                justifyContent: 'flex-start',
+              }}
+            >
               {group.tools.map(tool => (
-                <div key={tool.id} style={{border:'1px solid rgba(44, 50, 66, 0.85)', borderRadius:10, padding:14, background:'#0b0c10', display:'flex', flexDirection:'column', gap:10}}>
-                  <div style={{display:'flex', justifyContent:'space-between', alignItems:'flex-start', gap:12}}>
-                    <div>
-                      <div style={{fontWeight:600, fontSize:16}}>{tool.displayName}</div>
-                      <div style={{fontSize:12, opacity:.65, marginTop:2}}>{tool.rawName}</div>
+                <div
+                  key={tool.id}
+                  style={{
+                    border: '1px solid rgba(44, 50, 66, 0.85)',
+                    borderRadius: 10,
+                    padding: 16,
+                    background: '#0b0c10',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 12,
+                    minHeight: 240,
+                    maxWidth: 360,
+                    width: '100%',
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
+                    <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+                      <div style={{ width: 44, height: 44, borderRadius: 12, overflow: 'hidden', background: 'rgba(44, 50, 66, 0.6)', flexShrink: 0 }}>
+                        <img
+                          src={tool.icon}
+                          alt={`${tool.displayName} icon`}
+                          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                        />
+                      </div>
+                      <div>
+                        <div style={{ fontWeight: 600, fontSize: 16 }}>{tool.displayName}</div>
+                        <div style={{ fontSize: 12, opacity: 0.65, marginTop: 2 }}>{tool.rawName}</div>
+                      </div>
                     </div>
                     <AccessBadge level={tool.access} />
                   </div>
-                  {tool.description ? (
-                    <div style={{opacity:.9}}>{tool.description}</div>
+                  {tool.description ? <div style={{ opacity: 0.9 }}>{tool.description}</div> : null}
+                  {tool.tags.length ? (
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                      {tool.tags.map(tag => (
+                        <span key={tag} style={TAG_STYLE}>{tag}</span>
+                      ))}
+                    </div>
                   ) : null}
-                  <SchemaBlock title="Input Schema" value={tool.input} />
-                  <SchemaBlock title="Output Schema" value={tool.output} />
+                  <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column' }}>
+                    <SchemaBlock title="Input Schema" value={tool.input} />
+                    <SchemaBlock title="Output Schema" value={tool.output} />
+                  </div>
                 </div>
               ))}
             </div>
@@ -287,32 +409,54 @@ export default function ToolsPage() {
         ))}
       </div>
 
-      {showRaw && (
-        <div style={{marginTop:12}}>
-          <div style={{fontSize:12, opacity:.8, marginBottom:4}}>Raw response</div>
-          <pre style={{whiteSpace:'pre-wrap', background:'#0b0c10', color:'#9fb2c8', border:'1px solid #2c3242', borderRadius:4, padding:12}}>
+      <div style={{ marginTop: 24 }}>
+        <Collapsible title="Developers · View raw JSON" defaultOpen={false}>
+          <pre style={{
+            whiteSpace: 'pre-wrap',
+            background: '#0b0c10',
+            color: '#9fb2c8',
+            border: '1px solid #2c3242',
+            borderRadius: 6,
+            padding: 12,
+            margin: 0,
+          }}>
             {safeStringify(raw)}
           </pre>
-        </div>
-      )}
+        </Collapsible>
+      </div>
     </div>
   );
 }
 
 function SchemaBlock({ title, value }: { title: string; value: any }) {
-  if (!value) return null;
+  const hasValue = value !== null && value !== undefined;
   return (
-    <div style={{marginTop:8}}>
-      <div style={{fontSize:12, opacity:.8, marginBottom:4}}>{title}</div>
-      <pre style={{whiteSpace:'pre-wrap', background:'#0b0c10', color:'#9fb2c8', border:'1px solid #2c3242', borderRadius:4, padding:10, maxHeight:220, overflow:'auto'}}>
-        {safeStringify(value)}
-      </pre>
+    <div style={{ marginTop: 12 }}>
+      <Collapsible title={title} disabled={!hasValue} disabledLabel="N/A">
+        <pre
+          style={{
+            whiteSpace: 'pre-wrap',
+            background: '#0b0c10',
+            color: '#9fb2c8',
+            border: '1px solid #2c3242',
+            borderRadius: 6,
+            padding: 10,
+            margin: 0,
+          }}
+        >
+          {safeStringify(value)}
+        </pre>
+      </Collapsible>
     </div>
   );
 }
 
 function safeStringify(v: any) {
-  try { return JSON.stringify(v, null, 2); } catch { return String(v); }
+  try {
+    return JSON.stringify(v, null, 2);
+  } catch {
+    return String(v);
+  }
 }
 
 function AccessBadge({ level }: { level: AccessLevel }) {
@@ -320,15 +464,15 @@ function AccessBadge({ level }: { level: AccessLevel }) {
   return (
     <span
       style={{
-        fontSize:11,
-        textTransform:'uppercase',
-        letterSpacing:'.18em',
-        padding:'4px 10px',
-        borderRadius:999,
-        display:'inline-flex',
-        alignItems:'center',
-        gap:6,
-        fontWeight:600,
+        fontSize: 11,
+        textTransform: 'uppercase',
+        letterSpacing: '.18em',
+        padding: '4px 10px',
+        borderRadius: 999,
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: 6,
+        fontWeight: 600,
         ...style,
       }}
     >
