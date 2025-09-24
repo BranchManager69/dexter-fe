@@ -1,5 +1,6 @@
 'use client';
 
+import type { Route } from 'next';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -107,7 +108,8 @@ export function Header() {
     }
   }, [showAuthModal, siteKey]);
 
-  const navClass = (href: string) => {
+  const navClass = (href: Route | string, external?: boolean) => {
+    if (external) return 'nav-link';
     if (!pathname) return 'nav-link';
     const active = href === '/' ? pathname === '/' : pathname.startsWith(href);
     return `nav-link${active ? ' active' : ''}`;
@@ -124,14 +126,33 @@ export function Header() {
         </Link>
 
         <nav className="site-nav">
-          {SITE.navigation.map((item) => (
-            <Link key={item.href} href={item.href} className={navClass(item.href)}>
-              {item.label}
-            </Link>
-          ))}
+          {SITE.navigation.map((item) => {
+            if (item.external) {
+              return (
+                <a key={item.href} href={item.href} className={navClass(item.href, true)} target="_blank" rel="noreferrer">
+                  {item.label}
+                </a>
+              );
+            }
+            return (
+              <Link key={item.href} href={item.href} className={navClass(item.href)}>
+                {item.label}
+              </Link>
+            );
+          })}
         </nav>
 
         <div className="site-actions">
+          <Link
+            href="https://beta.dexter.cash"
+            className="button button--primary"
+            target="_blank"
+            rel="noreferrer"
+            prefetch={false}
+          >
+            Launch Dexter
+          </Link>
+
           {loading && <span className="text-muted">Loading…</span>}
 
           {!loading && !session && (

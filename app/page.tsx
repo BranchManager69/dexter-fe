@@ -30,77 +30,77 @@ type Differentiator = {
 };
 
 const heroHighlights = [
-  { value: '≤2s', label: 'Avg. voice turnaround' },
-  { value: '12+ tools', label: 'Crypto + research arsenal' },
-  { value: 'Wallet-native', label: 'Trade with your own keys' },
+  { value: '≤2s', label: 'Avg voice turnaround' },
+  { value: '20+ tools', label: 'Swaps · intel · wallets' },
+  { value: 'Pump.fun aware', label: 'Understands live rooms' },
 ];
 
 const promisePillars: PromisePillar[] = [
   {
-    title: 'Trade with your voice',
+    title: 'One console to trade and brief',
     description:
-      'Dexter hears you, routes to the right agent, and executes wallet actions in real time — no tabs, no delays.',
-    bullets: ['Instant market + limit orders', 'Live position updates', 'Visual confirmations on beta.dexter.cash'],
+      'Speak the intent and Dexter handles quoting, swapping, settling, and narrating receipts while you watch it all land in the console.',
+    bullets: ['Realtime swap and order routing with confirmations', 'Balances and positions surfaced mid-convo', 'Follow-up summaries voiced back in seconds'],
   },
   {
-    title: 'Read markets before they move',
+    title: 'Signal from Pump.fun and the market',
     description:
-      'Ask for Pump.fun surges, token health, or curated web intel. Dexter pulls charts, on-chain context, and sentiment streams while you talk.',
-    bullets: ['PumpStreams heat map', 'On-demand token dossiers', 'Web + social scouting'],
+      'Dexter listens to live rooms, scrapes sentiment, and condenses what’s actually happening so you react before the timeline does.',
+    bullets: ['Room-level rundowns beyond simple viewer counts', 'Token dossiers with social + on-chain indicators', 'Cross-exchange scanners for the next move'],
   },
   {
-    title: 'Built-in guardrails',
+    title: 'Guardrails that travel with you',
     description:
-      'Supabase identity plus Dexter-issued MCP tokens keep every call scoped to you. Guests stay in demo mode, holders unlock more firepower.',
-    bullets: ['Supabase auth & activity logs', 'Guest vs. Pro vs. Holder tiers', 'Optional JWT-per-user tools'],
+      'Supabase identity, wallet scopes, and per-session transcripts keep trading accountable whether you’re guest, Pro, or holding $DEXTER.',
+    bullets: ['Per-user wallet and approval flows', 'Guest · Pro · Holder access lanes', 'Tool receipts + session logs for every call'],
   },
 ];
 
 const liveSurfaces: LiveSurface[] = [
   {
     label: 'Voice cockpit',
-    title: 'Talk, see, and confirm in seconds',
+    title: 'Talk once, see it executed',
     description:
-      'Realtime captions, latency traces, and waveform playback keep you in control while Dexter executes trades or research tasks.',
+      'Waveforms, captions, and confirmations animate while Dexter completes swaps, pulls intel, or files follow-up tasks.',
   },
   {
     label: 'Agent timeline',
-    title: 'Multi-agent chat with receipts',
+    title: 'Specialists with receipts',
     description:
-      'Watch planners hand off to specialists for trading, wallet research, or report writing. Every tool call and MPC step lands in the timeline.',
+      'Planner, trader, analyst — every handoff is logged with the tool output so you always know who did what.',
   },
   {
     label: 'Research board',
-    title: 'Crypto intel on tap',
+    title: 'Live market radar',
     description:
-      'Drop tokens into a watch list, stream Pump.fun liquidity, and pull live decks your community can act on.',
+      'Track Pump.fun launches, token health, and news briefs without leaving the session.',
   },
 ];
 
 const toolsets: Toolset[] = [
   {
-    name: 'Wallet Ops',
-    blurb: 'Create wallets, list balances, switch funding sources, and queue approvals via Dexter’s managed MPC bridge.',
+    name: 'Execution',
+    blurb: 'Swap, bridge, settle, and confirm in one breath while Dexter streams the receipts back to you.',
   },
   {
-    name: 'PumpStreams',
-    blurb: 'Surface trending launches, track influencers, and catch liquidity spikes before they go viral.',
+    name: 'Pump.fun Intel',
+    blurb: 'Room summaries, influencer tracking, and sentiment so you know the play inside every stream.',
   },
   {
-    name: 'Market Radar',
-    blurb: 'Quote any token, fetch OHLCV, and overlay social + web sentiment to decide faster.',
+    name: 'Market Research',
+    blurb: 'Token dossiers, OHLCV overlays, and curated web intel when you ask for the next move.',
   },
   {
-    name: 'Web Scout',
-    blurb: 'Targeted web + doc search that compiles summaries and links into shareable briefs.',
+    name: 'Knowledge Base',
+    blurb: 'Search and retrieve the entire Dexter playbook mid-convo, then pin highlights for later.',
   },
   {
-    name: 'Memory & Recall',
-    blurb: 'Pin strategies, wallets, and call scripts so your agent remembers context next session.',
+    name: 'Wallet Automation',
+    blurb: 'Multi-wallet management, overrides, and approvals tailored to how you actually trade.',
   },
   {
-    name: 'Automation Hooks',
-    blurb: 'Webhook callbacks and upcoming token-gated triggers wire Dexter into your trading stack.',
+    name: 'Builder Hooks',
+    blurb: 'Soon: publish your own MCP bundles so Dexter can call into your stack on command.',
   },
 ];
 
@@ -108,22 +108,24 @@ const tiers: TierPlan[] = [
   {
     title: 'Guest',
     price: 'Free',
-    description: 'Hands-on demo mode for curious explorers.',
-    perks: ['Realtime voice sandbox', 'Shared demo wallet', 'Pump.fun watcher previews'],
+    description: 'Jump in, talk to Dexter, and see the live demo wallet in action.',
+    perks: ['Voice sandbox with curated tools', 'Pump.fun room snapshots', 'Session transcripts emailed to you'],
   },
   {
     title: 'Pro',
     price: '$49/mo',
-    description: 'Power users who need live wallets, deeper research, and faster limits.',
-    perks: ['Connect personal wallets', 'Full PumpStreams + market radar', 'Priority realtime lanes', 'Early token feature drops'],
+    description: 'Personal wallets, deeper research, and multiple portfolios coming online.',
+    perks: ['Connect and rotate multiple wallets', 'Full market + Pump.fun intelligence', 'Priority realtime lanes and support', 'Early access to automation drops'],
   },
   {
     title: 'Dexter Holders',
-    price: 'Token gated',
-    description: 'Stake enough $DEXTER to unlock practically unlimited access.',
-    perks: ['All Pro benefits', 'Custom toolset slots', 'Governance over new automations', 'Higher trading caps & storage'],
+    price: '≥1M $DEXTER',
+    description: 'Hold the token and the platform opens up — no monthly invoice.',
+    perks: ['All Pro privileges', 'Expanded usage limits*', 'Invite-only tool experiments', 'Influence roadmap decisions'],
   },
 ];
+
+const holderFootnote = '*Unlimited sessions subject to generous, common-sense abuse protections.';
 
 const differentiators: Differentiator[] = [
   {
@@ -149,16 +151,16 @@ export default function Home() {
             <div className="hero-chip">Voice trading · Crypto copilots</div>
             <div className="hero-chip">Beta now live on beta.dexter.cash</div>
           </div>
-          <h1>Voice-first trading for the crypto obsessed.</h1>
+          <h1>Your voice is the command line.</h1>
           <p>
-            Dexter hears you, calls the right specialist, and moves money in real time. Speak the order, get intel, and watch the console confirm trades,
-            charts, and wallets in seconds.
+            Dexter is the do-it-all crypto console — speak once and it swaps, researches markets, briefs you on Pump.fun streams, and confirms every move in
+            real time.
           </p>
           <div className="hero__actions">
             <Link href="https://beta.dexter.cash" className="button button--primary" target="_blank" rel="noreferrer">
-              Launch Beta Console
+              Launch Dexter
             </Link>
-            <Link href="/voice" className="button">Preview the voice surface</Link>
+            <Link href="/tools" className="button">View capabilities</Link>
           </div>
           <div className="stats-bar">
             {heroHighlights.map((item) => (
@@ -242,7 +244,7 @@ export default function Home() {
       <section className="section">
         <div className="section-heading">
           <h2>The tool arsenal keeps growing</h2>
-          <p>Dexter MCP hosts battle-tested bundles. Voice, chat, and automations can tap them instantly.</p>
+          <p>Dexter’s MCP catalog keeps expanding — voice sessions, future chat, and automations all inherit the same power.</p>
         </div>
         <div className="tool-grid">
           {toolsets.map((tool) => (
@@ -257,7 +259,7 @@ export default function Home() {
       <section className="section section--tiers">
         <div className="section-heading">
           <h2>Choose your lane</h2>
-          <p>Start free, upgrade when you need personal wallets, or stake $DEXTER for limitless sessions.</p>
+          <p>Start free, upgrade when you need personal wallets, or hold $DEXTER for practically unlimited access.</p>
         </div>
         <div className="tier-grid">
           {tiers.map((tier) => (
@@ -275,6 +277,7 @@ export default function Home() {
             </div>
           ))}
         </div>
+        <p className="helper-text" style={{ marginTop: '24px' }}>{holderFootnote}</p>
       </section>
 
       <section className="section section--alt">
@@ -294,16 +297,16 @@ export default function Home() {
 
       <section className="section final-section">
         <div className="final-cta">
-          <h2>Your voice is all you need.</h2>
+          <h2>Ready when you are.</h2>
           <p className="text-muted">
-            Open the beta console, connect a wallet, and feel what conversational trading is supposed to be. Builders — bring your own toolsets and Dexter
-            will make them sing.
+            Fire up the beta, try the voice agent, and see how fast trading feels when Dexter runs point. Builders — wire in your MCP tools and watch them
+            surface instantly.
           </p>
           <div className="hero__actions" style={{ justifyContent: 'center' }}>
             <Link href="https://beta.dexter.cash" className="button button--primary" target="_blank" rel="noreferrer">
-              Enter beta.dexter.cash
+              Launch Dexter
             </Link>
-            <Link href="/tools" className="button">Preview MCP catalog</Link>
+            <Link href="/tools" className="button">Explore capabilities</Link>
           </div>
         </div>
       </section>

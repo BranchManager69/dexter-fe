@@ -5,12 +5,116 @@ import { useAuth } from '../auth-context';
 
 type McpTool = {
   name?: string;
+  title?: string;
   description?: string;
   summary?: string;
   input_schema?: any;
   output_schema?: any;
+  inputSchema?: any;
+  outputSchema?: any;
   parameters?: any; // alternative field name in some MCP servers
+  category?: string;
+  access?: string;
 };
+
+type AccessLevel = 'guest' | 'pro' | 'holders';
+
+type CatalogTool = {
+  id: string;
+  rawName: string;
+  displayName: string;
+  description: string;
+  categoryKey: string;
+  categoryLabel: string;
+  access: AccessLevel;
+  input: any;
+  output: any;
+};
+
+type CatalogGroup = {
+  key: string;
+  label: string;
+  tools: CatalogTool[];
+};
+
+const CATEGORY_LABEL_OVERRIDES: Record<string, string> = {
+  pumpstream: 'Pump.fun & Streams',
+  wallets: 'Wallet Ops',
+  auth: 'Diagnostics',
+};
+
+const ACCESS_OVERRIDES: Record<string, AccessLevel> = {
+  pumpstream_live_summary: 'pro',
+  resolve_wallet: 'pro',
+  list_my_wallets: 'pro',
+  set_session_wallet_override: 'holders',
+  auth_info: 'holders',
+};
+
+const ACCESS_LABELS: Record<AccessLevel, string> = {
+  guest: 'Guest',
+  pro: 'Pro',
+  holders: 'Holders',
+};
+
+const ACCESS_BADGE_STYLES: Record<AccessLevel, { background: string; border: string; color: string }> = {
+  guest: { background: 'rgba(123, 139, 255, 0.12)', border: '1px solid rgba(123, 139, 255, 0.32)', color: '#cdd5ff' },
+  pro: { background: 'linear-gradient(135deg, rgba(255, 200, 87, 0.28), rgba(255, 200, 87, 0.12))', border: '1px solid rgba(255, 200, 87, 0.4)', color: '#ffdc90' },
+  holders: { background: 'linear-gradient(135deg, rgba(107, 212, 252, 0.28), rgba(123, 139, 255, 0.22))', border: '1px solid rgba(107, 212, 252, 0.5)', color: '#ade6ff' },
+};
+
+function titleCase(input: string) {
+  if (!input) return 'General';
+  return input
+    .replace(/[_\-]+/g, ' ')
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
+function deriveCategory(tool: McpTool) {
+  if (tool.category) {
+    const key = tool.category.toLowerCase();
+    return { key, label: CATEGORY_LABEL_OVERRIDES[key] ?? titleCase(tool.category) };
+  }
+  const raw = tool.name ?? '';
+  const prefix = raw.includes('.') ? raw.split('.')[0] : raw;
+  const key = prefix ? prefix.toLowerCase() : 'general';
+  const label = CATEGORY_LABEL_OVERRIDES[key] ?? titleCase(prefix || 'general');
+  return { key, label };
+}
+
+function normaliseAccess(value?: string): AccessLevel | null {
+  if (!value) return null;
+  const normalised = value.toLowerCase();
+  if (normalised.includes('holder')) return 'holders';
+  if (normalised.includes('pro')) return 'pro';
+  if (normalised.includes('guest') || normalised.includes('demo') || normalised.includes('public')) return 'guest';
+  return null;
+}
+
+function deriveAccess(tool: McpTool): AccessLevel {
+  const name = tool.name ?? '';
+  const override = ACCESS_OVERRIDES[name];
+  if (override) return override;
+  const explicit = normaliseAccess(tool.access);
+  return explicit ?? 'guest';
+}
+
+function toCatalogTool(tool: McpTool, index: number): CatalogTool {
+  const { key, label } = deriveCategory(tool);
+  const access = deriveAccess(tool);
+  const rawName = tool.name ?? tool.title ?? `tool-${index}`;
+  return {
+    id: `${rawName}:${index}`,
+    rawName,
+    displayName: tool.title || tool.name || 'Untitled tool',
+    description: tool.description || tool.summary || '',
+    categoryKey: key,
+    categoryLabel: label,
+    access,
+    input: (tool as any).inputSchema ?? tool.input_schema ?? tool.parameters ?? null,
+    output: (tool as any).outputSchema ?? tool.output_schema ?? null,
+  };
+}
 
 export default function ToolsPage() {
   const { session, loading: authLoading } = useAuth();
@@ -76,14 +180,28 @@ export default function ToolsPage() {
     fetchTools(nextMode, session?.access_token);
   }, [authLoading, session, fetchTools]);
 
-  const filtered = useMemo(() => {
+  const catalog = useMemo(() => tools.map((tool, index) => toCatalogTool(tool, index)), [tools]);
+
+  const filteredCatalog = useMemo(() => {
     const q = filter.trim().toLowerCase();
-    if (!q) return tools;
-    return tools.filter(t =>
-      (t.name || '').toLowerCase().includes(q) ||
-      (t.description || t.summary || '').toLowerCase().includes(q)
+    if (!q) return catalog;
+    return catalog.filter(tool =>
+      tool.displayName.toLowerCase().includes(q) ||
+      tool.rawName.toLowerCase().includes(q) ||
+      tool.description.toLowerCase().includes(q)
     );
-  }, [tools, filter]);
+  }, [catalog, filter]);
+
+  const groupedCatalog = useMemo<CatalogGroup[]>(() => {
+    const map = new Map<string, CatalogGroup>();
+    filteredCatalog.forEach((tool) => {
+      if (!map.has(tool.categoryKey)) {
+        map.set(tool.categoryKey, { key: tool.categoryKey, label: tool.categoryLabel, tools: [] });
+      }
+      map.get(tool.categoryKey)!.tools.push(tool);
+    });
+    return Array.from(map.values()).sort((a, b) => a.label.localeCompare(b.label));
+  }, [filteredCatalog]);
 
   return (
     <div>
@@ -133,22 +251,39 @@ export default function ToolsPage() {
         </div>
       )}
 
-      {!loading && !error && filtered.length === 0 && (
+      {!loading && !error && filteredCatalog.length === 0 && (
         <div style={{opacity:.8}}>No tools found.</div>
       )}
 
-      <div style={{display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(320px, 1fr))', gap:12}}>
-        {filtered.map((t, idx) => (
-          <div key={(t.name || 'tool') + ':' + idx} style={{border:'1px solid #2c3242', borderRadius:6, padding:12, background:'#0b0c10'}}>
-            <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:6}}>
-              <div style={{fontWeight:600}}>{t.name || '(unnamed tool)'}</div>
+      <div style={{display:'flex', flexDirection:'column', gap:16}}>
+        {groupedCatalog.map(group => (
+          <section key={group.key} style={{border:'1px solid #2c3242', borderRadius:8, padding:16, background:'#05060d'}}>
+            <div style={{display:'flex', justifyContent:'space-between', alignItems:'baseline', marginBottom:12}}>
+              <div style={{display:'flex', flexDirection:'column', gap:4}}>
+                <span style={{fontSize:12, letterSpacing:'.24em', textTransform:'uppercase', color:'rgba(226, 231, 255, 0.5)'}}>{group.label}</span>
+                <strong style={{fontSize:18}}>{group.tools.length} tool{group.tools.length === 1 ? '' : 's'}</strong>
+              </div>
+              <span style={{fontSize:12, opacity:.7}}>Auto-derived from tool prefixes</span>
             </div>
-            {t.description || t.summary ? (
-              <div style={{opacity:.9, marginBottom:8}}>{t.description || t.summary}</div>
-            ) : null}
-            <SchemaBlock title="Input Schema" value={(t as any).input_schema ?? (t as any).parameters} />
-            <SchemaBlock title="Output Schema" value={(t as any).output_schema} />
-          </div>
+            <div style={{display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(320px, 1fr))', gap:12}}>
+              {group.tools.map(tool => (
+                <div key={tool.id} style={{border:'1px solid rgba(44, 50, 66, 0.85)', borderRadius:10, padding:14, background:'#0b0c10', display:'flex', flexDirection:'column', gap:10}}>
+                  <div style={{display:'flex', justifyContent:'space-between', alignItems:'flex-start', gap:12}}>
+                    <div>
+                      <div style={{fontWeight:600, fontSize:16}}>{tool.displayName}</div>
+                      <div style={{fontSize:12, opacity:.65, marginTop:2}}>{tool.rawName}</div>
+                    </div>
+                    <AccessBadge level={tool.access} />
+                  </div>
+                  {tool.description ? (
+                    <div style={{opacity:.9}}>{tool.description}</div>
+                  ) : null}
+                  <SchemaBlock title="Input Schema" value={tool.input} />
+                  <SchemaBlock title="Output Schema" value={tool.output} />
+                </div>
+              ))}
+            </div>
+          </section>
         ))}
       </div>
 
@@ -178,4 +313,26 @@ function SchemaBlock({ title, value }: { title: string; value: any }) {
 
 function safeStringify(v: any) {
   try { return JSON.stringify(v, null, 2); } catch { return String(v); }
+}
+
+function AccessBadge({ level }: { level: AccessLevel }) {
+  const style = ACCESS_BADGE_STYLES[level];
+  return (
+    <span
+      style={{
+        fontSize:11,
+        textTransform:'uppercase',
+        letterSpacing:'.18em',
+        padding:'4px 10px',
+        borderRadius:999,
+        display:'inline-flex',
+        alignItems:'center',
+        gap:6,
+        fontWeight:600,
+        ...style,
+      }}
+    >
+      {ACCESS_LABELS[level]}
+    </span>
+  );
 }

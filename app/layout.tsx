@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { AuthProvider } from './auth-context';
 import { Header } from './header';
@@ -56,7 +56,6 @@ export const metadata: Metadata = {
     icon: '/assets/logos/logo_orange.png',
     apple: '/assets/logos/logo_orange.png',
   },
-  themeColor: '#0E0D1C',
   robots: {
     index: true,
     follow: true,
@@ -65,6 +64,10 @@ export const metadata: Metadata = {
       follow: true,
     },
   },
+};
+
+export const viewport: Viewport = {
+  themeColor: '#0E0D1C',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
