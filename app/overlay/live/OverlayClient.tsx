@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import styles from './overlay.module.css';
+import { LeaderboardColumn, type LeaderboardEntry } from './LeaderboardColumn';
 import type {
   OverlayData,
   TopStream,
@@ -10,12 +11,6 @@ import type {
 } from '../../../lib/overlay/pumpstreams';
 
 const numberFormatter = new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 });
-const currencyFormatter = new Intl.NumberFormat('en-US', {
-  style: 'currency',
-  currency: 'USD',
-  maximumFractionDigits: 0,
-});
-
 const TREND_TIME_ZONE = 'America/New_York';
 const TREND_TIME_ZONE_LABEL = 'Times in Eastern Time (ET)';
 const VIEWER_DELTA_HINT = 'viewers vs last update';
@@ -24,6 +19,7 @@ const MARKET_DELTA_HINT = 'cap vs last update';
 export type OverlayClientProps = {
   initialData: OverlayData | null;
   refreshIntervalMs?: number;
+  layoutVariant?: 'balanced' | 'compact';
 };
 
 type OverlayState = {
@@ -154,7 +150,36 @@ function buildSparkline(series: SparklineSeriesPoint[]): Sparkline {
   return { polyline, areaPath, points };
 }
 
-export function OverlayClient({ initialData, refreshIntervalMs = 15_000 }: OverlayClientProps) {
+function formatSnapshotAge(seconds: number | null): string {
+  if (seconds === null || !Number.isFinite(seconds)) return 'Updated —';
+  if (seconds < 5) return 'Updated just now';
+  if (seconds < 60) return `Updated ${Math.max(1, Math.round(seconds))}s ago`;
+  const minutes = Math.round(seconds / 60);
+  if (minutes < 60) return `Updated ${minutes}m ago`;
+  const hours = Math.round(minutes / 60);
+  return `Updated ${hours}h ago`;
+}
+
+function formatDropCountdown(seconds: number | null): string | null {
+  if (seconds === null || !Number.isFinite(seconds) || seconds <= 0) return null;
+  const total = Math.max(0, Math.round(seconds));
+  const minutes = Math.floor(total / 60);
+  const secs = total % 60;
+  return `Drop ${minutes}:${secs.toString().padStart(2, '0')}`;
+}
+
+function resolveStatusTone(stream: TopStream): { label: string; tone: 'live' | 'warning' | 'offline' } {
+  if (stream.status === 'live') return { label: 'LIVE', tone: 'live' };
+  if (stream.status === 'disconnecting') return { label: 'DROP', tone: 'warning' };
+  return { label: 'OFF', tone: 'offline' };
+}
+
+export function OverlayClient({
+  initialData,
+  refreshIntervalMs = 15_000,
+  layoutVariant = 'balanced',
+}: OverlayClientProps) {
+  const variant = layoutVariant === 'compact' ? 'compact' : 'balanced';
   const [state, setState] = useState<OverlayState>(() => ({
     data: initialData,
     error: null,
@@ -208,7 +233,7 @@ export function OverlayClient({ initialData, refreshIntervalMs = 15_000 }: Overl
               const currentCap = stream.marketCapUsd ?? null;
               const prevCap = previousMarketCaps.get(stream.mintId);
               marketCapDeltas[stream.mintId] =
-                prevCap === undefined || prevCap === null || currentCap === null ? 0 : (currentCap - prevCap);
+                prevCap === undefined || prevCap === null || currentCap === null ? 0 : currentCap - prevCap;
             }
 
             return {
@@ -245,20 +270,6 @@ export function OverlayClient({ initialData, refreshIntervalMs = 15_000 }: Overl
 
   const { data, error, lastUpdated, viewerDeltas, marketCapDeltas } = state;
 
-  const topByViewers = useMemo(() => {
-    if (!data) return [] as TopStream[];
-    return [...data.streams]
-      .sort((a, b) => (b.viewers ?? -Infinity) - (a.viewers ?? -Infinity))
-      .slice(0, 6);
-  }, [data]);
-
-  const topByMarketCap = useMemo(() => {
-    if (!data) return [] as TopStream[];
-    return [...data.streams]
-      .sort((a, b) => (b.marketCapUsd ?? -Infinity) - (a.marketCapUsd ?? -Infinity))
-      .slice(0, 6);
-  }, [data]);
-
   const viewerSeries = useMemo(() => buildViewerSeries(data?.viewerTrend ?? []), [data?.viewerTrend]);
   const marketSeries = useMemo(() => buildMarketSeries(data?.marketCapTrend ?? []), [data?.marketCapTrend]);
   const viewerSparkline = useMemo(() => buildSparkline(viewerSeries), [viewerSeries]);
@@ -266,15 +277,78 @@ export function OverlayClient({ initialData, refreshIntervalMs = 15_000 }: Overl
 
   const latestMarketCap = marketSeries.length ? marketSeries[marketSeries.length - 1].value : null;
 
+  const shellClassName = [
+    styles.overlayShell,
+    variant === 'compact' ? styles.overlayVariantCompact : styles.overlayVariantBalanced,
+  ].join(' ');
+
+  const viewerLeaderboard: LeaderboardEntry[] = useMemo(() => {
+    if (!data) return [];
+    return [...data.streams]
+      .sort((a, b) => (b.viewers ?? -Infinity) - (a.viewers ?? -Infinity))
+      .slice(0, 10)
+      .map((stream, index) => {
+        const delta = viewerDeltas[stream.mintId] ?? 0;
+        const deltaTrend: 'up' | 'down' | 'flat' = delta > 0 ? 'up' : delta < 0 ? 'down' : 'flat';
+        const { label: statusLabel, tone: statusTone } = resolveStatusTone(stream);
+        return {
+          rank: index + 1,
+          key: `${stream.mintId}-viewers`,
+          name: simplifyName(stream),
+          symbol: stream.symbol ?? '—',
+          statusLabel,
+          statusTone,
+          primaryStat: `Viewers ${formatViewers(stream.viewers)}`,
+          secondaryStat: `Cap ${formatMarketCap(stream)}`,
+          deltaLabel:
+            deltaTrend === 'flat'
+              ? 'STEADY'
+              : `${deltaTrend === 'up' ? '▲' : '▼'} ${formatViewerDelta(delta)}`,
+          deltaTrend,
+          deltaHint: VIEWER_DELTA_HINT,
+          lastUpdated: formatSnapshotAge(stream.lastSnapshotAgeSeconds),
+          extraLabel: formatDropCountdown(stream.dropCountdownSeconds),
+        } satisfies LeaderboardEntry;
+      });
+  }, [data, viewerDeltas]);
+
+  const marketLeaderboard: LeaderboardEntry[] = useMemo(() => {
+    if (!data) return [];
+    return [...data.streams]
+      .sort((a, b) => (b.marketCapUsd ?? -Infinity) - (a.marketCapUsd ?? -Infinity))
+      .slice(0, 10)
+      .map((stream, index) => {
+        const delta = marketCapDeltas[stream.mintId] ?? 0;
+        const deltaTrend: 'up' | 'down' | 'flat' = delta > 0 ? 'up' : delta < 0 ? 'down' : 'flat';
+        const { label: statusLabel, tone: statusTone } = resolveStatusTone(stream);
+        return {
+          rank: index + 1,
+          key: `${stream.mintId}-market`,
+          name: simplifyName(stream),
+          symbol: stream.symbol ?? '—',
+          statusLabel,
+          statusTone,
+          primaryStat: `Cap ${formatMarketCap(stream)}`,
+          secondaryStat: `Viewers ${formatViewers(stream.viewers)}`,
+          deltaLabel:
+            deltaTrend === 'flat'
+              ? 'STEADY'
+              : `${deltaTrend === 'up' ? '▲' : '▼'} ${formatMarketDelta(delta)}`,
+          deltaTrend,
+          deltaHint: MARKET_DELTA_HINT,
+          lastUpdated: formatSnapshotAge(stream.lastSnapshotAgeSeconds),
+          extraLabel: formatDropCountdown(stream.dropCountdownSeconds),
+        } satisfies LeaderboardEntry;
+      });
+  }, [data, marketCapDeltas]);
+
   return (
-    <div className={styles.overlayShell}>
+    <div className={shellClassName}>
       <div className={styles.overlayContent}>
         <div className={styles.overlayHeader}>
           <div className={styles.overlayBrand}>
             <div className={styles.overlayBrandTitle}>Dexter Live</div>
-            <div className={styles.overlayBrandSubtitle}>
-              Realtime pulse of PumpStreams and Dexter agents
-            </div>
+            <div className={styles.overlayBrandSubtitle}>Realtime pulse of PumpStreams and Dexter agents</div>
           </div>
           <div className={styles.overlayMeta}>
             <span className={styles.overlayMetaPill}>ON AIR</span>
@@ -288,18 +362,14 @@ export function OverlayClient({ initialData, refreshIntervalMs = 15_000 }: Overl
             <section className={styles.overlaySummary}>
               <article className={styles.summaryCard}>
                 <span className={styles.summaryCardLabel}>Live Streams</span>
-                <span className={styles.summaryCardValue}>
-                  {numberFormatter.format(data.summary.liveStreams)}
-                </span>
+                <span className={styles.summaryCardValue}>{numberFormatter.format(data.summary.liveStreams)}</span>
                 <span className={styles.summaryCardHint}>
                   Tracking {data.summary.totalStreams} over the last {Math.round(data.summary.windowMinutes / 60)}h
                 </span>
               </article>
               <article className={styles.summaryCard}>
                 <span className={styles.summaryCardLabel}>Viewers Now</span>
-                <span className={styles.summaryCardValue}>
-                  {numberFormatter.format(data.summary.totalLiveViewers)}
-                </span>
+                <span className={styles.summaryCardValue}>{numberFormatter.format(data.summary.totalLiveViewers)}</span>
                 <span className={styles.summaryCardHint}>
                   Avg {data.overallViewerAvg ? numberFormatter.format(Math.round(data.overallViewerAvg)) : '—'} viewers (48h)
                 </span>
@@ -331,115 +401,16 @@ export function OverlayClient({ initialData, refreshIntervalMs = 15_000 }: Overl
 
             <section className={styles.overlayMain}>
               <div className={styles.leaderboards}>
-                <div className={styles.leaderboardColumn}>
-                  <header className={styles.topStreamsHeader}>
-                    <span className={styles.topStreamsTitle}>Top Streams</span>
-                    <span className={styles.topStreamsSort}>By Live Viewers</span>
-                  </header>
-                  <div className={styles.topStreams}>
-                    {topByViewers.map((stream, index) => {
-                      const delta = viewerDeltas[stream.mintId] ?? 0;
-                      const trend = delta > 0 ? 'up' : delta < 0 ? 'down' : 'flat';
-                      return (
-                        <article key={`${stream.mintId}-viewers`} className={styles.topStreamCard}>
-                          <span className={styles.topStreamRank}>#{index + 1}</span>
-                          {stream.thumbnail ? (
-                            <div
-                              className={styles.topStreamThumbnail}
-                              style={{ backgroundImage: `url(${stream.thumbnail})` }}
-                              aria-hidden
-                            />
-                          ) : null}
-                          <header className={styles.topStreamHeader}>
-                            <div className={styles.topStreamIdentity}>
-                              <span className={styles.topStreamName}>{simplifyName(stream)}</span>
-                              <span className={styles.topStreamSymbol}>{stream.symbol ?? '—'}</span>
-                            </div>
-                            <span
-                              className={`${styles.topStreamBadge} ${
-                                stream.status === 'live'
-                                  ? styles.topStreamBadgeLive
-                                  : styles.topStreamBadgeDropping
-                              }`}
-                            >
-                              {stream.status === 'live' ? 'Live' : 'Dropping'}
-                            </span>
-                          </header>
-                          <div className={styles.topStreamMetric}>{formatViewers(stream.viewers)} viewers</div>
-                          <div className={styles.topStreamMeta}>
-                            <span>Cap {formatMarketCap(stream)}</span>
-                            <span>
-                              {stream.lastSnapshotAgeSeconds !== null
-                                ? `Updated ${Math.max(0, Math.round(stream.lastSnapshotAgeSeconds))}s ago`
-                                : 'Fresh data'}
-                            </span>
-                          </div>
-                          <div className={styles.topStreamDelta} data-trend={trend}>
-                            {trend === 'flat'
-                              ? '• steady'
-                              : `${trend === 'up' ? '▲' : '▼'} ${formatViewerDelta(delta)}`}
-                            <span className={styles.topStreamDeltaHint}>{VIEWER_DELTA_HINT}</span>
-                          </div>
-                        </article>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                <div className={styles.leaderboardColumn}>
-                  <header className={styles.topStreamsHeader}>
-                    <span className={styles.topStreamsTitle}>Top Streams</span>
-                    <span className={styles.topStreamsSort}>By Market Cap</span>
-                  </header>
-                  <div className={styles.topStreams}>
-                    {topByMarketCap.map((stream, index) => {
-                      const delta = marketCapDeltas[stream.mintId] ?? 0;
-                      const trend = delta > 0 ? 'up' : delta < 0 ? 'down' : 'flat';
-                      return (
-                        <article key={`${stream.mintId}-market`} className={styles.topStreamCard}>
-                          <span className={styles.topStreamRank}>#{index + 1}</span>
-                          {stream.thumbnail ? (
-                            <div
-                              className={styles.topStreamThumbnail}
-                              style={{ backgroundImage: `url(${stream.thumbnail})` }}
-                              aria-hidden
-                            />
-                          ) : null}
-                          <header className={styles.topStreamHeader}>
-                            <div className={styles.topStreamIdentity}>
-                              <span className={styles.topStreamName}>{simplifyName(stream)}</span>
-                              <span className={styles.topStreamSymbol}>{stream.symbol ?? '—'}</span>
-                            </div>
-                            <span
-                              className={`${styles.topStreamBadge} ${
-                                stream.status === 'live'
-                                  ? styles.topStreamBadgeLive
-                                  : styles.topStreamBadgeDropping
-                              }`}
-                            >
-                              {stream.status === 'live' ? 'Live' : 'Dropping'}
-                            </span>
-                          </header>
-                          <div className={styles.topStreamMetric}>{formatMarketCap(stream)}</div>
-                          <div className={styles.topStreamMeta}>
-                            <span>{formatViewers(stream.viewers)} viewers</span>
-                            <span>
-                              {stream.lastSnapshotAgeSeconds !== null
-                                ? `Updated ${Math.max(0, Math.round(stream.lastSnapshotAgeSeconds))}s ago`
-                                : 'Fresh data'}
-                            </span>
-                          </div>
-                          <div className={styles.topStreamDelta} data-trend={trend}>
-                            {trend === 'flat'
-                              ? '• steady'
-                              : `${trend === 'up' ? '▲' : '▼'} ${formatMarketDelta(delta)}`}
-                            <span className={styles.topStreamDeltaHint}>{MARKET_DELTA_HINT}</span>
-                          </div>
-                        </article>
-                      );
-                    })}
-                  </div>
-                </div>
+                <LeaderboardColumn
+                  title="Top Streams"
+                  subtitle="By Live Viewers"
+                  entries={viewerLeaderboard}
+                />
+                <LeaderboardColumn
+                  title="Top Streams"
+                  subtitle="By Market Cap"
+                  entries={marketLeaderboard}
+                />
               </div>
 
               <aside className={styles.trendPanel}>
@@ -467,20 +438,10 @@ export function OverlayClient({ initialData, refreshIntervalMs = 15_000 }: Overl
                             <stop offset="100%" stopColor="rgba(123, 139, 255, 0.05)" />
                           </linearGradient>
                         </defs>
-                        <path
-                          className={styles.trendArea}
-                          d={viewerSparkline.areaPath}
-                          fill="url(#overlayViewerTrendFill)"
-                        />
+                        <path className={styles.trendArea} d={viewerSparkline.areaPath} fill="url(#overlayViewerTrendFill)" />
                         <polyline className={styles.trendLine} points={viewerSparkline.polyline} />
                         {viewerSparkline.points.map((point) => (
-                          <circle
-                            key={`${point.iso}-viewer`}
-                            className={styles.trendDot}
-                            cx={point.x}
-                            cy={point.y}
-                            r={1.2}
-                          />
+                          <circle key={`${point.iso}-viewer`} className={styles.trendDot} cx={point.x} cy={point.y} r={1.2} />
                         ))}
                       </svg>
                       <div className={styles.trendAxis}>
@@ -519,20 +480,10 @@ export function OverlayClient({ initialData, refreshIntervalMs = 15_000 }: Overl
                             <stop offset="100%" stopColor="rgba(255, 138, 76, 0.05)" />
                           </linearGradient>
                         </defs>
-                        <path
-                          className={styles.trendArea}
-                          d={marketSparkline.areaPath}
-                          fill="url(#overlayMarketTrendFill)"
-                        />
+                        <path className={styles.trendArea} d={marketSparkline.areaPath} fill="url(#overlayMarketTrendFill)" />
                         <polyline className={styles.trendLine} points={marketSparkline.polyline} />
                         {marketSparkline.points.map((point) => (
-                          <circle
-                            key={`${point.iso}-market`}
-                            className={styles.trendDot}
-                            cx={point.x}
-                            cy={point.y}
-                            r={1.2}
-                          />
+                          <circle key={`${point.iso}-market`} className={styles.trendDot} cx={point.x} cy={point.y} r={1.2} />
                         ))}
                       </svg>
                       <div className={styles.trendAxis}>

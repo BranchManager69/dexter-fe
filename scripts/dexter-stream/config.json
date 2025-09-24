@@ -1,0 +1,11 @@
+{
+  "rtmpBase": "rtmp://example.com/live",
+  "streamKey": "YOUR-STREAM-KEY",
+  "overlayUrl": "https://dexter.cash/overlay/live?layout=compact",
+  "display": ":99",
+  "width": 1920,
+  "height": 1080,
+  "fps": 30,
+  "videoBitrate": "5000k",
+  "audioBitrate": "128k"
+}

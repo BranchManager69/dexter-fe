@@ -7,7 +7,11 @@
     "dev": "next dev -p 3017",
     "build": "next build",
     "start": "next start -p 3017",
-    "harness": "node ./cli/realtime-harness/run.mjs"
+    "harness": "node ./cli/realtime-harness/run.mjs",
+    "dexter-stream:start": "pm2 start scripts/dexter-stream/run.mjs --name dexter-stream",
+    "dexter-stream:stop": "pm2 stop dexter-stream",
+    "dexter-stream:restart": "pm2 restart dexter-stream",
+    "dexter-stream:status": "pm2 show dexter-stream"
   },
   "dependencies": {
     "@marsidev/react-turnstile": "^1.3.1",
@@ -22,6 +26,7 @@
   "type": "module",
   "devDependencies": {
     "@types/react": "19.1.12",
+    "playwright": "^1.55.1",
     "typescript": "^5.6.2"
   }
 }

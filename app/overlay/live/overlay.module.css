@@ -4,18 +4,26 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: radial-gradient(circle at 20% 20%, rgba(108, 140, 255, 0.15), transparent 55%),
+  background:
+    radial-gradient(circle at 20% 20%, rgba(108, 140, 255, 0.15), transparent 55%),
     radial-gradient(circle at 80% 0%, rgba(107, 212, 252, 0.12), transparent 50%),
     #05060d;
-  padding: clamp(16px, 3vw, 32px);
   box-sizing: border-box;
+}
+
+.overlayLayoutBalanced {
+  padding: clamp(14px, 2.8vw, 26px);
+}
+
+.overlayLayoutCompact {
+  padding: clamp(10px, 2vw, 18px);
 }
 
 .overlayShell {
   width: min(1920px, 100%);
-  height: auto;
-  aspect-ratio: 16 / 9;
-  border-radius: 32px;
+  height: min(1080px, 100vh);
+  min-height: 720px;
+  border-radius: 28px;
   border: 1px solid rgba(123, 139, 255, 0.2);
   background: linear-gradient(155deg, rgba(11, 13, 24, 0.94), rgba(9, 11, 20, 0.82));
   box-shadow: 0 45px 120px rgba(8, 9, 20, 0.65);
@@ -24,12 +32,27 @@
   flex-direction: column;
 }
 
+.overlayVariantBalanced {
+  padding: clamp(18px, 3vw, 32px);
+}
+
+.overlayVariantCompact {
+  padding: clamp(14px, 2.4vw, 24px);
+  border-radius: 22px;
+}
+
+
 .overlayContent {
   flex: 1;
   display: grid;
   grid-template-rows: auto 1fr;
-  gap: clamp(18px, 3vw, 32px);
-  padding: clamp(28px, 4vw, 56px);
+  gap: clamp(16px, 2.4vw, 24px);
+  padding: clamp(22px, 3.2vw, 34px);
+}
+
+.overlayVariantCompact .overlayContent {
+  gap: clamp(12px, 1.8vw, 18px);
+  padding: clamp(16px, 2.2vw, 24px);
 }
 
 .overlayHeader {
@@ -37,6 +60,10 @@
   align-items: center;
   justify-content: space-between;
   gap: clamp(18px, 3vw, 32px);
+}
+
+.overlayVariantCompact .overlayHeader {
+  gap: clamp(12px, 2vw, 20px);
 }
 
 .overlayBrand {
@@ -51,10 +78,18 @@
   letter-spacing: -0.02em;
 }
 
+.overlayVariantCompact .overlayBrandTitle {
+  font-size: clamp(1.6rem, 2.6vw, 2.1rem);
+}
+
 .overlayBrandSubtitle {
   font-size: clamp(0.85rem, 1.8vw, 1rem);
   font-weight: 500;
   color: rgba(226, 231, 255, 0.66);
+}
+
+.overlayVariantCompact .overlayBrandSubtitle {
+  font-size: clamp(0.72rem, 1.4vw, 0.88rem);
 }
 
 .overlayMeta {
@@ -64,6 +99,11 @@
   gap: 8px;
   font-size: clamp(0.78rem, 1.6vw, 0.95rem);
   color: rgba(226, 231, 255, 0.66);
+}
+
+.overlayVariantCompact .overlayMeta {
+  font-size: clamp(0.68rem, 1.3vw, 0.82rem);
+  gap: 6px;
 }
 
 .overlayMetaPill {
@@ -82,20 +122,35 @@
   animation: pulseGlow 2.4s ease-in-out infinite;
 }
 
+.overlayVariantCompact .overlayMetaPill {
+  padding: 8px 16px;
+  font-size: 0.72rem;
+}
+
 .overlaySummary {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: clamp(16px, 2.5vw, 28px);
 }
 
+.overlayVariantCompact .overlaySummary {
+  gap: clamp(12px, 1.8vw, 16px);
+}
+
 .summaryCard {
   background: rgba(15, 18, 32, 0.78);
   border: 1px solid rgba(123, 139, 255, 0.18);
-  border-radius: 22px;
-  padding: clamp(18px, 2.6vw, 24px);
+  border-radius: 20px;
+  padding: clamp(16px, 2.2vw, 22px);
   display: grid;
-  gap: 12px;
+  gap: 10px;
   box-shadow: 0 18px 40px rgba(9, 12, 22, 0.32);
+}
+
+.overlayVariantCompact .summaryCard {
+  padding: clamp(12px, 1.8vw, 18px);
+  border-radius: 16px;
+  gap: 8px;
 }
 
 .summaryCardLabel {
@@ -106,14 +161,22 @@
 }
 
 .summaryCardValue {
-  font-size: clamp(1.7rem, 3.6vw, 2.4rem);
+  font-size: clamp(1.5rem, 3.1vw, 2.1rem);
   font-weight: 600;
   letter-spacing: -0.02em;
 }
 
+.overlayVariantCompact .summaryCardValue {
+  font-size: clamp(1.3rem, 2.6vw, 1.8rem);
+}
+
 .summaryCardHint {
-  font-size: clamp(0.78rem, 1.6vw, 0.95rem);
+  font-size: clamp(0.74rem, 1.4vw, 0.9rem);
   color: rgba(226, 231, 255, 0.6);
+}
+
+.overlayVariantCompact .summaryCardHint {
+  font-size: clamp(0.68rem, 1.2vw, 0.82rem);
 }
 
 .overlayMain {
@@ -124,16 +187,29 @@
   align-items: stretch;
 }
 
+.overlayVariantCompact .overlayMain {
+  grid-template-columns: minmax(0, 5fr) minmax(0, 3fr);
+  gap: clamp(12px, 2.2vw, 18px);
+}
+
 .leaderboards {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: clamp(18px, 2.6vw, 24px);
 }
 
+.overlayVariantCompact .leaderboards {
+  gap: clamp(12px, 1.8vw, 16px);
+}
+
 .leaderboardColumn {
   display: flex;
   flex-direction: column;
   gap: clamp(16px, 2vw, 24px);
+}
+
+.overlayVariantCompact .leaderboardColumn {
+  gap: clamp(10px, 1.6vw, 16px);
 }
 
 .topStreamsHeader {
@@ -158,148 +234,141 @@
 .topStreams {
   display: flex;
   flex-direction: column;
-  gap: clamp(14px, 2vw, 20px);
+  gap: clamp(8px, 1.4vw, 12px);
+}
+
+.overlayVariantCompact .topStreams {
+  gap: clamp(6px, 1.2vw, 10px);
 }
 
 .topStreamCard {
-  position: relative;
-  padding: 24px;
-  border-radius: 24px;
-  border: 1px solid rgba(123, 139, 255, 0.16);
-  background: rgba(13, 16, 28, 0.82);
-  overflow: hidden;
+  border: 1px solid rgba(123, 139, 255, 0.22);
+  border-radius: 12px;
+  background: rgba(10, 12, 22, 0.92);
+  padding: 8px 12px;
   display: flex;
   flex-direction: column;
-  gap: 18px;
-  box-shadow: 0 16px 36px rgba(8, 12, 24, 0.28);
+  gap: 6px;
+  line-height: 1.1;
 }
 
-.topStreamCard::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(135deg, rgba(123, 139, 255, 0.22), transparent 60%);
-  opacity: 0.65;
-  pointer-events: none;
+.overlayVariantCompact .topStreamCard {
+  padding: 6px 10px;
+  border-radius: 10px;
+  gap: 4px;
+}
+
+.topStreamRowPrimary {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto auto;
+  gap: 8px;
+  align-items: center;
+  font-size: clamp(0.75rem, 1.3vw, 0.88rem);
+}
+
+.overlayVariantCompact .topStreamRowPrimary {
+  gap: 6px;
+  font-size: clamp(0.68rem, 1.1vw, 0.8rem);
+}
+
+.topStreamRowSecondary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: clamp(0.66rem, 1.1vw, 0.78rem);
+  color: rgba(226, 231, 255, 0.76);
+}
+
+.topStreamRowSecondary span {
+  white-space: nowrap;
+}
+
+.overlayVariantCompact .topStreamRowSecondary {
+  gap: 6px;
+  font-size: clamp(0.6rem, 1vw, 0.72rem);
 }
 
 .topStreamRank {
-  position: absolute;
-  top: 18px;
-  left: 20px;
-  font-size: clamp(0.78rem, 1.6vw, 0.95rem);
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: 0.16em;
-  color: rgba(226, 231, 255, 0.68);
-  z-index: 1;
-}
-
-.topStreamHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  position: relative;
-  z-index: 1;
-}
-
-.topStreamIdentity {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
+  color: rgba(226, 231, 255, 0.72);
 }
 
 .topStreamName {
-  font-size: clamp(1rem, 2.2vw, 1.2rem);
   font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .topStreamSymbol {
-  font-size: clamp(0.74rem, 1.6vw, 0.9rem);
-  color: rgba(226, 231, 255, 0.64);
+  font-size: 0.78em;
+  opacity: 0.7;
+  white-space: nowrap;
 }
 
-.topStreamMetric {
-  font-size: clamp(1.3rem, 2.6vw, 1.6rem);
-  font-weight: 600;
-  position: relative;
-  z-index: 1;
-}
-
-.topStreamMeta {
-  font-size: clamp(0.78rem, 1.6vw, 0.92rem);
-  color: rgba(226, 231, 255, 0.62);
-  display: flex;
-  gap: clamp(10px, 2vw, 16px);
-  position: relative;
-  z-index: 1;
-}
-
-.topStreamBadge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 10px;
+.topStreamStatus {
+  padding: 2px 8px;
   border-radius: 999px;
-  font-size: clamp(0.68rem, 1.4vw, 0.78rem);
   text-transform: uppercase;
   letter-spacing: 0.12em;
+  font-size: 0.7em;
+  font-weight: 600;
 }
 
-.topStreamBadgeLive {
-  background: rgba(74, 222, 128, 0.18);
+.topStreamStatusLive {
+  background: rgba(74, 222, 128, 0.16);
   color: #4ade80;
 }
 
-.topStreamBadgeDropping {
+.topStreamStatusWarning {
   background: rgba(250, 204, 21, 0.18);
   color: #facc15;
 }
 
-.topStreamThumbnail {
-  position: absolute;
-  inset: 0;
-  opacity: 0.18;
-  background-size: cover;
-  background-position: center;
-  filter: saturate(90%);
+.topStreamStatusOffline {
+  background: rgba(148, 163, 184, 0.12);
+  color: rgba(226, 231, 255, 0.65);
 }
 
 .topStreamDelta {
-  position: relative;
-  z-index: 1;
-  display: inline-flex;
-  align-items: baseline;
-  gap: 8px;
-  padding: 8px 14px;
-  border-radius: 999px;
-  font-size: clamp(0.85rem, 1.8vw, 1rem);
+  padding: 2px 10px;
+  border-radius: 6px;
   font-weight: 600;
-  background: rgba(123, 139, 255, 0.14);
-  color: rgba(226, 231, 255, 0.86);
+  font-size: 0.82em;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
 }
 
-.topStreamDelta[data-trend='up'] {
-  background: rgba(74, 222, 128, 0.18);
+.overlayVariantCompact .topStreamDelta {
+  padding: 2px 8px;
+  font-size: 0.7em;
+}
+
+.topStreamDelta-up {
+  background: rgba(74, 222, 128, 0.16);
   color: #4ade80;
 }
 
-.topStreamDelta[data-trend='down'] {
-  background: rgba(248, 113, 113, 0.18);
+.topStreamDelta-down {
+  background: rgba(248, 113, 113, 0.16);
   color: #f87171;
 }
 
-.topStreamDelta[data-trend='flat'] {
+.topStreamDelta-flat {
   background: rgba(148, 163, 184, 0.12);
-  color: rgba(226, 231, 255, 0.7);
+  color: rgba(226, 231, 255, 0.72);
 }
 
 .topStreamDeltaHint {
-  font-size: clamp(0.64rem, 1.2vw, 0.75rem);
-  font-weight: 500;
-  letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: rgba(226, 231, 255, 0.48);
+  letter-spacing: 0.16em;
+  opacity: 0.55;
+  font-size: 0.62em;
+}
+
+.overlayVariantCompact .topStreamDeltaHint {
+  font-size: 0.55em;
 }
 
 .trendPanel {
@@ -311,6 +380,12 @@
   border: 1px solid rgba(123, 139, 255, 0.16);
   background: rgba(12, 15, 26, 0.85);
   box-shadow: 0 16px 36px rgba(7, 9, 18, 0.24);
+}
+
+.overlayVariantCompact .trendPanel {
+  gap: clamp(14px, 1.8vw, 18px);
+  padding: clamp(16px, 2.2vw, 22px);
+  border-radius: 20px;
 }
 
 .trendBlock {
@@ -347,6 +422,10 @@
   height: clamp(160px, 20vw, 220px);
 }
 
+.overlayVariantCompact .trendSparkline {
+  height: clamp(120px, 15vw, 160px);
+}
+
 .trendLine {
   fill: none;
   stroke: rgba(144, 179, 255, 0.95);
@@ -368,6 +447,11 @@
   font-size: clamp(0.58rem, 1.3vw, 0.78rem);
   text-align: center;
   color: rgba(226, 231, 255, 0.62);
+}
+
+.overlayVariantCompact .trendAxis {
+  gap: 8px;
+  font-size: clamp(0.52rem, 1.1vw, 0.68rem);
 }
 
 .trendAxisLabel {
@@ -403,6 +487,11 @@
   color: rgba(226, 231, 255, 0.56);
 }
 
+.overlayVariantCompact .overlayFooter {
+  padding: 0 clamp(18px, 3.2vw, 32px) clamp(12px, 2.4vw, 20px);
+  font-size: clamp(0.62rem, 1.3vw, 0.82rem);
+}
+
 .overlayFooterStatus {
   display: inline-flex;
   align-items: center;
@@ -415,6 +504,11 @@
   border-radius: 50%;
   background: #4ade80;
   box-shadow: 0 0 12px rgba(74, 222, 128, 0.8);
+}
+
+.overlayVariantCompact .statusIndicator {
+  width: 8px;
+  height: 8px;
 }
 
 .overlayFooterCta {
