@@ -16,8 +16,8 @@ async function fetchFromPumpstreams<T>(path: string, options: FetchOptions = {})
       cache: options.cache ?? 'no-store',
       signal: options.signal ?? controller.signal,
       headers: {
-        'accept': 'application/json',
-        'user-agent': 'dexter-fe-overlay/1.0',
+        accept: 'application/json',
+        'user-agent': 'dexter-fe-overlay/1.1',
       },
       next: { revalidate: 0 },
     });
@@ -94,6 +94,18 @@ type PumpStreamsTrendResponse = {
   };
 };
 
+type PlatformMetricsSample = {
+  bucket: string;
+  live_streams: number | null;
+  total_viewers: number | null;
+  total_market_cap: number | null;
+};
+
+type PumpStreamsMetricsResponse = {
+  windowMinutes: number;
+  samples: PlatformMetricsSample[];
+};
+
 export type OverlaySummary = {
   totalStreams: number;
   liveStreams: number;
@@ -109,10 +121,16 @@ export type ViewerTrendPoint = {
   avgViewers: number;
 };
 
+export type MarketCapTrendPoint = {
+  bucket: string;
+  totalMarketCap: number;
+};
+
 export type OverlayData = {
   summary: OverlaySummary;
   streams: TopStream[];
   viewerTrend: ViewerTrendPoint[];
+  marketCapTrend: MarketCapTrendPoint[];
   overallViewerAvg: number | null;
   extremes: PumpStreamsTrendResponse['extrema'];
 };
@@ -132,32 +150,67 @@ function mapStreams(response: PumpStreamsLiveResponse): TopStream[] {
   }));
 }
 
+function buildViewerTrend(response: PumpStreamsTrendResponse): ViewerTrendPoint[] {
+  return (response.averages?.hourly ?? [])
+    .slice(-48)
+    .map((point) => ({ hour: point.hour, avgViewers: point.avgViewers }));
+}
+
+function buildMarketCapTrend(samples: PlatformMetricsSample[]): MarketCapTrendPoint[] {
+  const entries = samples
+    .filter((sample) => sample.total_market_cap != null && Number.isFinite(sample.total_market_cap))
+    .map((sample) => ({
+      bucket: sample.bucket,
+      totalMarketCap: Number(sample.total_market_cap),
+    }));
+
+  if (!entries.length) return [];
+  if (entries.length === 1) {
+    return entries;
+  }
+
+  const desiredPoints = Math.min(12, entries.length);
+  if (desiredPoints === 1) {
+    return [entries[entries.length - 1]];
+  }
+
+  const step = (entries.length - 1) / (desiredPoints - 1);
+  const points: MarketCapTrendPoint[] = [];
+  for (let i = 0; i < desiredPoints; i += 1) {
+    const index = Math.round(i * step);
+    const point = entries[Math.min(entries.length - 1, index)];
+    points.push(point);
+  }
+
+  return points;
+}
+
 export async function fetchOverlayData(): Promise<OverlayData> {
-  const [live, trend] = await Promise.all([
+  const [live, trend, metrics] = await Promise.all([
     fetchFromPumpstreams<PumpStreamsLiveResponse>('/api/live'),
     fetchFromPumpstreams<PumpStreamsTrendResponse>('/api/platform/viewer-trend?windowMinutes=2880'),
+    fetchFromPumpstreams<PumpStreamsMetricsResponse>('/api/platform/metrics?windowMinutes=2880'),
   ]);
 
   const summary: OverlaySummary = {
     totalStreams: live.totals?.totalStreams ?? live.streams.length,
     liveStreams: live.totals?.liveStreams ?? live.streams.filter((s) => s.status === 'live').length,
-    disconnectingStreams: live.totals?.disconnectingStreams ?? live.streams.filter((s) => s.status === 'disconnecting').length,
-    totalLiveViewers: live.totals?.totalLiveViewers ?? live.streams.reduce((sum, stream) => sum + (stream.metrics?.viewers?.current ?? 0), 0),
-    totalLiveMarketCap: live.totals?.totalLiveMarketCap ?? live.streams.reduce((sum, stream) => sum + (stream.metrics?.marketCap?.usd ?? stream.metrics?.marketCap?.current ?? 0), 0),
+    disconnectingStreams:
+      live.totals?.disconnectingStreams ?? live.streams.filter((s) => s.status === 'disconnecting').length,
+    totalLiveViewers:
+      live.totals?.totalLiveViewers ?? live.streams.reduce((sum, stream) => sum + (stream.metrics?.viewers?.current ?? 0), 0),
+    totalLiveMarketCap:
+      live.totals?.totalLiveMarketCap ?? live.streams.reduce((sum, stream) => sum + (stream.metrics?.marketCap?.usd ?? stream.metrics?.marketCap?.current ?? 0), 0),
     windowMinutes: live.windowMinutes,
     generatedAt: live.generatedAt,
   };
 
-  const viewerTrend: ViewerTrendPoint[] = (trend.averages?.hourly ?? [])
-    .slice(-48)
-    .map((point) => ({ hour: point.hour, avgViewers: point.avgViewers }));
-
   return {
     summary,
     streams: mapStreams(live),
-    viewerTrend,
+    viewerTrend: buildViewerTrend(trend),
+    marketCapTrend: buildMarketCapTrend(metrics?.samples ?? []),
     overallViewerAvg: trend.averages?.overall ?? null,
     extremes: trend.extrema ?? { min: null, max: null },
   };
 }
-
