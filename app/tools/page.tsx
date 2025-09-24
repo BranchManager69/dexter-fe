@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../auth-context';
 
 type McpTool = {
@@ -20,52 +20,61 @@ export default function ToolsPage() {
   const [tools, setTools] = useState<McpTool[]>([]);
   const [filter, setFilter] = useState('');
   const [showRaw, setShowRaw] = useState(false);
+  const [mode, setMode] = useState<'user' | 'demo' | null>(null);
 
-  useEffect(() => {
-    let alive = true;
-    if (authLoading) return;
-    if (!session) {
-      setLoading(false);
-      setTools([]);
-      setError('Sign in to view MCP tools.');
-      return;
-    }
-
-    (async () => {
+  const fetchTools = useCallback(
+    async (nextMode: 'user' | 'demo', token?: string) => {
       try {
         setLoading(true);
         setError(null);
-        const r = await fetch('/api/tools', {
+        const headers: Record<string, string> = {};
+        if (token) {
+          headers['Authorization'] = `Bearer ${token}`;
+        }
+        const response = await fetch('/api/tools', {
           credentials: 'include',
           cache: 'no-store',
-          headers: {
-            Authorization: `Bearer ${session.access_token}`,
-          },
+          headers,
         });
-        const ct = r.headers.get('content-type') || '';
-        const text = await r.text();
-        if (!r.ok) {
-          setError(`${r.status} ${r.statusText} — ${text.slice(0, 400)}`);
+        const contentType = response.headers.get('content-type') || '';
+        const text = await response.text();
+        if (!response.ok) {
+          setError(`${response.status} ${response.statusText} — ${text.slice(0, 400)}`);
           setRaw(text);
+          setTools([]);
+          setMode(null);
           return;
         }
         let data: any;
-        try { data = ct.includes('json') ? JSON.parse(text) : JSON.parse(text); } catch {
-          // Fall back to treating body as plain text
+        try {
+          data = contentType.includes('json') ? JSON.parse(text) : JSON.parse(text);
+        } catch {
           data = { raw: text };
         }
-        if (!alive) return;
         setRaw(data);
-        const arr: McpTool[] = Array.isArray(data?.tools) ? data.tools : (Array.isArray(data) ? data : []);
+        const arr: McpTool[] = Array.isArray(data?.tools)
+          ? data.tools
+          : Array.isArray(data)
+            ? data
+            : [];
         setTools(arr);
+        setMode(nextMode);
       } catch (e: any) {
         setError(e?.message || String(e));
+        setTools([]);
+        setMode(null);
       } finally {
         setLoading(false);
       }
-    })();
-    return () => { alive = false; };
-  }, [session, authLoading]);
+    },
+    []
+  );
+
+  useEffect(() => {
+    if (authLoading) return;
+    const nextMode: 'user' | 'demo' = session ? 'user' : 'demo';
+    fetchTools(nextMode, session?.access_token);
+  }, [authLoading, session, fetchTools]);
 
   const filtered = useMemo(() => {
     const q = filter.trim().toLowerCase();
@@ -80,6 +89,30 @@ export default function ToolsPage() {
     <div>
       <h1>MCP Tools</h1>
       <p style={{opacity:.8}}>Fetched from /api/tools (proxied to dexter-mcp). Shows name, description, and schemas for quick visibility.</p>
+
+      <div style={{display:'flex', gap:8, alignItems:'center', flexWrap:'wrap', margin:'8px 0'}}>
+        <span style={{opacity:.7}}>
+          Viewing: {mode === 'user' ? 'your authenticated tool catalog' : mode === 'demo' ? 'demo tool catalog (shared bearer)' : '—'}
+        </span>
+        <div style={{marginLeft:'auto', display:'flex', gap:8}}>
+          {session && mode !== 'user' && (
+            <button onClick={() => fetchTools('user', session.access_token)} style={{padding:'8px 12px'}}>
+              View my tools
+            </button>
+          )}
+          {mode !== 'demo' && (
+            <button onClick={() => fetchTools('demo')} style={{padding:'8px 12px'}}>
+              View demo tools
+            </button>
+          )}
+        </div>
+      </div>
+
+      {mode === 'demo' && !session && (
+        <div style={{margin:'8px 0', padding:8, borderRadius:4, background:'#0b0c10', border:'1px solid #2c3242', color:'#9fb2c8'}}>
+          You are browsing the demo catalog. Sign in to see tools tailored to your account and wallet access.
+        </div>
+      )}
 
       <div style={{display:'flex', gap:8, alignItems:'center', margin:'8px 0'}}>
         <input
