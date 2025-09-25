@@ -17,7 +17,7 @@ type ExternalNavItem = {
 type NavItem = InternalNavItem | ExternalNavItem;
 
 const navigation = [
-  { label: 'Capabilities', href: '/tools' satisfies Route },
+  { label: 'MCP', href: '/tools' satisfies Route },
   { label: 'Docs', href: 'https://docs.dexter.cash', external: true },
   { label: 'Link', href: '/link' satisfies Route },
 ] satisfies NavItem[];

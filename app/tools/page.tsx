@@ -26,6 +26,8 @@ type McpTool = {
 
 type AccessLevel = 'guest' | 'pro' | 'holders';
 
+type AccessFilter = 'all' | AccessLevel;
+
 type CatalogTool = {
   id: string;
   rawName: string;
@@ -57,7 +59,7 @@ const CATEGORY_LABEL_OVERRIDES: Record<string, string> = {
 };
 
 const ACCESS_LABELS: Record<AccessLevel, string> = {
-  guest: 'Guest',
+  guest: 'Free',
   pro: 'Pro',
   holders: 'Holders',
 };
@@ -77,21 +79,28 @@ const ACCESS_MAP: Record<string, AccessLevel> = {
 };
 
 const ACCESS_BADGE_STYLES: Record<AccessLevel, { background: string; border: string; color: string }> = {
-  guest: { background: 'rgba(123, 139, 255, 0.12)', border: '1px solid rgba(123, 139, 255, 0.32)', color: '#cdd5ff' },
+  guest: { background: 'linear-gradient(135deg, rgba(114, 242, 175, 0.22), rgba(76, 189, 143, 0.16))', border: '1px solid rgba(114, 242, 175, 0.32)', color: '#d5ffe8' },
   pro: { background: 'linear-gradient(135deg, rgba(255, 200, 87, 0.28), rgba(255, 200, 87, 0.12))', border: '1px solid rgba(255, 200, 87, 0.4)', color: '#ffdc90' },
   holders: { background: 'linear-gradient(135deg, rgba(107, 212, 252, 0.28), rgba(123, 139, 255, 0.22))', border: '1px solid rgba(107, 212, 252, 0.5)', color: '#ade6ff' },
 };
 
 const TAG_STYLE: CSSProperties = {
   fontSize: 11,
-  letterSpacing: '.12em',
+  letterSpacing: '.14em',
   textTransform: 'uppercase',
-  padding: '3px 8px',
+  padding: '3px 9px',
   borderRadius: 999,
-  border: '1px solid rgba(123, 139, 255, 0.25)',
-  background: 'rgba(123, 139, 255, 0.12)',
-  color: '#cdd5ff',
+  border: '1px solid rgba(123, 139, 255, 0.35)',
+  background: 'rgba(15, 28, 58, 0.65)',
+  color: '#d9e3ff',
 };
+
+const ACCESS_FILTER_OPTIONS: Array<{ id: AccessFilter; label: string }> = [
+  { id: 'all', label: 'All' },
+  { id: 'guest', label: ACCESS_LABELS.guest },
+  { id: 'pro', label: ACCESS_LABELS.pro },
+  { id: 'holders', label: ACCESS_LABELS.holders },
+];
 
 const DEFAULT_ICON = '/assets/logos/logo_orange.png';
 
@@ -172,11 +181,14 @@ export default function ToolsPage() {
   const [raw, setRaw] = useState<any>(null);
   const [tools, setTools] = useState<McpTool[]>([]);
   const [filter, setFilter] = useState('');
+  const [accessFilter, setAccessFilter] = useState<AccessFilter>('all');
   const [mode, setMode] = useState<'user' | 'demo' | null>(null);
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
 
   const fetchTools = useCallback(
     async (nextMode: 'user' | 'demo', token?: string) => {
       try {
+        setMode(nextMode);
         setLoading(true);
         setError(null);
         const headers: Record<string, string> = {};
@@ -210,7 +222,6 @@ export default function ToolsPage() {
             ? data
             : [];
         setTools(arr);
-        setMode(nextMode);
       } catch (e: any) {
         setError(e?.message || String(e));
         setTools([]);
@@ -232,13 +243,15 @@ export default function ToolsPage() {
 
   const filteredCatalog = useMemo(() => {
     const q = filter.trim().toLowerCase();
-    if (!q) return catalog;
-    return catalog.filter(tool =>
-      tool.displayName.toLowerCase().includes(q) ||
-      tool.rawName.toLowerCase().includes(q) ||
-      tool.description.toLowerCase().includes(q)
-    );
-  }, [catalog, filter]);
+    return catalog.filter(tool => {
+      const matchesText = !q
+        || tool.displayName.toLowerCase().includes(q)
+        || tool.rawName.toLowerCase().includes(q)
+        || tool.description.toLowerCase().includes(q);
+      const matchesAccess = accessFilter === 'all' || tool.access === accessFilter;
+      return matchesText && matchesAccess;
+    });
+  }, [catalog, filter, accessFilter]);
 
   const groupedCatalog = useMemo<CatalogGroup[]>(() => {
     const map = new Map<string, CatalogGroup>();
@@ -256,81 +269,259 @@ export default function ToolsPage() {
       .sort((a, b) => a.label.localeCompare(b.label));
   }, [filteredCatalog]);
 
+  const totalVisible = filteredCatalog.length;
+  const totalCatalog = catalog.length;
+  const hasSearchFilter = filter.trim().length > 0;
+  const isDemo = mode === 'demo';
+  const isUser = mode === 'user';
+  const modeLabel = isDemo ? 'Shared demo catalog' : isUser ? 'My authorized tools' : 'Loading inventory…';
+  const modeHelper = isDemo
+    ? 'Sign in to load wallet-scoped tools and premium bundles.'
+    : isUser
+      ? 'These tools reflect your wallets and premium entitlements.'
+      : 'Hang tight while we pull the latest inventory.';
+  const modeBadgeStyle: CSSProperties = {
+    fontSize: 11,
+    letterSpacing: '.18em',
+    textTransform: 'uppercase',
+    padding: '4px 12px',
+    borderRadius: 14,
+    border: isDemo ? '1px solid rgba(123, 139, 255, 0.42)' : isUser ? '1px solid rgba(114, 242, 175, 0.42)' : '1px solid rgba(255, 255, 255, 0.2)',
+    background: isDemo
+      ? 'linear-gradient(135deg, rgba(123, 139, 255, 0.25), rgba(107, 212, 252, 0.18))'
+      : isUser
+        ? 'linear-gradient(135deg, rgba(114, 242, 175, 0.24), rgba(76, 189, 143, 0.16))'
+        : 'rgba(255, 255, 255, 0.08)',
+    color: isDemo ? '#e3e9ff' : isUser ? '#d5ffe8' : '#f8faff',
+  };
+  const heroContainerStyle: CSSProperties = {
+    borderRadius: 12,
+    padding: '28px 28px 26px',
+    background: 'linear-gradient(135deg, rgba(6, 10, 24, 0.96) 0%, rgba(18, 32, 63, 0.9) 48%, rgba(8, 20, 36, 0.94) 100%)',
+    border: '1px solid rgba(123, 139, 255, 0.28)',
+    boxShadow: '0 20px 48px rgba(5, 10, 22, 0.55)',
+    marginBottom: 32,
+  };
+  const heroPrimaryButtonStyle: CSSProperties = {
+    padding: '10px 16px',
+    borderRadius: 8,
+    border: '1px solid rgba(114, 242, 175, 0.46)',
+    background: 'linear-gradient(135deg, rgba(114, 242, 175, 0.26), rgba(76, 189, 143, 0.18))',
+    color: '#eafff4',
+    fontSize: 12,
+    letterSpacing: '.14em',
+    textTransform: 'uppercase',
+    fontWeight: 600,
+    transition: 'opacity 0.2s ease',
+  };
+  const heroSecondaryButtonStyle: CSSProperties = {
+    padding: '10px 16px',
+    borderRadius: 8,
+    border: '1px solid rgba(123, 139, 255, 0.32)',
+    background: 'rgba(7, 18, 44, 0.68)',
+    color: '#dce5ff',
+    fontSize: 12,
+    letterSpacing: '.14em',
+    textTransform: 'uppercase',
+    fontWeight: 600,
+    transition: 'opacity 0.2s ease',
+  };
+  const totalDescriptor = hasSearchFilter || accessFilter !== 'all'
+    ? `of ${totalCatalog.toLocaleString()} total`
+    : 'available';
+  const groupContainerStyle: CSSProperties = {
+    borderRadius: 10,
+    padding: '22px 22px 20px',
+    background: 'linear-gradient(135deg, rgba(6, 12, 26, 0.9), rgba(14, 25, 46, 0.92))',
+    border: '1px solid rgba(123, 139, 255, 0.2)',
+    boxShadow: '0 16px 32px rgba(4, 9, 20, 0.4)',
+  };
+  const groupGridStyle: CSSProperties = {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
+    gap: 16,
+    justifyContent: 'flex-start',
+  };
+  const groupLabelStyle: CSSProperties = {
+    fontSize: 15,
+    letterSpacing: '.18em',
+    textTransform: 'uppercase',
+    color: '#e2e9ff',
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: 10,
+  };
+  const groupCountStyle: CSSProperties = {
+    fontSize: 12,
+    opacity: 0.72,
+    minWidth: 86,
+    textAlign: 'right',
+  };
+  const toolCardStyle: CSSProperties = {
+    border: '1px solid rgba(123, 139, 255, 0.22)',
+    borderRadius: 8,
+    padding: 18,
+    background: 'linear-gradient(135deg, rgba(4, 9, 20, 0.92), rgba(9, 16, 30, 0.96))',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 12,
+    minHeight: 240,
+    maxWidth: 360,
+    width: '100%',
+    boxShadow: '0 12px 28px rgba(4, 9, 22, 0.38)',
+  };
+  const accessFilterButtonStyle = (active: boolean, tier: AccessFilter): CSSProperties => {
+    const isAll = tier === 'all';
+    const activeBackground = isAll
+      ? 'linear-gradient(135deg, rgba(123, 139, 255, 0.22), rgba(107, 212, 252, 0.18))'
+      : 'linear-gradient(135deg, rgba(114, 242, 175, 0.2), rgba(76, 189, 143, 0.18))';
+    const activeBorder = isAll ? '1px solid rgba(123, 139, 255, 0.4)' : '1px solid rgba(114, 242, 175, 0.4)';
+    const activeColor = isAll ? '#e4ecff' : '#eafff4';
+
+    return {
+      padding: '8px 12px',
+      borderRadius: 14,
+      border: active ? activeBorder : '1px solid rgba(123, 139, 255, 0.3)',
+      background: active ? activeBackground : 'rgba(12, 20, 40, 0.72)',
+      color: active ? activeColor : '#d9e4ff',
+      fontSize: 12,
+      letterSpacing: '.12em',
+      textTransform: 'uppercase',
+      fontWeight: 600,
+      display: 'inline-flex',
+      alignItems: 'center',
+      gap: 6,
+      transition: 'opacity 0.2s ease',
+      cursor: 'pointer',
+      outline: 'none',
+      backgroundClip: 'padding-box',
+    };
+  };
+
+  const toggleGroup = useCallback((key: string) => {
+    setOpenGroups(prev => ({ ...prev, [key]: !prev[key] }));
+  }, []);
+
+
+  const buildHideLabel = (group: CatalogGroup) => {
+    const baseLabel = group.label.toLowerCase();
+    const noun = group.tools.length === 1 ? 'tool' : 'tools';
+    return `Hide ${baseLabel} ${noun}`;
+  };
+
   return (
     <div>
-      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 16, flexWrap: 'wrap', marginBottom: 16 }}>
-        <div style={{ flex: '1 1 320px' }}>
-          <h1 style={{ marginBottom: 4 }}>MCP Tools</h1>
-          <p style={{ opacity: 0.8, margin: 0 }}>Explore the live Dexter catalog. Filter, inspect schemas, and jump between personal and demo inventories.</p>
-        </div>
-        <div style={{ display: 'flex', gap: 8, marginLeft: 'auto', flexShrink: 0 }}>
-          {session && mode !== 'user' && (
-            <button
-              onClick={() => fetchTools('user', session.access_token)}
-              style={{
-                padding: '8px 12px',
-                borderRadius: 6,
-                border: '1px solid #2c3242',
-                background: '#1b2136',
-                color: '#cdd5ff',
-                fontSize: 12,
-                letterSpacing: '.12em',
-                textTransform: 'uppercase',
-              }}
-            >
-              View my tools
-            </button>
-          )}
-          {mode !== 'demo' && (
-            <button
-              onClick={() => fetchTools('demo')}
-              style={{
-                padding: '8px 12px',
-                borderRadius: 6,
-                border: '1px solid #2c3242',
-                background: '#1b2136',
-                color: '#cdd5ff',
-                fontSize: 12,
-                letterSpacing: '.12em',
-                textTransform: 'uppercase',
-              }}
-            >
-              View demo tools
-            </button>
-          )}
-        </div>
-      </div>
-
-      {mode === 'demo' && (
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: 12,
-            margin: '8px 0 16px',
-            padding: '12px 14px',
-            borderRadius: 8,
-            background: 'linear-gradient(135deg, rgba(123, 139, 255, 0.18), rgba(107, 212, 252, 0.12))',
-            border: '1px solid rgba(123, 139, 255, 0.42)',
-            color: '#cdd5ff',
-          }}
-        >
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-            <span style={{ fontSize: 12, letterSpacing: '.18em', textTransform: 'uppercase' }}>Demo catalog</span>
-            <span>You're viewing the shared demo inventory. Sign in to load wallet-scoped tools and premium bundles.</span>
+      <section className="catalog-hero" style={heroContainerStyle}>
+        <div className="catalog-hero__top" style={{ display: 'flex', gap: 24, flexWrap: 'wrap', alignItems: 'flex-start' }}>
+          <div className="catalog-hero__intro" style={{ flex: '1 1 360px', minWidth: 280, display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+              <span style={{ fontSize: 11, letterSpacing: '.2em', textTransform: 'uppercase', opacity: 0.7 }}>Dexter MCP</span>
+              <span style={modeBadgeStyle}>{modeLabel}</span>
+            </div>
+            <h1 style={{ margin: 0, fontSize: 32, letterSpacing: '-0.01em', color: '#f5f7ff' }}>Tool Catalog</h1>
+            <p style={{ margin: '4px 0 0', opacity: 0.86, maxWidth: 520 }}>
+              Browse the live tool inventory powering Dexter automations. Filter, inspect schemas, and queue actions straight into your workflows.
+            </p>
+            <p style={{ margin: '6px 0 0', fontSize: 13, opacity: 0.74 }}>{modeHelper}</p>
+          </div>
+          <div className="catalog-hero__actions" style={{ flex: '0 0 auto', minWidth: 220, display: 'flex', flexDirection: 'column', gap: 10, alignItems: 'flex-end' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, opacity: 0.7, fontSize: 11, letterSpacing: '.18em', textTransform: 'uppercase' }}>
+              <span>Catalog mode</span>
+              <span style={{ opacity: 0.5 }}>•</span>
+              <span>{mode === 'user' ? 'Personal' : 'Demo'}</span>
+            </div>
+            <div className="catalog-hero__actions-buttons" style={{ display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+              {session && mode !== 'user' && (
+                <button onClick={() => fetchTools('user', session.access_token)} style={heroPrimaryButtonStyle}>
+                  View my tools
+                </button>
+              )}
+              {mode !== 'demo' && (
+                <button onClick={() => fetchTools('demo')} style={heroSecondaryButtonStyle}>
+                  View demo tools
+                </button>
+              )}
+            </div>
           </div>
         </div>
-      )}
-
-      <div style={{ display: 'flex', alignItems: 'center', margin: '8px 0' }}>
-        <input
-          placeholder="Filter by name or description"
-          value={filter}
-          onChange={e => setFilter(e.target.value)}
-          style={{ flex: '1 1 auto', padding: '8px', background: '#0b0c10', color: '#e6edf3', border: '1px solid #2c3242', borderRadius: 4 }}
-        />
-      </div>
+        <div
+          className="catalog-hero__controls"
+          style={{
+            marginTop: 26,
+            paddingTop: 20,
+            borderTop: '1px solid rgba(123, 139, 255, 0.22)',
+            display: 'flex',
+            gap: 14,
+            flexWrap: 'wrap',
+            alignItems: 'center',
+          }}
+        >
+          <div className="catalog-hero__filter" style={{ flex: '1 1 360px', minWidth: 260 }}>
+            <input
+              placeholder="Filter by name or description"
+              value={filter}
+              onChange={e => setFilter(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '12px 14px',
+                background: 'rgba(4, 9, 22, 0.78)',
+                color: '#f0f6ff',
+                border: '1px solid rgba(123, 139, 255, 0.34)',
+                borderRadius: 8,
+                fontSize: 14,
+              }}
+            />
+          </div>
+          <div className="catalog-hero__chip-row" style={{ flex: '1 1 320px', display: 'flex', gap: 12, alignItems: 'stretch', minWidth: 260, flexWrap: 'wrap' }}>
+            <div
+              className="catalog-hero__access"
+              style={{
+                flex: '1 1 auto',
+                display: 'flex',
+                gap: 8,
+                alignItems: 'center',
+                padding: '4px 0',
+                flexWrap: 'nowrap',
+                overflowX: 'auto',
+                scrollbarWidth: 'none',
+              }}
+            >
+              {ACCESS_FILTER_OPTIONS.map(option => (
+                <button
+                  key={option.id}
+                  type="button"
+                  onClick={() => setAccessFilter(option.id)}
+                style={accessFilterButtonStyle(accessFilter === option.id, option.id)}
+              >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+            <div
+              className="catalog-hero__count"
+              style={{
+                flex: '0 0 auto',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+                padding: '10px 16px',
+                borderRadius: 999,
+                border: '1px solid rgba(123, 139, 255, 0.32)',
+                background: 'rgba(15, 28, 58, 0.65)',
+                color: '#dce5ff',
+                fontSize: 13,
+                whiteSpace: 'nowrap',
+              }}
+            >
+              <span>Showing</span>
+              <strong style={{ fontSize: 16, color: '#f6f8ff' }}>{totalVisible.toLocaleString()}</strong>
+              <span>
+                tool{totalVisible === 1 ? '' : 's'} {totalDescriptor}
+              </span>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {loading && <div>Loading…</div>}
       {error && (
@@ -343,40 +534,30 @@ export default function ToolsPage() {
 
       {!loading && !error && filteredCatalog.length === 0 && <div style={{ opacity: 0.8 }}>No tools found.</div>}
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <div className="tool-groups" style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
         {groupedCatalog.map(group => (
-          <section key={group.key} style={{ border: '1px solid #2c3242', borderRadius: 8, padding: 16, background: '#05060d' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-              <span style={{ fontSize: 16, letterSpacing: '.16em', textTransform: 'uppercase', color: '#dde6ff' }}>{group.label}</span>
-              <span style={{ fontSize: 12, opacity: 0.7, minWidth: 80, textAlign: 'right' }}>{group.tools.length} tool{group.tools.length === 1 ? '' : 's'}</span>
-            </div>
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
-                gap: 12,
-                justifyContent: 'flex-start',
-              }}
-            >
-              {group.tools.map(tool => (
-                <div
-                  key={tool.id}
-                  style={{
-                    border: '1px solid rgba(44, 50, 66, 0.85)',
-                    borderRadius: 10,
-                    padding: 16,
-                    background: '#0b0c10',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: 12,
-                    minHeight: 240,
-                    maxWidth: 360,
-                    width: '100%',
-                  }}
-                >
+          <section key={group.key} className="tool-group" style={groupContainerStyle}>
+            {(() => {
+              const expanded = openGroups[group.key] ?? false;
+              const wrapperClass = `tool-group__grid-wrapper ${expanded ? 'tool-group__grid-wrapper--expanded' : 'tool-group__grid-wrapper--collapsed'}`;
+              const overlayClass = `tool-group__overlay ${expanded ? 'tool-group__overlay--expanded' : 'tool-group__overlay--collapsed'}`;
+              return (
+                <>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+                    <span style={groupLabelStyle}>{group.label}</span>
+                    <span style={groupCountStyle}>{group.tools.length} tool{group.tools.length === 1 ? '' : 's'}</span>
+                  </div>
+                  <div className={wrapperClass}>
+                    <div className="tool-group__grid" style={groupGridStyle}>
+                      {group.tools.map(tool => (
+                        <div
+                          key={tool.id}
+                          className="tool-card"
+                          style={toolCardStyle}
+                        >
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
                     <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-                      <div style={{ width: 44, height: 44, borderRadius: 12, overflow: 'hidden', background: 'rgba(44, 50, 66, 0.6)', flexShrink: 0 }}>
+                      <div style={{ width: 44, height: 44, borderRadius: 8, overflow: 'hidden', background: 'rgba(44, 50, 66, 0.55)', flexShrink: 0 }}>
                         <img
                           src={tool.icon}
                           alt={`${tool.displayName} icon`}
@@ -390,7 +571,7 @@ export default function ToolsPage() {
                     </div>
                     <AccessBadge level={tool.access} />
                   </div>
-                  {tool.description ? <div style={{ opacity: 0.9 }}>{tool.description}</div> : null}
+                  {tool.description ? <div style={{ color: '#cdd8f5', lineHeight: 1.5 }}>{tool.description}</div> : null}
                   {tool.tags.length ? (
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                       {tool.tags.map(tag => (
@@ -403,8 +584,21 @@ export default function ToolsPage() {
                     <SchemaBlock title="Output Schema" value={tool.output} />
                   </div>
                 </div>
-              ))}
-            </div>
+                      ))}
+                    </div>
+                    <div className={overlayClass}>
+                      <button
+                        type="button"
+                        onClick={() => toggleGroup(group.key)}
+                        className="tool-group__overlay-button"
+                      >
+                        {expanded ? buildHideLabel(group) : buildShowLabel(group)}
+                      </button>
+                    </div>
+                  </div>
+                </>
+              );
+            })()}
           </section>
         ))}
       </div>
@@ -424,6 +618,197 @@ export default function ToolsPage() {
           </pre>
         </Collapsible>
       </div>
+      <style jsx>{`
+        .catalog-hero__actions-buttons button {
+          min-width: 148px;
+        }
+
+        @media (max-width: 992px) {
+          .catalog-hero {
+            padding: 24px 20px 22px;
+          }
+        }
+
+        @media (max-width: 768px) {
+          .catalog-hero {
+            padding: 20px 16px 18px;
+            border-radius: 10px;
+          }
+
+          .catalog-hero__top {
+            flex-direction: column;
+            gap: 8px;
+          }
+
+          .catalog-hero__intro {
+            min-width: 100% !important;
+          }
+
+          .catalog-hero__actions {
+            min-width: 100% !important;
+            align-items: stretch !important;
+            gap: 10px !important;
+            margin-top: 0 !important;
+          }
+
+          .catalog-hero__actions-buttons {
+            width: 100%;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+          }
+
+          .catalog-hero__actions-buttons button {
+            flex: 1 1 160px;
+            min-width: 0;
+          }
+
+          .catalog-hero__controls {
+            flex-direction: column;
+            align-items: stretch !important;
+            gap: 10px;
+            border-top: 1px solid rgba(123, 139, 255, 0.18);
+            padding-top: 14px;
+            margin-top: 18px;
+          }
+
+          .catalog-hero__filter {
+            min-width: 100% !important;
+            flex: 1 1 100% !important;
+          }
+
+          .catalog-hero__chip-row {
+            width: 100%;
+            align-items: center;
+          }
+
+          .catalog-hero__access {
+            flex: 1 1 auto;
+          }
+
+          .catalog-hero__count {
+            justify-content: center;
+            border-radius: 18px;
+            padding: 8px 14px;
+          }
+
+          .tool-group {
+            padding: 18px 16px 16px !important;
+            border-radius: 10px;
+          }
+
+          .tool-group__grid {
+            grid-template-columns: minmax(0, 1fr) !important;
+            gap: 12px !important;
+          }
+
+          .tool-card {
+            max-width: none !important;
+            padding: 16px !important;
+            border-radius: 8px;
+          }
+        }
+
+        @media (max-width: 480px) {
+          .catalog-hero {
+            padding: 18px 14px 16px;
+          }
+
+          .catalog-hero__actions-buttons {
+            flex-direction: column;
+          }
+
+          .catalog-hero__actions-buttons button,
+          .catalog-hero__access button {
+            width: 100%;
+            flex: 1 1 auto;
+          }
+
+          .catalog-hero__access {
+            gap: 6px;
+          }
+
+          .catalog-hero__count {
+            padding: 10px 14px;
+            font-size: 12px;
+          }
+        }
+
+        .catalog-hero__access::-webkit-scrollbar {
+          display: none;
+        }
+
+        .tool-group__grid-wrapper {
+          position: relative;
+          overflow: hidden;
+          transition: max-height 0.45s ease;
+        }
+
+        .tool-group__grid-wrapper--collapsed {
+          max-height: 240px;
+          border-radius: 12px;
+        }
+
+        .tool-group__grid-wrapper--expanded {
+          max-height: 1600px;
+          border-radius: 12px;
+        }
+
+        .tool-group__overlay {
+          position: absolute;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          display: flex;
+          justify-content: center;
+          align-items: flex-end;
+          padding-bottom: 18px;
+          pointer-events: auto;
+          transition: background 0.3s ease, height 0.3s ease, opacity 0.3s ease;
+        }
+
+        .tool-group__overlay--collapsed {
+          height: 110px;
+          background: linear-gradient(180deg, rgba(8, 14, 26, 0) 0%, rgba(8, 14, 26, 0.9) 45%, rgba(6, 12, 24, 0.96) 100%);
+        }
+
+        .tool-group__overlay--expanded {
+          height: 64px;
+          background: none;
+          padding-bottom: 12px;
+        }
+
+        .tool-group__overlay-button {
+          border: none;
+          background: transparent;
+          color: #f6f8ff;
+          font-size: 12px;
+          letter-spacing: .18em;
+          text-transform: uppercase;
+          font-weight: 600;
+          padding: 10px 18px;
+          border-radius: 999px;
+          cursor: pointer;
+          box-shadow: none;
+          transition: background 0.2s ease, transform 0.2s ease;
+          pointer-events: auto;
+        }
+
+        .tool-group__overlay-button:hover {
+          transform: translateY(-1px);
+        }
+
+        .tool-group__overlay-button:focus-visible {
+          outline: 2px solid rgba(123, 139, 255, 0.8);
+          outline-offset: 2px;
+        }
+
+        @media (max-width: 768px) {
+          .tool-group__grid-wrapper--collapsed {
+            max-height: 260px;
+          }
+        }
+      `}</style>
     </div>
   );
 }
@@ -480,3 +865,9 @@ function AccessBadge({ level }: { level: AccessLevel }) {
     </span>
   );
 }
+  const buildShowLabel = (group: CatalogGroup) => {
+    const count = group.tools.length;
+    const baseLabel = group.label.toLowerCase();
+    const noun = count === 1 ? 'tool' : 'tools';
+    return `Show ${count} ${baseLabel} ${noun}`;
+  };
