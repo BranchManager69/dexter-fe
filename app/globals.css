@@ -1075,6 +1075,8 @@ textarea {
   .site-header__cluster--actions {
     justify-content: space-between;
     gap: 14px;
+    flex-wrap: nowrap;
+    align-items: center;
   }
 
   .site-header__nav {
@@ -1092,6 +1094,11 @@ textarea {
   .site-header__launch {
     flex: 1 1 auto;
     justify-content: center;
+    min-width: 0;
+  }
+
+  .account-menu {
+    flex: 0 0 auto;
   }
 
   .account-menu__dropdown {
