@@ -3,11 +3,112 @@ import { readFile, rm, access } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import { chromium } from 'playwright';
+import livekitSdk from 'livekit-server-sdk';
+
+const { EgressClient, SegmentedFileProtocol, EncodingOptionsPreset } = livekitSdk;
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const configPath = path.join(__dirname, 'config.json');
 const localConfigPath = path.join(__dirname, 'config.local.json');
+
+const DEFAULT_CONFIG = {
+  overlayUrl: 'https://dexter.cash/overlay/live?layout=compact',
+  display: ':99',
+  width: 1920,
+  height: 1080,
+  fps: 30,
+  videoBitrate: '5000k',
+  audioBitrate: '128k',
+};
+
+const DEFAULT_LIVEKIT_CONFIG = {
+  enableHls: false,
+  host: '',
+  apiKey: '',
+  apiSecret: '',
+  roomName: '',
+  layout: '',
+  encodingPreset: '',
+  audioOnly: false,
+  videoOnly: false,
+  customBaseUrl: '',
+  hls: {
+    playlistName: 'dextervision.m3u8',
+    filenamePrefix: 'dextervision',
+    segmentDuration: 6,
+    pathPrefix: '',
+    directory: '',
+    playbackUrl: '',
+  },
+};
+
+function normalizeLivekitConfig(base = {}, override = {}) {
+  const merged = {
+    ...DEFAULT_LIVEKIT_CONFIG,
+    ...base,
+    ...override,
+  };
+  merged.hls = {
+    ...DEFAULT_LIVEKIT_CONFIG.hls,
+    ...(base?.hls ?? {}),
+    ...(override?.hls ?? {}),
+  };
+  return merged;
+}
+
+function resolveEncodingPreset(preset) {
+  if (!preset || typeof preset !== 'string') return undefined;
+  const key = preset.trim().toUpperCase();
+  if (Object.prototype.hasOwnProperty.call(EncodingOptionsPreset, key)) {
+    return EncodingOptionsPreset[key];
+  }
+  return undefined;
+}
+
+async function startLivekitHlsEgress(livekitConfig) {
+  if (!livekitConfig?.enableHls) return null;
+  const required = ['host', 'apiKey', 'apiSecret', 'roomName'];
+  const missing = required.filter((key) => !livekitConfig[key]);
+  if (missing.length) {
+    console.warn('[dexter-stream] skipping HLS egress (missing config keys:', missing.join(', '), ')');
+    return null;
+  }
+
+  const client = new EgressClient(livekitConfig.host, livekitConfig.apiKey, livekitConfig.apiSecret);
+
+  const output = {
+    protocol: SegmentedFileProtocol.HLS_PROTOCOL,
+    playlistName: livekitConfig.hls.playlistName,
+    filenamePrefix: livekitConfig.hls.filenamePrefix,
+    segmentDuration: livekitConfig.hls.segmentDuration,
+  };
+  if (livekitConfig.hls.pathPrefix) output.pathPrefix = livekitConfig.hls.pathPrefix;
+  if (livekitConfig.hls.directory) output.directory = livekitConfig.hls.directory;
+
+  const opts = {
+    layout: livekitConfig.layout || undefined,
+    encodingOptions: resolveEncodingPreset(livekitConfig.encodingPreset),
+    audioOnly: livekitConfig.audioOnly,
+    videoOnly: livekitConfig.videoOnly,
+    customBaseUrl: livekitConfig.customBaseUrl || undefined,
+  };
+
+  try {
+    const info = await client.startRoomCompositeEgress(livekitConfig.roomName, output, opts);
+    const playlistUrl = livekitConfig.hls.playbackUrl || info?.hls?.playlistUrl || '';
+    const streamUrl = info?.hls?.streamUrl || '';
+    return {
+      client,
+      egressId: info?.egressId || null,
+      playlistUrl,
+      streamUrl,
+    };
+  } catch (error) {
+    console.error('[dexter-stream] failed to start LiveKit HLS egress', error);
+    return null;
+  }
+}
 
 async function loadConfig() {
   let baseConfig = {};
@@ -26,17 +127,18 @@ async function loadConfig() {
     if (error.code !== 'ENOENT') throw error;
   }
 
+  const baseLivekit = baseConfig?.livekit;
+  const localLivekit = localConfig?.livekit;
+  delete baseConfig.livekit;
+  delete localConfig.livekit;
+
   const merged = {
-    overlayUrl: 'https://dexter.cash/overlay/live?layout=compact',
-    display: ':99',
-    width: 1920,
-    height: 1080,
-    fps: 30,
-    videoBitrate: '5000k',
-    audioBitrate: '128k',
+    ...DEFAULT_CONFIG,
     ...baseConfig,
     ...localConfig,
   };
+
+  merged.livekit = normalizeLivekitConfig(baseLivekit, localLivekit);
 
   const rtmpUrl = merged.rtmpUrl
     ? merged.rtmpUrl
@@ -233,6 +335,27 @@ async function main() {
       ffmpeg.kill('SIGTERM');
     } catch {}
   });
+
+  let hlsHandle = null;
+  try {
+    hlsHandle = await startLivekitHlsEgress(config.livekit);
+    if (hlsHandle?.egressId && hlsHandle.client) {
+      cleanupTasks.push(async () => {
+        try {
+          await hlsHandle.client.stopEgress(hlsHandle.egressId);
+        } catch (error) {
+          console.error('[dexter-stream] failed to stop HLS egress', error);
+        }
+      });
+    }
+    if (hlsHandle?.playlistUrl) {
+      console.log(`[dexter-stream] 🎯 HLS playlist → ${hlsHandle.playlistUrl}`);
+    } else if (config.livekit?.enableHls) {
+      console.log('[dexter-stream] 🎯 HLS egress requested (playlist URL pending)');
+    }
+  } catch (error) {
+    console.error('[dexter-stream] HLS egress error', error);
+  }
 
   const safeRtmp = (() => {
     if (config.rtmpBase) return `${String(config.rtmpBase).replace(/\/$/, '')}/•••`;

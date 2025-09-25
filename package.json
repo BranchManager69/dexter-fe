@@ -18,6 +18,7 @@
     "@openai/agents": "^0.1.0",
     "@openai/agents-realtime": "^0.1.0",
     "@supabase/supabase-js": "^2.45.1",
+    "livekit-server-sdk": "^1.2.7",
     "next": "^15.0.0-canary",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
