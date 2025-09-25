@@ -101,21 +101,19 @@ textarea {
   width: 100%;
   margin: 0;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 32px;
-  padding: 14px 32px;
+  flex-direction: column;
+  gap: 18px;
+  padding: 16px 32px;
 }
 
-.site-header__cluster {
+.site-header__top {
   display: flex;
   align-items: center;
-  gap: 24px;
+  gap: 18px;
 }
 
-.site-header__cluster--actions {
+.site-header__top > .account-menu {
   margin-left: auto;
-  gap: 18px;
 }
 
 .site-header__brand {
@@ -159,14 +157,9 @@ textarea {
   color: rgba(198, 205, 233, 0.68);
 }
 
-.site-header__divider {
-  width: 1px;
-  height: 36px;
-  background: radial-gradient(circle, rgba(123, 139, 255, 0.6) 0%, rgba(123, 139, 255, 0.08) 70%, transparent 100%);
-}
 
-.site-header__nav {
-  display: inline-flex;
+.site-header__nav-row {
+  display: flex;
   align-items: center;
   gap: 10px;
   flex-wrap: wrap;
@@ -216,6 +209,7 @@ textarea {
   border: 1px solid rgba(114, 242, 175, 0.42);
   color: #eafff4;
   transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+  margin-left: auto;
 }
 
 .site-header__launch:hover,
@@ -1060,59 +1054,40 @@ textarea {
 
 @media (max-width: 720px) {
   .site-header__inner {
-    flex-direction: row;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 12px;
-    padding: 16px 20px;
+    padding: 14px 20px;
+    gap: 14px;
   }
 
-  .site-header__cluster {
-    flex: 1 1 auto;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 12px;
-    min-width: 0;
-  }
-
-  .site-header__cluster--actions {
-    flex: 0 0 auto;
-    justify-content: flex-end;
-    gap: 10px;
-  }
-
-  .site-header__nav {
+  .site-header__top {
     width: 100%;
-    justify-content: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .site-header__brand-tagline {
+    display: none;
+  }
+
+  .site-header__nav-row {
+    width: 100%;
     gap: 8px;
     overflow-x: auto;
     padding-bottom: 4px;
   }
 
-  .site-header__nav::-webkit-scrollbar {
+  .site-header__nav-row::-webkit-scrollbar {
     display: none;
   }
 
   .site-header__launch {
-    flex: 0 0 auto;
-    justify-content: center;
-    white-space: nowrap;
     padding-left: 16px;
     padding-right: 16px;
-  }
-
-  .account-menu {
     flex: 0 0 auto;
   }
 
   .account-menu__dropdown {
     right: 50%;
     transform: translateX(50%);
-  }
-
-  .site-header__divider,
-  .site-header__brand-tagline {
-    display: none;
   }
 
   .main-content {

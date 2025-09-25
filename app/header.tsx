@@ -170,7 +170,7 @@ export function Header() {
   return (
     <header className="site-header">
       <div className="site-header__inner">
-        <div className="site-header__cluster">
+        <div className="site-header__top">
           <Link href="/" className="site-header__brand" aria-label="Dexter home">
             <span className="site-header__brand-logo">
               <Image src="/assets/logos/logo_orange.png" alt="Dexter" width={36} height={36} priority />
@@ -179,38 +179,6 @@ export function Header() {
               <span className="site-header__brand-name">Dexter</span>
               <span className="site-header__brand-tagline">Realtime Agents for DeFi</span>
             </span>
-          </Link>
-          <span className="site-header__divider" aria-hidden="true" />
-          <nav className="site-header__nav" aria-label="Primary">
-            {SITE.navigation.map((item) =>
-              item.external ? (
-                <a
-                  key={item.href}
-                  href={item.href}
-                  className={navClass(item.href, true)}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  {item.label}
-                </a>
-              ) : (
-                <Link key={item.href} href={item.href} className={navClass(item.href)}>
-                  {item.label}
-                </Link>
-              )
-            )}
-          </nav>
-        </div>
-
-        <div className="site-header__cluster site-header__cluster--actions">
-          <Link
-            href="https://beta.dexter.cash"
-            className="site-header__launch"
-            target="_blank"
-            rel="noreferrer"
-            prefetch={false}
-          >
-            Launch Dexter
           </Link>
 
           <div className="account-menu" ref={accountRef}>
@@ -333,6 +301,35 @@ export function Header() {
             )}
           </div>
         </div>
+
+        <nav className="site-header__nav-row" aria-label="Primary">
+          {SITE.navigation.map((item) =>
+            item.external ? (
+              <a
+                key={item.href}
+                href={item.href}
+                className={navClass(item.href, true)}
+                target="_blank"
+                rel="noreferrer"
+              >
+                {item.label}
+              </a>
+            ) : (
+              <Link key={item.href} href={item.href} className={navClass(item.href)}>
+                {item.label}
+              </Link>
+            )
+          )}
+          <Link
+            href="https://beta.dexter.cash"
+            className="site-header__launch"
+            target="_blank"
+            rel="noreferrer"
+            prefetch={false}
+          >
+            Launch Dexter
+          </Link>
+        </nav>
       </div>
     </header>
   );
