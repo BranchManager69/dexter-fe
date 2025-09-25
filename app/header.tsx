@@ -61,11 +61,32 @@ export function Header() {
     return `site-header__nav-link${active ? ' site-header__nav-link--active' : ''}`;
   };
 
-  const accountLabel = loading
-    ? 'Checking…'
-    : session?.user?.email ?? 'Guest';
+  const deriveAccountLabel = () => {
+    if (loading) return 'Checking…';
+    const user = session?.user;
+    if (!user) return 'Guest';
+    const displayName = (user.user_metadata as any)?.full_name as string | undefined;
+    if (displayName && displayName.trim()) return displayName.trim();
+    const email = user.email;
+    if (email && email.includes('@')) return email.split('@')[0];
+    if (email) return email;
+    return 'Guest';
+  };
 
-  const initials = (session?.user?.email || 'Dexter')[0]?.toUpperCase() ?? 'D';
+  const accountLabel = deriveAccountLabel();
+
+  const initialsSource = (() => {
+    if (session?.user?.user_metadata && (session.user.user_metadata as any)?.full_name) {
+      return ((session.user.user_metadata as any).full_name as string).
+        split(' ')
+        .filter(Boolean)
+        .map((chunk) => chunk[0])
+        .join('');
+    }
+    return session?.user?.email || 'Dexter';
+  })();
+
+  const initials = initialsSource[0]?.toUpperCase() ?? 'D';
 
   const handleSendMagicLink = async () => {
     if (!email.trim()) {

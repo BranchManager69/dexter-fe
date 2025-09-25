@@ -1092,9 +1092,9 @@ textarea {
   }
 
   .site-header__launch {
-    flex: 1 1 auto;
+    flex: 0 0 auto;
     justify-content: center;
-    min-width: 0;
+    white-space: nowrap;
   }
 
   .account-menu {
