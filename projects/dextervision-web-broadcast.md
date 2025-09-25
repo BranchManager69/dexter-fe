@@ -1,41 +1,50 @@
 # DexterVision Web Broadcast
 
-## Goal
-Deliver a public, always-on DexterVision player on the Dexter FE homepage that mirrors the OBS overlay with minimal ops overhead.
+## Roadmap Overview
+1. **Phase 0 – Foundations**
+   - Shared scene state (`dextervision/scene-state.json`) and `/stream/scene` endpoints in dexter-api (done).
+   - OBS-style runner in `dexter-fe/scripts/dexter-stream/` with PM2 scripts (done).
+   - Overlay UI available for Playwright/FFmpeg capture (done).
 
-## Output Criteria
-- LiveKit produces an HLS playlist (`.m3u8`) accessible via HTTPS for browser playback.
-- Dexter FE renders a responsive video module that autoplays the HLS feed with a live scene badge (On Air / Standby / Game Show) and fallback messaging when offline.
-- Stream runner keeps the OBS RTMP feed intact while optionally pushing the same scene to the HLS output.
+2. **Phase 1 – HLS Broadcast (current focus)**
+   - Enable LiveKit HLS egress and capture the public `.m3u8` URL.
+   - Update the stream runner to trigger HLS alongside the existing RTMP feed, logging a clear “HLS ✅” when publishing.
+   - Build a `<DexterVisionPlayer />` that autoplays the HLS feed, displays scene badges via `/stream/scene`, and falls back to an offline slate.
+   - Wire the player into the homepage (or dedicated route) behind a feature flag; add lightweight viewer/error telemetry.
+   - Document build/restart steps (`npm run build`, `pm2 restart dexter-stream --update-env`) and add a simple `.m3u8` health probe.
 
-## Task List
+3. **Phase 2 – Enhancements**
+   - Scheduled scene playlists and nightly standby slates driven by a JSON schedule.
+   - Scene-aware Ops dashboard plus viewer metrics (count, error rate, scene history).
+   - Optional alternate tickers/headlines or highlight capture for marketing snapshots.
+
+4. **Phase 3 – WebRTC Upgrade (low-latency future)**
+   - Publish the stream into a LiveKit Room (WebRTC ingress) while retaining HLS as fallback.
+   - Add a dexter-api token endpoint for viewer auth; integrate LiveKit’s React player for sub-second latency.
+   - Layer on interactive features (chat, buzz-in, invite-to-stage) once the room path is stable.
+
+## Phase 1 Task List
 1. **Enable LiveKit HLS egress**
-   - Confirm the LiveKit project tier supports HLS output.
-   - Generate or note the public HLS playback URL (may require enabling the egress hook or API call).
-   - Document any auth tokens/headers needed.
-2. **Update stream runner (dexter-fe/scripts/dexter-stream)**
-   - Add config fields for an optional HLS target or reuse the existing LiveKit credentials.
-   - Ensure the Playwright/FFmpeg pipeline can publish both OBS RTMP and HLS (sequentially or via LiveKit dual-output).
-   - Emit a success log when HLS publishing is active.
-3. **Frontend player component**
-   - Add a reusable `<DexterVisionPlayer />` that mounts `hls.js` when the browser lacks native HLS.
-   - Autoplay + mute by default, with a styled fallback slate for “stream offline.”
-   - Read `/stream/scene` (or `dextervision/scene-state.json`) to display a live status badge and timestamp.
-   - Embed on the Dexter FE landing page (or a dedicated DexterVision route) behind a feature flag.
+   - Confirm LiveKit project tier supports HLS.
+   - Enable egress via console/API and record the playback URL plus any access controls.
+2. **Update stream runner**
+   - Extend `config.*` with optional HLS settings (room name, API key, etc.).
+   - Trigger HLS egress at startup and log success alongside the RTMP announcement.
+3. **Frontend player**
+   - Implement `<DexterVisionPlayer />` with `hls.js` fallback, autoplay muted, and scene badge driven by `/stream/scene`.
+   - Show an “offline” slate when the playlist fails; emit basic telemetry events.
+   - Embed on the homepage or dedicated route behind a feature flag.
 4. **Configuration & secrets**
-   - Introduce environment variables for the HLS playlist URL (e.g., `NEXT_PUBLIC_DEXTERVISION_HLS_URL`).
-   - Update `.env.example`, onboarding docs, and the README to mention the new config.
+   - Add `NEXT_PUBLIC_DEXTERVISION_HLS_URL` (and any related LiveKit settings) to `.env.example`.
+   - Update docs/onboarding with the HLS setup steps.
 5. **Operations & monitoring**
-   - Extend the runbook with instructions for restarting the stream runner and verifying HLS playback.
-   - Add a lightweight health probe (e.g., HEAD request to `.m3u8`) to alert if the feed is stale.
-   - Capture basic viewer metrics (session count, playback errors) for Ops dashboards.
+   - Document PM2 restart expectations and HLS health checks.
+   - Add a periodic probe (curl/HEAD) and basic viewer metrics collection.
 
 ## Considerations / Stretch
-- Scheduled scene playlists (e.g., cron-driven standby → live transitions, rotating channels) once streaming basics land.
-- Alternate lower-third / ticker content (AI headlines, pumpstream deltas) after the core layout ships.
-- highlight capture: auto-save still frames or short clips for marketing snapshots.
-- If near-real-time latency becomes critical, revisit a WebRTC viewer using LiveKit’s React SDK after HLS launch.
-- Reuse the scene-switch JSON (`dextervision/scene-state.json`) to display current scene status alongside the video.
+- Alternate lower-third/ticker content after the core layout ships.
+- Automated highlight capture (stills or short clips) for marketing.
+- WebRTC path can be layered on later without ditching the HLS work.
 
 ## Estimated Effort
-~½ day once the FE repo is clear (mix of LiveKit config, runner tweak, and frontend module work).
+~½ day for Phase 1 once dexter-fe is free (LiveKit config + runner tweak + frontend module). Subsequent phases build incrementally on the same foundation.
