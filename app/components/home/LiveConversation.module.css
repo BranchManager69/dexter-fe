@@ -1,0 +1,132 @@
+.wrapper {
+  display: grid;
+  gap: var(--space-6);
+}
+
+.intro {
+  display: grid;
+  gap: var(--space-3);
+  max-width: none;
+}
+
+.intro h2 {
+  margin: 0;
+  font-size: clamp(1.9rem, 1vw + 1.6rem, 2.45rem);
+  line-height: 1.02;
+  white-space: nowrap;
+}
+
+.feed {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  position: relative;
+}
+
+.bubble {
+  --bubble-bg: rgba(10, 14, 28, 0.92);
+  --bubble-text: var(--color-text-primary);
+  --bubble-label: rgba(198, 205, 233, 0.7);
+  position: relative;
+  max-width: min(72%, 520px);
+  padding: 18px 22px 20px;
+  border-radius: 24px;
+  background: var(--bubble-bg);
+  color: var(--bubble-text);
+  box-shadow: 0 22px 48px rgba(5, 8, 18, 0.42);
+  opacity: 0;
+  transform: translateY(26px) scale(0.98);
+  animation: bubbleIn 0.65s cubic-bezier(0.24, 0.82, 0.19, 1) forwards;
+}
+
+.bubble::after {
+  content: '';
+  position: absolute;
+  bottom: 4px;
+  width: 24px;
+  height: 24px;
+  pointer-events: none;
+  background: var(--bubble-bg);
+}
+
+.bubble header {
+  margin-bottom: 10px;
+  font-size: 0.72rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--bubble-label);
+}
+
+.bubble p {
+  margin: 0;
+  font-size: 1.02rem;
+  line-height: 1.54;
+}
+
+.user {
+  --bubble-bg: linear-gradient(135deg, #0b8bff 6%, #0065ff 86%);
+  --bubble-text: #ffffff;
+  --bubble-label: rgba(255, 255, 255, 0.68);
+}
+
+.user::after {
+  right: -10px;
+  clip-path: path('M0 24 C0 18 10 16 15 12 C19 9 21 5 24 0 L24 24 Z');
+}
+
+.user header span,
+.user p {
+  color: var(--bubble-text);
+}
+
+.dexter {
+  --bubble-bg: linear-gradient(135deg, #1b1f2f 4%, #212c3e 96%);
+  --bubble-text: rgba(243, 244, 246, 0.92);
+  --bubble-label: rgba(202, 206, 220, 0.72);
+}
+
+.dexter::after {
+  left: -10px;
+  clip-path: path('M24 24 C24 18 14 16 9 12 C5 9 3 5 0 0 L0 24 Z');
+}
+
+.left {
+  align-self: flex-start;
+}
+
+.right {
+  align-self: flex-end;
+}
+
+@keyframes bubbleIn {
+  0% {
+    opacity: 0;
+    transform: translateY(28px) scale(0.95);
+  }
+
+  60% {
+    opacity: 1;
+    transform: translateY(-2px) scale(1.01);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (max-width: 900px) {
+  .bubble {
+    max-width: min(78%, 480px);
+  }
+}
+
+@media (max-width: 720px) {
+  .bubble {
+    max-width: 100%;
+  }
+
+  .intro h2 {
+    white-space: normal;
+  }
+}

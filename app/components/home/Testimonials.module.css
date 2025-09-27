@@ -1,0 +1,50 @@
+.wrapper {
+  display: grid;
+  gap: var(--space-6);
+}
+
+.intro {
+  display: grid;
+  gap: var(--space-3);
+  max-width: 560px;
+}
+
+.intro h2 {
+  margin: 0;
+  font-size: clamp(1.9rem, 2.2vw + 1rem, 2.6rem);
+  line-height: 1.08;
+}
+
+.grid {
+  display: grid;
+  gap: var(--space-5);
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+.card {
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border-muted);
+  background: rgba(9, 12, 26, 0.88);
+  padding: var(--space-5);
+  display: grid;
+  gap: var(--space-4);
+  box-shadow: var(--shadow-soft);
+}
+
+.card blockquote {
+  margin: 0;
+  font-size: 1.02rem;
+  line-height: 1.7;
+  color: rgba(233, 237, 255, 0.88);
+}
+
+.name {
+  font-weight: 600;
+}
+
+.role {
+  color: var(--color-text-secondary);
+  font-size: 0.82rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}

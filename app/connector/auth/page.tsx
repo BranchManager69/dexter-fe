@@ -112,6 +112,8 @@ function ConnectorAuthContent() {
           body: JSON.stringify({
             request_id: requestId,
             refresh_token: refreshToken,
+            access_token: workingSession?.access_token ?? null,
+            supabase_user_id: workingSession?.user?.id ?? null,
           }),
         });
         if (!resp.ok) {

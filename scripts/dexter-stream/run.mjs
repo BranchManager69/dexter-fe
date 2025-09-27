@@ -5,7 +5,15 @@ import path from 'node:path';
 import { chromium } from 'playwright';
 import livekitSdk from 'livekit-server-sdk';
 
-const { EgressClient, SegmentedFileProtocol, EncodingOptionsPreset } = livekitSdk;
+const {
+  EgressClient,
+  SegmentedFileProtocol,
+  EncodingOptionsPreset,
+  IngressClient,
+  IngressInput,
+  IngressVideoEncodingPreset,
+  IngressAudioEncodingPreset,
+} = livekitSdk;
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -27,7 +35,7 @@ const DEFAULT_LIVEKIT_CONFIG = {
   host: '',
   apiKey: '',
   apiSecret: '',
-  roomName: '',
+  roomName: 'dextervision',
   layout: '',
   encodingPreset: '',
   audioOnly: false,
@@ -40,6 +48,12 @@ const DEFAULT_LIVEKIT_CONFIG = {
     pathPrefix: '',
     directory: '',
     playbackUrl: '',
+  },
+  ingress: {
+    name: 'DexterVision OBS',
+    participantIdentity: 'dextervision-broadcast',
+    participantName: 'DexterVision Broadcast',
+    videoPreset: 'H264_1080P_30FPS_1_LAYER',
   },
 };
 
@@ -54,6 +68,11 @@ function normalizeLivekitConfig(base = {}, override = {}) {
     ...(base?.hls ?? {}),
     ...(override?.hls ?? {}),
   };
+  merged.ingress = {
+    ...DEFAULT_LIVEKIT_CONFIG.ingress,
+    ...(base?.ingress ?? {}),
+    ...(override?.ingress ?? {}),
+  };
   return merged;
 }
 
@@ -64,6 +83,22 @@ function resolveEncodingPreset(preset) {
     return EncodingOptionsPreset[key];
   }
   return undefined;
+}
+
+function resolveIngressVideoPreset(preset) {
+  if (!preset || typeof preset !== 'string') return undefined;
+  const key = preset.trim().toUpperCase();
+  if (Object.prototype.hasOwnProperty.call(IngressVideoEncodingPreset, key)) {
+    return IngressVideoEncodingPreset[key];
+  }
+  return undefined;
+}
+
+function safeJoinUrl(base, suffix) {
+  if (!base) return suffix;
+  const normalizedBase = base.endsWith('/') ? base.slice(0, -1) : base;
+  const normalizedSuffix = suffix.startsWith('/') ? suffix.slice(1) : suffix;
+  return `${normalizedBase}/${normalizedSuffix}`;
 }
 
 async function startLivekitHlsEgress(livekitConfig) {
@@ -106,6 +141,65 @@ async function startLivekitHlsEgress(livekitConfig) {
     };
   } catch (error) {
     console.error('[dexter-stream] failed to start LiveKit HLS egress', error);
+    throw error;
+  }
+}
+
+async function ensureLivekitIngress(livekitConfig) {
+  if (!livekitConfig?.enableHls) return null;
+  const required = ['host', 'apiKey', 'apiSecret'];
+  const missing = required.filter((key) => !livekitConfig[key]);
+  if (missing.length) {
+    console.warn('[dexter-stream] skipping LiveKit ingress (missing config keys:', missing.join(', '), ')');
+    return null;
+  }
+
+  const client = new IngressClient(livekitConfig.host, livekitConfig.apiKey, livekitConfig.apiSecret);
+  try {
+    const targetIdentity = livekitConfig.ingress?.participantIdentity || 'dextervision-broadcast';
+    const list = await client.listIngress({ roomName: livekitConfig.roomName });
+    let ingressInfo = list?.find((info) => info?.participantIdentity === targetIdentity);
+
+    const createIngress = async () => {
+      const createOpts = {
+        name: livekitConfig.ingress?.name || 'DexterVision OBS',
+        roomName: livekitConfig.roomName,
+        participantIdentity: targetIdentity,
+        participantName: livekitConfig.ingress?.participantName || 'DexterVision Broadcast',
+      };
+
+      const videoPreset = resolveIngressVideoPreset(livekitConfig.ingress?.videoPreset);
+      if (videoPreset !== undefined) {
+        createOpts.video = { preset: videoPreset };
+      }
+
+      const created = await client.createIngress(IngressInput.RTMP_INPUT, createOpts);
+      console.log('[dexter-stream] created LiveKit ingress', created?.ingressId || '');
+      return created;
+    };
+
+    if (!ingressInfo) {
+      ingressInfo = await createIngress();
+    } else if (!ingressInfo?.url) {
+      console.warn('[dexter-stream] ingress missing push URL, recreating');
+      if (ingressInfo.ingressId) {
+        try {
+          await client.deleteIngress(ingressInfo.ingressId);
+        } catch (deleteError) {
+          console.error('[dexter-stream] failed to delete stale ingress', deleteError);
+        }
+      }
+      ingressInfo = await createIngress();
+    }
+
+    if (!ingressInfo?.url) {
+      console.warn('[dexter-stream] ingress is still missing push URL after recreation');
+      return { client, ingressInfo: null };
+    }
+
+    return { client, ingressInfo };
+  } catch (error) {
+    console.error('[dexter-stream] failed to prepare LiveKit ingress', error);
     return null;
   }
 }
@@ -321,9 +415,40 @@ async function main() {
     '-ar', '44100',
     '-ac', '2',
     '-shortest',
-    '-f', 'flv',
-    config.rtmpUrl,
   ];
+
+  const livekitIngress = await ensureLivekitIngress(config.livekit);
+
+  const teeOutputs = [];
+  const safeOutputs = [];
+
+  const maskUrl = (rawUrl) => rawUrl.replace(/\/(?!.*\/).*/, '/•••');
+
+  ffmpegArgs.push('-map', '0:v:0', '-map', '1:a:0');
+
+  if (config.rtmpUrl) {
+    teeOutputs.push(`[f=flv:onfail=ignore]${config.rtmpUrl}`);
+    safeOutputs.push(`${maskUrl(config.rtmpUrl)} (pump)`);
+  }
+
+  if (livekitIngress?.ingressInfo?.url) {
+    const ingestUrl = livekitIngress.ingressInfo.url;
+    const streamKey = livekitIngress.ingressInfo.streamKey || '';
+    const fullIngestUrl = streamKey ? safeJoinUrl(ingestUrl, streamKey) : ingestUrl;
+    teeOutputs.push(`[f=flv:onfail=ignore]${fullIngestUrl}`);
+    safeOutputs.push(`${maskUrl(fullIngestUrl)} (livekit)`);
+  }
+
+  if (!teeOutputs.length) {
+    throw new Error('No streaming destinations configured');
+  }
+
+  if (teeOutputs.length === 1) {
+    const single = teeOutputs[0].replace('[f=flv]', '');
+    ffmpegArgs.push('-f', 'flv', single);
+  } else {
+    ffmpegArgs.push('-f', 'tee', teeOutputs.join('|'));
+  }
 
   const ffmpeg = spawnProcess('ffmpeg', ffmpegArgs, {
     env: { ...process.env },
@@ -337,27 +462,43 @@ async function main() {
   });
 
   let hlsHandle = null;
-  try {
-    hlsHandle = await startLivekitHlsEgress(config.livekit);
-    if (hlsHandle?.egressId && hlsHandle.client) {
-      cleanupTasks.push(async () => {
-        try {
-          await hlsHandle.client.stopEgress(hlsHandle.egressId);
-        } catch (error) {
-          console.error('[dexter-stream] failed to stop HLS egress', error);
-        }
-      });
+  const requestHlsEgress = async (attempt = 0) => {
+    const scheduleRetry = (reason) => {
+      const delay = Math.min(15000, 2000 * (attempt + 1));
+      console.warn('[dexter-stream] HLS egress retry', reason, `retrying in ${delay}ms`);
+      setTimeout(() => requestHlsEgress(attempt + 1), delay).unref?.();
+    };
+
+    try {
+      hlsHandle = await startLivekitHlsEgress(config.livekit);
+      if (hlsHandle?.egressId && hlsHandle.client) {
+        cleanupTasks.push(async () => {
+          try {
+            await hlsHandle.client.stopEgress(hlsHandle.egressId);
+          } catch (error) {
+            console.error('[dexter-stream] failed to stop HLS egress', error);
+          }
+        });
+      }
+      if (hlsHandle?.playlistUrl) {
+        console.log(`[dexter-stream] 🎯 HLS playlist → ${hlsHandle.playlistUrl}`);
+      } else if (config.livekit?.enableHls) {
+        console.log('[dexter-stream] 🎯 HLS egress requested (playlist URL pending)');
+        scheduleRetry('playlist pending');
+      }
+    } catch (error) {
+      if (config.livekit?.enableHls) {
+        scheduleRetry(error?.message || error);
+      }
     }
-    if (hlsHandle?.playlistUrl) {
-      console.log(`[dexter-stream] 🎯 HLS playlist → ${hlsHandle.playlistUrl}`);
-    } else if (config.livekit?.enableHls) {
-      console.log('[dexter-stream] 🎯 HLS egress requested (playlist URL pending)');
-    }
-  } catch (error) {
-    console.error('[dexter-stream] HLS egress error', error);
+  };
+
+  if (config.livekit?.enableHls) {
+    setTimeout(() => requestHlsEgress(0), 5000).unref?.();
   }
 
   const safeRtmp = (() => {
+    if (safeOutputs.length) return safeOutputs.join(', ');
     if (config.rtmpBase) return `${String(config.rtmpBase).replace(/\/$/, '')}/•••`;
     const idx = config.rtmpUrl.lastIndexOf('/');
     return idx > -1 ? `${config.rtmpUrl.slice(0, idx)}/•••` : 'rtmp://•••';

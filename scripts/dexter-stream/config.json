@@ -26,6 +26,12 @@
       "pathPrefix": "",
       "directory": "",
       "playbackUrl": ""
+    },
+    "ingress": {
+      "name": "DexterVision OBS",
+      "participantIdentity": "dextervision-broadcast",
+      "participantName": "DexterVision Broadcast",
+      "videoPreset": "H264_1080P_30FPS_1_LAYER"
     }
   }
 }

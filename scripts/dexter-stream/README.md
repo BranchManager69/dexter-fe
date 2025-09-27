@@ -15,9 +15,14 @@ Automates a headless 24/7 overlay stream by launching Xvfb, Chromium (Playwright
    cp scripts/dexter-stream/config.template.json scripts/dexter-stream/config.local.json
    ```
    - Edit the new `config.local.json` and set either `rtmpUrl`, or `rtmpBase` + `streamKey`.
-   - To enable HLS egress, flip `livekit.enableHls` to `true` and supply your LiveKit `host`, API credentials, `roomName`, and preferred playlist options. The runner will start a room-composite egress and log the playlist URL.
+   - To enable HLS egress, flip `livekit.enableHls` to `true` and supply your LiveKit `host`, API credentials, `roomName`, and preferred playlist options. The runner will auto-create an RTMP ingress for the broadcast, mirror the stream to LiveKit, then start a room-composite egress and log the playlist URL.
    - `config.json` stays in git with placeholders for reference; `config.local.json` (ignored) carries real secrets.
    - Adjust other fields (layout, fps, bitrate) only if you know you need to.
+
+   **LiveKit prerequisites**
+   - The self-hosted LiveKit node must be configured with Redis and an `ingress.rtmp_base_url` (for example `rtmp://127.0.0.1:1935/live`) so the `CreateIngress` RPC returns a push URL and key.
+   - Run the standalone [`livekit-ingress`](https://github.com/livekit/ingress) worker alongside the server; it listens on the RTMP port, persists state in the same Redis instance, and is what FFmpeg actually connects to. Without it the runner will keep retrying the HLS egress because no room ever receives the mirrored stream.
+   - When LiveKit or the ingress worker are offline the tee pipeline continues streaming to the primary RTMP endpoint thanks to `onfail=ignore`.
 
 ## Usage
 
