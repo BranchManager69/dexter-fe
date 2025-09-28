@@ -3,17 +3,24 @@ import { NextResponse } from 'next/server';
 const API_ORIGIN = (process.env.NEXT_PUBLIC_API_ORIGIN || process.env.DEXTER_API_ORIGIN || 'https://api.dexter.cash').replace(/\/$/, '');
 const HEALTH_TOKEN = process.env.HEALTH_PROBE_TOKEN || '';
 
-export async function POST() {
+export async function POST(request: Request) {
   if (!HEALTH_TOKEN) {
     return NextResponse.json({ ok: false, error: 'HEALTH_PROBE_TOKEN not configured' }, { status: 503 });
   }
 
   try {
+    const headers: Record<string, string> = {
+      'X-Health-Token': HEALTH_TOKEN,
+    };
+
+    const authHeader = request.headers.get('authorization') || request.headers.get('Authorization');
+    if (authHeader) {
+      headers['Authorization'] = authHeader;
+    }
+
     const upstream = await fetch(`${API_ORIGIN}/api/health/full`, {
       method: 'POST',
-      headers: {
-        'X-Health-Token': HEALTH_TOKEN,
-      },
+      headers,
       cache: 'no-store',
     });
 

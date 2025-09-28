@@ -37,6 +37,8 @@ const CONNECTOR_LABELS: Record<string, string> = {
   claude: 'Claude Connector',
 };
 
+const ADMIN_ROLES = new Set(['admin', 'superadmin']);
+
 function formatTimestamp(value: string | null | undefined) {
   if (!value) return '—';
   try {
@@ -85,50 +87,18 @@ export function HealthStatus() {
   const [runError, setRunError] = useState<string | null>(null);
   const [refreshIndex, setRefreshIndex] = useState(0);
 
-  const adminEmailSet = useMemo(() => {
-    const raw = process.env.NEXT_PUBLIC_HEALTH_ADMIN_EMAILS || '';
-    return new Set(
-      raw
-        .split(',')
-        .map(entry => entry.trim().toLowerCase())
-        .filter(Boolean)
-    );
-  }, []);
-
   const isAdmin = useMemo(() => {
     const user = session?.user;
     if (!user) return false;
-
-    const email = user.email?.toLowerCase() ?? '';
-    if (email && adminEmailSet.has(email)) return true;
-
-    const userMeta: any = user.user_metadata || {};
     const appMeta: any = user.app_metadata || {};
-
-    const flags = [
-      userMeta.admin,
-      userMeta.is_admin,
-      appMeta.admin,
-      appMeta.is_admin,
-    ];
-    if (flags.some(Boolean)) return true;
-
-    const collectRoles = (value: unknown): string[] => {
-      if (!value) return [];
-      if (Array.isArray(value)) return value.map(String);
-      if (typeof value === 'string') return [value];
-      return [];
-    };
-
-    const roles = new Set<string>([
-      ...collectRoles(userMeta.roles),
-      ...collectRoles(appMeta.roles),
-    ].map(role => role.toLowerCase()));
-
-    if (roles.has('admin') || roles.has('superadmin')) return true;
-
-    return false;
-  }, [session, adminEmailSet]);
+    const rawRoles = appMeta.roles;
+    const roles: string[] = Array.isArray(rawRoles)
+      ? rawRoles.map((role: unknown) => String(role).toLowerCase())
+      : typeof rawRoles === 'string'
+        ? [rawRoles.toLowerCase()]
+        : [];
+    return roles.some(role => ADMIN_ROLES.has(role));
+  }, [session]);
 
   const loadSnapshot = useCallback(async () => {
     try {
@@ -197,8 +167,16 @@ export function HealthStatus() {
     try {
       setRunning(true);
       setRunError(null);
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+      if (session?.access_token) {
+        headers['Authorization'] = `Bearer ${session.access_token}`;
+      }
+
       const response = await fetch('/health/run', {
         method: 'POST',
+        headers,
         cache: 'no-store',
         credentials: 'include',
       });
