@@ -3,6 +3,7 @@ node_modules/
 .DS_Store
 .env*
 !**/.env.sample
+!**/.env.production.example
 examples/openai-realtime-agents/.env
 screenshots/
 scripts/dexter-stream/config.local.json
