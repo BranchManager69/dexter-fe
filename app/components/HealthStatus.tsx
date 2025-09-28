@@ -86,7 +86,7 @@ export function HealthStatus() {
     try {
       setLoading(true);
       setError(null);
-      const response = await fetch('/health/deep', {
+      const response = await fetch(`/api/health/deep?ts=${Date.now()}`, {
         cache: 'no-store',
         credentials: 'include',
       });
@@ -97,7 +97,7 @@ export function HealthStatus() {
           return;
         }
         const text = await response.text();
-        throw new Error(`${response.status} ${response.statusText}: ${text.slice(0, 200)}`);
+        throw new Error(`${response.status} ${response.statusText} — ${text.slice(0, 200)}`);
       }
       const data: DeepResponse = await response.json();
       const nextSnapshot = data.snapshot ?? (data as unknown as DeepSnapshot);
