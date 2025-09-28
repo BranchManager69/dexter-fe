@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState, type CSSProperties } from 'react';
 import { useAuth } from '../auth-context';
 import { Collapsible } from '../components/Collapsible';
+import { HealthStatus } from '../components/HealthStatus';
 
 type McpTool = {
   name?: string;
@@ -411,6 +412,7 @@ export default function ToolsPage() {
 
   return (
     <div>
+      <HealthStatus />
       <section className="catalog-hero" style={heroContainerStyle}>
         <div className="catalog-hero__top" style={{ display: 'flex', gap: 24, flexWrap: 'wrap', alignItems: 'flex-start' }}>
           <div className="catalog-hero__intro" style={{ flex: '1 1 360px', minWidth: 280, display: 'flex', flexDirection: 'column', gap: 12 }}>
