@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useAuth } from '../auth-context';
 
 type ConnectorStatus = {
   ok: boolean;
@@ -54,7 +55,6 @@ function formatTimestamp(value: string | null | undefined) {
 
 function formatDuration(ms?: number | null) {
   if (typeof ms !== 'number' || Number.isNaN(ms)) return '—';
-  if (ms < 1000) return `${ms} ms`;
   return `${(ms / 1000).toFixed(2)} s`;
 }
 
@@ -77,10 +77,58 @@ function StatusLight({ ok }: { ok: boolean }) {
 }
 
 export function HealthStatus() {
+  const { session } = useAuth();
   const [snapshot, setSnapshot] = useState<DeepSnapshot | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [running, setRunning] = useState(false);
+  const [runError, setRunError] = useState<string | null>(null);
   const [refreshIndex, setRefreshIndex] = useState(0);
+
+  const adminEmailSet = useMemo(() => {
+    const raw = process.env.NEXT_PUBLIC_HEALTH_ADMIN_EMAILS || '';
+    return new Set(
+      raw
+        .split(',')
+        .map(entry => entry.trim().toLowerCase())
+        .filter(Boolean)
+    );
+  }, []);
+
+  const isAdmin = useMemo(() => {
+    const user = session?.user;
+    if (!user) return false;
+
+    const email = user.email?.toLowerCase() ?? '';
+    if (email && adminEmailSet.has(email)) return true;
+
+    const userMeta: any = user.user_metadata || {};
+    const appMeta: any = user.app_metadata || {};
+
+    const flags = [
+      userMeta.admin,
+      userMeta.is_admin,
+      appMeta.admin,
+      appMeta.is_admin,
+    ];
+    if (flags.some(Boolean)) return true;
+
+    const collectRoles = (value: unknown): string[] => {
+      if (!value) return [];
+      if (Array.isArray(value)) return value.map(String);
+      if (typeof value === 'string') return [value];
+      return [];
+    };
+
+    const roles = new Set<string>([
+      ...collectRoles(userMeta.roles),
+      ...collectRoles(appMeta.roles),
+    ].map(role => role.toLowerCase()));
+
+    if (roles.has('admin') || roles.has('superadmin')) return true;
+
+    return false;
+  }, [session, adminEmailSet]);
 
   const loadSnapshot = useCallback(async () => {
     try {
@@ -145,6 +193,30 @@ export function HealthStatus() {
   const overallOk = snapshot?.ok ?? false;
   const lastRun = formatTimestamp(snapshot?.timestamp ?? null);
 
+  const runDeepProbe = useCallback(async () => {
+    try {
+      setRunning(true);
+      setRunError(null);
+      const response = await fetch('/health/run', {
+        method: 'POST',
+        cache: 'no-store',
+        credentials: 'include',
+      });
+      const text = await response.text();
+      if (!response.ok) {
+        throw new Error(`${response.status} ${response.statusText} — ${text.slice(0, 200)}`);
+      }
+      const data: DeepResponse = JSON.parse(text);
+      const nextSnapshot = data.snapshot ?? (data as unknown as DeepSnapshot);
+      setSnapshot(nextSnapshot ?? null);
+      setRefreshIndex(prev => prev + 1);
+    } catch (err: any) {
+      setRunError(err?.message || 'Failed to run deep probe.');
+    } finally {
+      setRunning(false);
+    }
+  }, []);
+
   return (
     <section
       style={{
@@ -173,6 +245,9 @@ export function HealthStatus() {
           <div style={{ fontSize: 12, opacity: 0.72 }}>
             Last run · <span style={{ color: '#dce5ff' }}>{lastRun}</span>
           </div>
+          {runError && (
+            <div style={{ fontSize: 11, color: '#ffd7d7' }}>{runError}</div>
+          )}
           <button
             type="button"
             onClick={() => setRefreshIndex(prev => prev + 1)}
@@ -190,6 +265,25 @@ export function HealthStatus() {
           >
             {loading ? 'Refreshing…' : 'Refresh'}
           </button>
+          {isAdmin && (
+            <button
+              type="button"
+              onClick={runDeepProbe}
+              style={{
+                padding: '8px 12px',
+                borderRadius: 10,
+                border: '1px solid rgba(114, 242, 175, 0.4)',
+                background: 'linear-gradient(135deg, rgba(114, 242, 175, 0.18), rgba(76, 189, 143, 0.14))',
+                color: '#e8fff3',
+                fontSize: 12,
+                letterSpacing: '.14em',
+                textTransform: 'uppercase',
+              }}
+              disabled={running}
+            >
+              {running ? 'Running…' : 'Run Deep Probe'}
+            </button>
+          )}
         </div>
       </header>
 
