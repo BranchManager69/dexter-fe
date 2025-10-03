@@ -18,6 +18,7 @@ export function LandingHero() {
       <div className={styles.copy}>
         <span className="eyebrow">Voice-native crypto butler</span>
         <h1>Speak, and I obey.</h1>
+        <span className={styles.tagline}>Realtime Agents for DeFi</span>
         <p>Dexter hears the command, runs the trade, pulls the intel, and leaves the receipts—no screens, no typing.</p>
         <div className={styles.actions}>
           <Link href="https://beta.dexter.cash" className="button button--primary" target="_blank" rel="noreferrer">

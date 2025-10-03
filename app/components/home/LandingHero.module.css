@@ -18,6 +18,14 @@
 }
 
 
+.tagline {
+  font-size: 0.78rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: rgba(198, 205, 233, 0.7);
+}
+
+
 .copy p {
   margin: 0;
   color: var(--color-text-secondary);
