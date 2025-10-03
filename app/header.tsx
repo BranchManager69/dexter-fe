@@ -11,14 +11,7 @@ import { resolveEmailProvider } from '../lib/emailProviders';
 import { TurnstileWidget } from './components/TurnstileWidget';
 
 export function Header() {
-  const {
-    session,
-    loading,
-    signOut,
-    sendMagicLink,
-    signInWithTwitter,
-    signInWithSolanaWallet,
-  } = useAuth();
+  const { session, loading, signOut, sendMagicLink } = useAuth();
   const pathname = usePathname();
   const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || '';
 
@@ -27,7 +20,6 @@ export function Header() {
   const [authMessage, setAuthMessage] = useState('');
   const [magicLinkBusy, setMagicLinkBusy] = useState(false);
   const [magicLinkSent, setMagicLinkSent] = useState(false);
-  const [oauthBusy, setOauthBusy] = useState<'twitter' | 'solana' | null>(null);
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const [turnstileKey, setTurnstileKey] = useState(0);
   const [turnstileVisible, setTurnstileVisible] = useState(() => Boolean(siteKey));
@@ -114,44 +106,6 @@ export function Header() {
     }
 
     setMagicLinkBusy(false);
-  };
-
-  const handleTwitterLogin = async () => {
-    setAuthMessage('');
-    if (siteKey && !captchaToken) {
-      setAuthMessage('Complete the verification challenge to continue.');
-      return;
-    }
-    setOauthBusy('twitter');
-    const result = await signInWithTwitter({ captchaToken: captchaToken || undefined });
-    if (!result.success && result.message) {
-      setAuthMessage(result.message);
-    }
-    setOauthBusy(null);
-    if (siteKey) {
-      setCaptchaToken(null);
-      setTurnstileVisible(Boolean(siteKey));
-      setTurnstileKey((key) => key + 1);
-    }
-  };
-
-  const handleSolanaLogin = async () => {
-    setAuthMessage('');
-    if (siteKey && !captchaToken) {
-      setAuthMessage('Complete the verification challenge to continue.');
-      return;
-    }
-    setOauthBusy('solana');
-    const result = await signInWithSolanaWallet({ captchaToken: captchaToken || undefined });
-    if (!result.success && result.message) {
-      setAuthMessage(result.message);
-    }
-    setOauthBusy(null);
-    if (siteKey) {
-      setCaptchaToken(null);
-      setTurnstileVisible(Boolean(siteKey));
-      setTurnstileKey((key) => key + 1);
-    }
   };
 
   const handleSignOut = async () => {
@@ -244,25 +198,6 @@ export function Header() {
                   </div>
                 ) : (
                   <>
-                    <div className="account-menu__section account-menu__section--grid">
-                      <button
-                        type="button"
-                        className="account-menu__action"
-                        onClick={handleTwitterLogin}
-                        disabled={oauthBusy !== null}
-                      >
-                        {oauthBusy === 'twitter' ? 'Starting…' : 'Continue with Twitter'}
-                      </button>
-                      <button
-                        type="button"
-                        className="account-menu__action"
-                        onClick={handleSolanaLogin}
-                        disabled={oauthBusy !== null}
-                      >
-                        {oauthBusy === 'solana' ? 'Starting…' : 'Sign in with Solana wallet'}
-                      </button>
-                    </div>
-
                     <div className="account-menu__section">
                       <label htmlFor="auth-email" className="account-menu__label-inline">Email</label>
                       <input
