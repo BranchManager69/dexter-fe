@@ -3,9 +3,9 @@
   --font-display: 'Space Grotesk', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-mono: 'JetBrains Mono', 'SFMono-Regular', 'Menlo', monospace;
   --color-bg: rgb(var(--color-background));
-  --color-bg-gradient: radial-gradient(circle at 18% 14%, rgb(var(--color-gradient-ember) / 0.32), transparent 58%),
-    radial-gradient(circle at 80% 12%, rgb(var(--color-primary-bright) / 0.24), transparent 50%),
-    radial-gradient(circle at 70% 78%, rgb(var(--color-flux) / 0.16), transparent 62%), rgb(var(--color-background));
+  --color-bg-gradient: radial-gradient(circle at 16% 14%, rgb(var(--color-gradient-warm) / 0.32), transparent 58%),
+    radial-gradient(circle at 78% 12%, rgb(var(--color-primary-bright) / 0.18), transparent 50%),
+    radial-gradient(circle at 68% 78%, rgb(var(--color-primary) / 0.12), transparent 60%), rgb(var(--color-background));
   --color-surface: rgb(var(--color-surface-base) / 0.88);
   --color-surface-elevated: rgb(var(--color-surface-raised) / 0.94);
   --color-surface-glass: rgb(var(--color-surface-glass) / 0.92);
@@ -19,9 +19,9 @@
   --color-success: rgb(var(--color-accent-success));
   --color-warning: rgb(var(--color-accent-warn));
   --color-danger: rgb(var(--color-accent-critical));
-  --shadow-lg: 0 35px 80px rgba(12, 21, 38, 0.38);
-  --shadow-md: 0 20px 46px rgba(12, 21, 38, 0.32);
-  --shadow-soft: 0 12px 32px rgba(14, 25, 46, 0.28);
+  --shadow-lg: 0 35px 80px rgba(20, 10, 6, 0.34);
+  --shadow-md: 0 20px 46px rgba(20, 10, 6, 0.28);
+  --shadow-soft: 0 12px 32px rgba(24, 13, 8, 0.22);
   --radius-sm: 10px;
   --radius-md: 16px;
   --radius-lg: 28px;
@@ -96,9 +96,9 @@ textarea {
   top: 0;
   z-index: 120;
   backdrop-filter: blur(22px);
-  background: linear-gradient(130deg, rgb(var(--color-gradient-ember) / 0.88) 0%, rgb(var(--color-primary) / 0.85) 55%, rgb(var(--color-header-bg) / 0.9) 100%);
-  border-bottom: 1px solid rgb(var(--color-primary) / 0.7);
-  box-shadow: 0 18px 36px rgba(255, 123, 0, 0.35);
+  background: linear-gradient(130deg, rgb(var(--color-header-bg) / 0.94) 0%, rgb(var(--color-gradient-warm) / 0.52) 60%, rgb(var(--color-background) / 0.92) 100%);
+  border-bottom: 1px solid rgb(var(--color-border-strong) / 0.6);
+  box-shadow: 0 16px 30px rgba(120, 48, 18, 0.32);
 }
 
 .site-header__inner {
@@ -200,20 +200,20 @@ textarea {
   letter-spacing: 0.18em;
   text-transform: uppercase;
   font-weight: 600;
-  background: linear-gradient(135deg, rgb(var(--color-primary-bright)) 0%, rgb(var(--color-primary)) 100%);
-  border: 1px solid rgb(var(--color-primary) / 0.82);
+  background: linear-gradient(135deg, rgb(var(--color-primary)) 0%, rgb(var(--color-primary-bright)) 100%);
+  border: 1px solid rgb(var(--color-border-strong));
   color: rgb(var(--color-neutral-100));
   transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease, border 0.2s ease;
   margin-left: auto;
-  box-shadow: 0 12px 28px rgba(255, 123, 0, 0.35);
+  box-shadow: 0 12px 26px rgba(120, 48, 18, 0.34);
 }
 
 .site-header__launch:hover,
 .site-header__launch:focus-visible {
   transform: translateY(-1px);
-  background: linear-gradient(135deg, rgb(var(--color-primary-muted)) 0%, rgb(var(--color-primary)) 100%);
-  border-color: rgb(var(--color-primary-bright));
-  box-shadow: 0 16px 32px rgba(255, 123, 0, 0.4);
+  background: linear-gradient(135deg, rgb(var(--color-primary)) 0%, rgb(var(--color-primary-bright)) 85%);
+  border-color: rgb(var(--color-border-strong));
+  box-shadow: 0 16px 34px rgba(120, 48, 18, 0.36);
 }
 
 .account-menu {
@@ -229,9 +229,9 @@ textarea {
   gap: 10px;
   padding: 8px 14px 8px 10px;
   border-radius: 999px;
-  border: 1px solid rgb(var(--color-primary) / 0.6);
-  background: linear-gradient(135deg, rgb(var(--color-primary-muted) / 0.55), rgb(var(--color-surface-glass) / 0.9));
-  color: rgb(var(--color-neutral-100) / 0.9);
+  border: 1px solid rgb(var(--color-border) / 0.7);
+  background: linear-gradient(135deg, rgb(var(--color-surface-base) / 0.95), rgb(var(--color-surface-glass) / 0.88));
+  color: rgb(var(--color-neutral-100) / 0.78);
   font-size: 0.72rem;
   letter-spacing: 0.18em;
   text-transform: uppercase;
@@ -241,8 +241,8 @@ textarea {
 
 .account-menu__trigger:hover,
 .account-menu__trigger:focus-visible {
-  border-color: rgb(var(--color-primary-bright));
-  background: linear-gradient(135deg, rgb(var(--color-primary)) 0%, rgb(var(--color-primary-muted)) 100%);
+  border-color: rgb(var(--color-border-strong) / 0.75);
+  background: linear-gradient(135deg, rgb(var(--color-primary) / 0.24), rgb(var(--color-surface-glass) / 0.95));
 }
 
 .account-menu__avatar {
@@ -562,8 +562,8 @@ textarea {
 
 .site-footer {
   padding: var(--space-6) var(--space-7) var(--space-8);
-  border-top: 1px solid rgb(var(--color-primary) / 0.6);
-  background: linear-gradient(140deg, rgb(var(--color-gradient-ember) / 0.85) 0%, rgb(var(--color-footer-bg) / 0.9) 65%, rgb(var(--color-surface-base) / 0.92) 100%);
+  border-top: 1px solid rgb(var(--color-border-strong) / 0.5);
+  background: linear-gradient(160deg, rgb(var(--color-footer-bg) / 0.92) 0%, rgb(var(--color-gradient-warm) / 0.4) 55%, rgb(var(--color-background) / 0.96) 100%);
   backdrop-filter: blur(12px);
 }
 

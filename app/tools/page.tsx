@@ -79,10 +79,25 @@ const ACCESS_MAP: Record<string, AccessLevel> = {
   premium: 'holders',
 };
 
+const solid = (token: string) => `rgb(var(${token}))`;
+const withAlpha = (token: string, alpha: number) => `rgb(var(${token}) / ${alpha})`;
+
 const ACCESS_BADGE_STYLES: Record<AccessLevel, { background: string; border: string; color: string }> = {
-  guest: { background: 'linear-gradient(135deg, rgba(114, 242, 175, 0.22), rgba(76, 189, 143, 0.16))', border: '1px solid rgba(114, 242, 175, 0.32)', color: '#d5ffe8' },
-  pro: { background: 'linear-gradient(135deg, rgba(255, 200, 87, 0.28), rgba(255, 200, 87, 0.12))', border: '1px solid rgba(255, 200, 87, 0.4)', color: '#ffdc90' },
-  holders: { background: 'linear-gradient(135deg, rgba(107, 212, 252, 0.28), rgba(123, 139, 255, 0.22))', border: '1px solid rgba(107, 212, 252, 0.5)', color: '#ade6ff' },
+  guest: {
+    background: `linear-gradient(135deg, ${withAlpha('--color-primary', 0.18)}, ${withAlpha('--color-primary-muted', 0.14)})`,
+    border: `1px solid ${withAlpha('--color-border-strong', 0.35)}`,
+    color: solid('--color-neutral-100'),
+  },
+  pro: {
+    background: `linear-gradient(135deg, ${withAlpha('--color-focus-ring', 0.22)}, ${withAlpha('--color-primary', 0.14)})`,
+    border: `1px solid ${withAlpha('--color-border-strong', 0.4)}`,
+    color: solid('--color-neutral-100'),
+  },
+  holders: {
+    background: `linear-gradient(135deg, ${withAlpha('--color-iris', 0.22)}, ${withAlpha('--color-iris', 0.12)})`,
+    border: `1px solid ${withAlpha('--color-iris', 0.35)}`,
+    color: solid('--color-neutral-100'),
+  },
 };
 
 const TAG_STYLE: CSSProperties = {
@@ -91,9 +106,9 @@ const TAG_STYLE: CSSProperties = {
   textTransform: 'uppercase',
   padding: '3px 9px',
   borderRadius: 999,
-  border: '1px solid rgba(123, 139, 255, 0.35)',
-  background: 'rgba(15, 28, 58, 0.65)',
-  color: '#d9e3ff',
+  border: `1px solid ${withAlpha('--color-border-strong', 0.28)}`,
+  background: withAlpha('--color-surface-glass', 0.7),
+  color: solid('--color-neutral-100'),
 };
 
 const ACCESS_FILTER_OPTIONS: Array<{ id: AccessFilter; label: string }> = [
@@ -287,28 +302,32 @@ export default function ToolsPage() {
     textTransform: 'uppercase',
     padding: '4px 12px',
     borderRadius: 14,
-    border: isDemo ? '1px solid rgba(123, 139, 255, 0.42)' : isUser ? '1px solid rgba(114, 242, 175, 0.42)' : '1px solid rgba(255, 255, 255, 0.2)',
-    background: isDemo
-      ? 'linear-gradient(135deg, rgba(123, 139, 255, 0.25), rgba(107, 212, 252, 0.18))'
+    border: isDemo
+      ? `1px solid ${withAlpha('--color-iris', 0.38)}`
       : isUser
-        ? 'linear-gradient(135deg, rgba(114, 242, 175, 0.24), rgba(76, 189, 143, 0.16))'
-        : 'rgba(255, 255, 255, 0.08)',
-    color: isDemo ? '#e3e9ff' : isUser ? '#d5ffe8' : '#f8faff',
+        ? `1px solid ${withAlpha('--color-success', 0.4)}`
+        : `1px solid ${withAlpha('--color-border-subtle', 0.4)}`,
+    background: isDemo
+      ? `linear-gradient(135deg, ${withAlpha('--color-iris', 0.22)}, ${withAlpha('--color-iris', 0.12)})`
+      : isUser
+        ? `linear-gradient(135deg, ${withAlpha('--color-success', 0.22)}, ${withAlpha('--color-success', 0.14)})`
+        : withAlpha('--color-surface-glass', 0.5),
+    color: isDemo || isUser ? solid('--color-neutral-100') : withAlpha('--color-neutral-200', 0.82),
   };
   const heroContainerStyle: CSSProperties = {
     borderRadius: 12,
     padding: '28px 28px 26px',
-    background: 'linear-gradient(135deg, rgba(6, 10, 24, 0.96) 0%, rgba(18, 32, 63, 0.9) 48%, rgba(8, 20, 36, 0.94) 100%)',
-    border: '1px solid rgba(123, 139, 255, 0.28)',
-    boxShadow: '0 20px 48px rgba(5, 10, 22, 0.55)',
+    background: `linear-gradient(135deg, ${withAlpha('--color-surface-base', 0.94)}, ${withAlpha('--color-surface-glass', 0.88)})`,
+    border: `1px solid ${withAlpha('--color-border-subtle', 0.6)}`,
+    boxShadow: '0 20px 48px rgba(20, 10, 6, 0.4)',
     marginBottom: 32,
   };
   const heroPrimaryButtonStyle: CSSProperties = {
     padding: '10px 16px',
     borderRadius: 8,
-    border: '1px solid rgba(114, 242, 175, 0.46)',
-    background: 'linear-gradient(135deg, rgba(114, 242, 175, 0.26), rgba(76, 189, 143, 0.18))',
-    color: '#eafff4',
+    border: `1px solid ${withAlpha('--color-border-strong', 0.5)}`,
+    background: `linear-gradient(135deg, ${withAlpha('--color-primary', 0.26)}, ${withAlpha('--color-primary-bright', 0.22)})`,
+    color: solid('--color-neutral-100'),
     fontSize: 12,
     letterSpacing: '.14em',
     textTransform: 'uppercase',
@@ -318,9 +337,9 @@ export default function ToolsPage() {
   const heroSecondaryButtonStyle: CSSProperties = {
     padding: '10px 16px',
     borderRadius: 8,
-    border: '1px solid rgba(123, 139, 255, 0.32)',
-    background: 'rgba(7, 18, 44, 0.68)',
-    color: '#dce5ff',
+    border: `1px solid ${withAlpha('--color-border-subtle', 0.55)}`,
+    background: `linear-gradient(135deg, ${withAlpha('--color-surface-glass', 0.85)}, ${withAlpha('--color-surface-base', 0.92)})`,
+    color: withAlpha('--color-neutral-100', 0.82),
     fontSize: 12,
     letterSpacing: '.14em',
     textTransform: 'uppercase',
@@ -333,9 +352,9 @@ export default function ToolsPage() {
   const groupContainerStyle: CSSProperties = {
     borderRadius: 10,
     padding: '22px 22px 20px',
-    background: 'linear-gradient(135deg, rgba(6, 12, 26, 0.9), rgba(14, 25, 46, 0.92))',
-    border: '1px solid rgba(123, 139, 255, 0.2)',
-    boxShadow: '0 16px 32px rgba(4, 9, 20, 0.4)',
+    background: `linear-gradient(135deg, ${withAlpha('--color-surface-base', 0.92)}, ${withAlpha('--color-surface-glass', 0.88)})`,
+    border: `1px solid ${withAlpha('--color-border-subtle', 0.6)}`,
+    boxShadow: '0 16px 32px rgba(20, 10, 6, 0.32)',
   };
   const groupGridStyle: CSSProperties = {
     display: 'grid',
@@ -347,7 +366,7 @@ export default function ToolsPage() {
     fontSize: 15,
     letterSpacing: '.18em',
     textTransform: 'uppercase',
-    color: '#e2e9ff',
+    color: withAlpha('--color-neutral-100', 0.88),
     display: 'inline-flex',
     alignItems: 'center',
     gap: 10,
@@ -357,34 +376,37 @@ export default function ToolsPage() {
     opacity: 0.72,
     minWidth: 86,
     textAlign: 'right',
+    color: withAlpha('--color-neutral-200', 0.72),
   };
   const toolCardStyle: CSSProperties = {
-    border: '1px solid rgba(123, 139, 255, 0.22)',
+    border: `1px solid ${withAlpha('--color-border-subtle', 0.55)}`,
     borderRadius: 8,
     padding: 18,
-    background: 'linear-gradient(135deg, rgba(4, 9, 20, 0.92), rgba(9, 16, 30, 0.96))',
+    background: `linear-gradient(135deg, ${withAlpha('--color-surface-raised', 0.92)}, ${withAlpha('--color-surface-glass', 0.88)})`,
     display: 'flex',
     flexDirection: 'column',
     gap: 12,
     minHeight: 240,
     maxWidth: 360,
     width: '100%',
-    boxShadow: '0 12px 28px rgba(4, 9, 22, 0.38)',
+    boxShadow: '0 12px 28px rgba(20, 10, 6, 0.3)',
   };
   const accessFilterButtonStyle = (active: boolean, tier: AccessFilter): CSSProperties => {
     const isAll = tier === 'all';
     const activeBackground = isAll
-      ? 'linear-gradient(135deg, rgba(123, 139, 255, 0.22), rgba(107, 212, 252, 0.18))'
-      : 'linear-gradient(135deg, rgba(114, 242, 175, 0.2), rgba(76, 189, 143, 0.18))';
-    const activeBorder = isAll ? '1px solid rgba(123, 139, 255, 0.4)' : '1px solid rgba(114, 242, 175, 0.4)';
-    const activeColor = isAll ? '#e4ecff' : '#eafff4';
+      ? `linear-gradient(135deg, ${withAlpha('--color-iris', 0.2)}, ${withAlpha('--color-iris', 0.14)})`
+      : `linear-gradient(135deg, ${withAlpha('--color-success', 0.2)}, ${withAlpha('--color-success', 0.14)})`;
+    const activeBorder = isAll
+      ? `1px solid ${withAlpha('--color-iris', 0.4)}`
+      : `1px solid ${withAlpha('--color-success', 0.42)}`;
+    const activeColor = solid('--color-neutral-100');
 
     return {
       padding: '8px 12px',
       borderRadius: 14,
-      border: active ? activeBorder : '1px solid rgba(123, 139, 255, 0.3)',
-      background: active ? activeBackground : 'rgba(12, 20, 40, 0.72)',
-      color: active ? activeColor : '#d9e4ff',
+      border: active ? activeBorder : `1px solid ${withAlpha('--color-border-subtle', 0.5)}`,
+      background: active ? activeBackground : withAlpha('--color-surface-glass', 0.65),
+      color: active ? activeColor : withAlpha('--color-neutral-200', 0.78),
       fontSize: 12,
       letterSpacing: '.12em',
       textTransform: 'uppercase',
@@ -417,17 +439,17 @@ export default function ToolsPage() {
         <div className="catalog-hero__top" style={{ display: 'flex', gap: 24, flexWrap: 'wrap', alignItems: 'flex-start' }}>
           <div className="catalog-hero__intro" style={{ flex: '1 1 360px', minWidth: 280, display: 'flex', flexDirection: 'column', gap: 12 }}>
             <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-              <span style={{ fontSize: 11, letterSpacing: '.2em', textTransform: 'uppercase', opacity: 0.7 }}>Dexter MCP</span>
+              <span style={{ fontSize: 11, letterSpacing: '.2em', textTransform: 'uppercase', color: withAlpha('--color-neutral-200', 0.72) }}>Dexter MCP</span>
               <span style={modeBadgeStyle}>{modeLabel}</span>
             </div>
-            <h1 style={{ margin: 0, fontSize: 32, letterSpacing: '-0.01em', color: '#f5f7ff' }}>Tool Catalog</h1>
-            <p style={{ margin: '4px 0 0', opacity: 0.86, maxWidth: 520 }}>
+            <h1 style={{ margin: 0, fontSize: 32, letterSpacing: '-0.01em', color: solid('--color-neutral-100') }}>Tool Catalog</h1>
+            <p style={{ margin: '4px 0 0', color: withAlpha('--color-neutral-100', 0.82), maxWidth: 520 }}>
               Browse the live tool inventory powering Dexter automations. Filter, inspect schemas, and queue actions straight into your workflows.
             </p>
-            <p style={{ margin: '6px 0 0', fontSize: 13, opacity: 0.74 }}>{modeHelper}</p>
+            <p style={{ margin: '6px 0 0', fontSize: 13, color: withAlpha('--color-neutral-200', 0.76) }}>{modeHelper}</p>
           </div>
           <div className="catalog-hero__actions" style={{ flex: '0 0 auto', minWidth: 220, display: 'flex', flexDirection: 'column', gap: 10, alignItems: 'flex-end' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, opacity: 0.7, fontSize: 11, letterSpacing: '.18em', textTransform: 'uppercase' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: withAlpha('--color-neutral-200', 0.7), fontSize: 11, letterSpacing: '.18em', textTransform: 'uppercase' }}>
               <span>Catalog mode</span>
               <span style={{ opacity: 0.5 }}>•</span>
               <span>{mode === 'user' ? 'Personal' : 'Demo'}</span>
@@ -451,7 +473,7 @@ export default function ToolsPage() {
             style={{
               marginTop: 26,
               paddingTop: 20,
-              borderTop: '1px solid rgba(123, 139, 255, 0.22)',
+              borderTop: `1px solid ${withAlpha('--color-border-subtle', 0.4)}`,
               display: 'flex',
               gap: 14,
               flexWrap: 'wrap',
@@ -466,9 +488,9 @@ export default function ToolsPage() {
               style={{
                 width: '100%',
                 padding: '12px 14px',
-                background: 'rgba(4, 9, 22, 0.78)',
-                color: '#f0f6ff',
-                border: '1px solid rgba(123, 139, 255, 0.34)',
+                background: withAlpha('--color-surface-base', 0.85),
+                color: solid('--color-neutral-100'),
+                border: `1px solid ${withAlpha('--color-border-subtle', 0.58)}`,
                 borderRadius: 8,
                 fontSize: 14,
               }}
@@ -511,9 +533,9 @@ export default function ToolsPage() {
                 gap: 8,
                 padding: '10px 16px',
                 borderRadius: 999,
-                border: '1px solid rgba(123, 139, 255, 0.32)',
-                background: 'rgba(15, 28, 58, 0.65)',
-                color: '#dce5ff',
+                border: `1px solid ${withAlpha('--color-border-subtle', 0.5)}`,
+                background: withAlpha('--color-surface-glass', 0.6),
+                color: withAlpha('--color-neutral-200', 0.82),
                 fontSize: 13,
                 textAlign: 'center',
                 whiteSpace: 'normal',
@@ -522,7 +544,7 @@ export default function ToolsPage() {
               }}
             >
               <span>Showing</span>
-              <strong style={{ fontSize: 16, color: '#f6f8ff' }}>{totalVisible.toLocaleString()}</strong>
+              <strong style={{ fontSize: 16, color: solid('--color-neutral-100') }}>{totalVisible.toLocaleString()}</strong>
               <span>
                 tool{totalVisible === 1 ? '' : 's'} {totalDescriptor}
               </span>
@@ -533,10 +555,21 @@ export default function ToolsPage() {
 
       {loading && <div>Loading…</div>}
       {error && (
-        <div style={{ color: '#ff9f9f', border: '1px solid #5a2323', background: '#2b0e0e', padding: 8, borderRadius: 4, margin: '8px 0' }}>
+        <div
+          style={{
+            color: solid('--color-accent-critical'),
+            border: `1px solid ${withAlpha('--color-accent-critical', 0.42)}`,
+            background: withAlpha('--color-accent-critical', 0.16),
+            padding: 12,
+            borderRadius: 10,
+            margin: '8px 0',
+          }}
+        >
           <div style={{ fontWeight: 600 }}>Error</div>
           <div style={{ whiteSpace: 'pre-wrap' }}>{error}</div>
-          <div style={{ marginTop: 6, opacity: 0.8 }}>If you see 401/403, ensure TOKEN_AI_MCP_TOKEN is configured on the API.</div>
+          <div style={{ marginTop: 6, color: withAlpha('--color-neutral-200', 0.75) }}>
+            If you see 401/403, ensure TOKEN_AI_MCP_TOKEN is configured on the API.
+          </div>
         </div>
       )}
 
@@ -565,7 +598,7 @@ export default function ToolsPage() {
                         >
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
                     <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-                      <div style={{ width: 44, height: 44, borderRadius: 8, overflow: 'hidden', background: 'rgba(44, 50, 66, 0.55)', flexShrink: 0 }}>
+                      <div style={{ width: 44, height: 44, borderRadius: 8, overflow: 'hidden', background: withAlpha('--color-surface-glass', 0.62), flexShrink: 0 }}>
                         <img
                           src={tool.icon}
                           alt={`${tool.displayName} icon`}
@@ -579,7 +612,7 @@ export default function ToolsPage() {
                     </div>
                     <AccessBadge level={tool.access} />
                   </div>
-                  {tool.description ? <div style={{ color: '#cdd8f5', lineHeight: 1.5 }}>{tool.description}</div> : null}
+                  {tool.description ? <div style={{ color: withAlpha('--color-neutral-100', 0.82), lineHeight: 1.5 }}>{tool.description}</div> : null}
                   {tool.tags.length ? (
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                       {tool.tags.map(tag => (
@@ -615,10 +648,10 @@ export default function ToolsPage() {
         <Collapsible title="Developers · View raw JSON" defaultOpen={false}>
           <pre style={{
             whiteSpace: 'pre-wrap',
-            background: '#0b0c10',
-            color: '#9fb2c8',
-            border: '1px solid #2c3242',
-            borderRadius: 6,
+            background: withAlpha('--color-surface-base', 0.88),
+            color: withAlpha('--color-neutral-100', 0.82),
+            border: `1px solid ${withAlpha('--color-border-subtle', 0.5)}`,
+            borderRadius: 8,
             padding: 12,
             margin: 0,
           }}>
@@ -675,7 +708,7 @@ export default function ToolsPage() {
             flex-direction: column;
             align-items: stretch !important;
             gap: 10px;
-            border-top: 1px solid rgba(123, 139, 255, 0.18);
+            border-top: 1px solid rgb(var(--color-border-subtle) / 0.32);
             padding-top: 14px;
             margin-top: 18px;
           }
@@ -777,7 +810,12 @@ export default function ToolsPage() {
 
         .tool-group__overlay--collapsed {
           height: 110px;
-          background: linear-gradient(180deg, rgba(8, 14, 26, 0) 0%, rgba(8, 14, 26, 0.9) 45%, rgba(6, 12, 24, 0.96) 100%);
+          background: linear-gradient(
+            180deg,
+            rgb(var(--color-background) / 0) 0%,
+            rgb(var(--color-background) / 0.85) 45%,
+            rgb(var(--color-surface-base) / 0.94) 100%
+          );
         }
 
         .tool-group__overlay--expanded {
@@ -789,7 +827,7 @@ export default function ToolsPage() {
         .tool-group__overlay-button {
           border: none;
           background: transparent;
-          color: #f6f8ff;
+          color: rgb(var(--color-neutral-100));
           font-size: 12px;
           letter-spacing: .18em;
           text-transform: uppercase;
@@ -807,7 +845,7 @@ export default function ToolsPage() {
         }
 
         .tool-group__overlay-button:focus-visible {
-          outline: 2px solid rgba(123, 139, 255, 0.8);
+          outline: 2px solid rgb(var(--color-border-strong) / 0.9);
           outline-offset: 2px;
         }
 
@@ -829,10 +867,10 @@ function SchemaBlock({ title, value }: { title: string; value: any }) {
         <pre
           style={{
             whiteSpace: 'pre-wrap',
-            background: '#0b0c10',
-            color: '#9fb2c8',
-            border: '1px solid #2c3242',
-            borderRadius: 6,
+            background: withAlpha('--color-surface-base', 0.9),
+            color: withAlpha('--color-neutral-100', 0.82),
+            border: `1px solid ${withAlpha('--color-border-subtle', 0.5)}`,
+            borderRadius: 8,
             padding: 10,
             margin: 0,
           }}
