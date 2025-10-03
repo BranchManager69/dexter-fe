@@ -23,10 +23,10 @@ const navigation = [
 ] satisfies NavItem[];
 
 const footerLinks = [
-  { label: 'Status', href: 'https://status.dexter.tools' },
-  { label: 'Roadmap', href: 'https://dexter.tools/roadmap' },
-  { label: 'Support', href: 'mailto:support@dexter.tools' },
-] as const;
+  { label: 'Status', href: '/status' satisfies Route },
+  { label: 'Roadmap', href: '/roadmap' satisfies Route },
+  { label: 'Support', href: '/support' satisfies Route },
+] satisfies NavItem[];
 
 export const SITE = {
   name: 'Dexter',

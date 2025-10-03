@@ -1,0 +1,41 @@
+.wrapper {
+  display: grid;
+  gap: var(--space-7);
+  max-width: 720px;
+}
+
+.card {
+  border-radius: var(--radius-md);
+  border: 1px solid rgb(var(--color-border-subtle) / 0.6);
+  background: rgb(var(--color-surface-base) / 0.92);
+  padding: var(--space-5);
+  display: grid;
+  gap: 12px;
+}
+
+.card h2 {
+  margin: 0;
+}
+
+.card p {
+  margin: 0;
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+}
+
+.links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.links a {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: var(--radius-pill);
+  border: 1px solid rgb(var(--color-border-subtle) / 0.6);
+  background: rgb(var(--color-surface-glass) / 0.9);
+  font-size: 0.9rem;
+}

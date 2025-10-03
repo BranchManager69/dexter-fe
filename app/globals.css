@@ -631,3 +631,10 @@ textarea {
     padding: var(--space-6) 0;
   }
 }
+.site-footer {
+  padding: var(--space-4) var(--space-7);
+}
+
+.site-footer__inner {
+  display: contents;
+}
