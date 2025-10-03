@@ -4,6 +4,67 @@ import { createContext, useContext, useEffect, useState, ReactNode } from 'react
 import type { Session, SupabaseClient } from '@supabase/supabase-js';
 import { createClient } from '@supabase/supabase-js';
 
+const HOST_REDIRECT_OVERRIDES: Record<string, string> = {
+  'beta.branch.bet': 'https://beta.dexter.cash',
+  'www.beta.branch.bet': 'https://beta.dexter.cash',
+  'branch.bet': 'https://dexter.cash',
+  'www.branch.bet': 'https://dexter.cash',
+};
+
+const stripTrailingSlash = (value?: string | null) => (value ? value.replace(/\/+$/, '') : undefined);
+
+const normaliseAbsoluteUrl = (raw?: string | null, base?: string) => {
+  if (!raw) return undefined;
+  try {
+    return new URL(raw).toString();
+  } catch {
+    if (!base) return undefined;
+    try {
+      return new URL(raw, `${base}/`).toString();
+    } catch {
+      return undefined;
+    }
+  }
+};
+
+const deriveRedirectBase = () => {
+  if (typeof window !== 'undefined') {
+    try {
+      const current = new URL(window.location.href);
+      const override = HOST_REDIRECT_OVERRIDES[current.hostname];
+      return stripTrailingSlash(override ?? current.origin);
+    } catch {
+      // Ignore and fall through to env fallback
+    }
+  }
+  return stripTrailingSlash(process.env.NEXT_PUBLIC_SITE_URL ?? undefined);
+};
+
+const computeRedirectTo = (explicit?: string) => {
+  const base = deriveRedirectBase();
+
+  const pick = (candidate?: string | null) => normaliseAbsoluteUrl(candidate, base);
+
+  const explicitUrl = pick(explicit);
+  if (explicitUrl) return explicitUrl;
+
+  if (typeof window !== 'undefined') {
+    try {
+      const current = new URL(window.location.href);
+      const paramCandidate =
+        current.searchParams.get('redirect_to') ||
+        current.searchParams.get('redirect') ||
+        current.searchParams.get('return_to');
+      const paramUrl = pick(paramCandidate);
+      if (paramUrl) return paramUrl;
+    } catch {
+      // Ignore query parsing errors and fall back to base
+    }
+  }
+
+  return base ?? undefined;
+};
+
 function apiUrl(path: string) {
   // Always use relative URLs to go through Next.js rewrites
   return path;
@@ -101,7 +162,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     try {
-      const redirectTo = options?.redirectTo || (typeof window !== 'undefined' ? `${window.location.origin}/` : undefined);
+      const redirectTo = computeRedirectTo(options?.redirectTo);
       const { error } = await supabase.auth.signInWithOtp({
         email: trimmed,
         options: {
@@ -117,11 +178,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const resolveRedirectTo = (explicit?: string) => {
-    if (explicit) return explicit;
-    if (typeof window !== 'undefined') return `${window.location.origin}/`;
-    return undefined;
-  };
+  const resolveRedirectTo = (explicit?: string) => computeRedirectTo(explicit);
 
   const signInWithTwitter = async (options?: { redirectTo?: string; captchaToken?: string }) => {
     if (!supabase) return { success: false, message: 'Authentication not initialized' };
