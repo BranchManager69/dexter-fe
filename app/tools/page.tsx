@@ -446,18 +446,18 @@ export default function ToolsPage() {
             </div>
           </div>
         </div>
-        <div
-          className="catalog-hero__controls"
-          style={{
-            marginTop: 26,
-            paddingTop: 20,
-            borderTop: '1px solid rgba(123, 139, 255, 0.22)',
-            display: 'flex',
-            gap: 14,
-            flexWrap: 'wrap',
-            alignItems: 'center',
-          }}
-        >
+          <div
+            className="catalog-hero__controls"
+            style={{
+              marginTop: 26,
+              paddingTop: 20,
+              borderTop: '1px solid rgba(123, 139, 255, 0.22)',
+              display: 'flex',
+              gap: 14,
+              flexWrap: 'wrap',
+              alignItems: 'flex-start',
+            }}
+          >
           <div className="catalog-hero__filter" style={{ flex: '1 1 360px', minWidth: 260 }}>
             <input
               placeholder="Filter by name or description"
@@ -486,6 +486,7 @@ export default function ToolsPage() {
                 flexWrap: 'nowrap',
                 overflowX: 'auto',
                 scrollbarWidth: 'none',
+                minWidth: 0,
               }}
             >
               {ACCESS_FILTER_OPTIONS.map(option => (
@@ -502,9 +503,11 @@ export default function ToolsPage() {
             <div
               className="catalog-hero__count"
               style={{
-                flex: '0 0 auto',
+                flex: '1 1 220px',
+                minWidth: 0,
                 display: 'flex',
                 alignItems: 'center',
+                justifyContent: 'center',
                 gap: 8,
                 padding: '10px 16px',
                 borderRadius: 999,
@@ -512,7 +515,10 @@ export default function ToolsPage() {
                 background: 'rgba(15, 28, 58, 0.65)',
                 color: '#dce5ff',
                 fontSize: 13,
-                whiteSpace: 'nowrap',
+                textAlign: 'center',
+                whiteSpace: 'normal',
+                flexWrap: 'wrap',
+                rowGap: 4,
               }}
             >
               <span>Showing</span>

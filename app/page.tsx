@@ -7,9 +7,9 @@ export default function Home() {
   return (
     <>
       <LandingHero />
-      <ClosingCta />
       <LiveConversation />
       <TrustBand />
+      <ClosingCta />
     </>
   );
 }
