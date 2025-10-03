@@ -3,6 +3,7 @@ import './globals.css';
 import { AuthProvider } from './auth-context';
 import { Header } from './header';
 import { Footer } from './footer';
+import { activeThemeVariables, sunrisePalette } from '../lib/theme/palette';
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.startsWith('http')
   ? process.env.NEXT_PUBLIC_SITE_URL
@@ -67,12 +68,12 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: '#0E0D1C',
+  themeColor: sunrisePalette.background,
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" style={activeThemeVariables}>
       <body>
         <AuthProvider>
           <div className="page-shell">

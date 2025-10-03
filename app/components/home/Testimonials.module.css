@@ -23,8 +23,8 @@
 
 .card {
   border-radius: var(--radius-lg);
-  border: 1px solid var(--color-border-muted);
-  background: rgba(9, 12, 26, 0.88);
+  border: 1px solid rgb(var(--color-primary) / 0.5);
+  background: linear-gradient(150deg, rgb(var(--color-primary-muted) / 0.32), rgb(var(--color-surface-base) / 0.9));
   padding: var(--space-5);
   display: grid;
   gap: var(--space-4);
@@ -35,7 +35,7 @@
   margin: 0;
   font-size: 1.02rem;
   line-height: 1.7;
-  color: rgba(233, 237, 255, 0.88);
+  color: rgb(var(--color-neutral-200) / 0.92);
 }
 
 .name {

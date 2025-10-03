@@ -29,8 +29,8 @@
 
 .card {
   border-radius: var(--radius-md);
-  border: 1px solid rgba(144, 179, 255, 0.2);
-  background: linear-gradient(160deg, rgba(123, 139, 255, 0.18), rgba(8, 11, 24, 0.92));
+  border: 1px solid rgb(var(--color-primary) / 0.5);
+  background: linear-gradient(160deg, rgb(var(--color-primary-muted) / 0.35), rgb(var(--color-surface-base) / 0.92));
   padding: var(--space-5);
   display: grid;
   gap: var(--space-3);

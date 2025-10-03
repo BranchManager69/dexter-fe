@@ -4,8 +4,8 @@
 
 .shell {
   border-radius: var(--radius-lg);
-  border: 1px solid rgba(114, 242, 175, 0.32);
-  background: linear-gradient(140deg, rgba(33, 76, 58, 0.7), rgba(7, 12, 20, 0.92));
+  border: 1px solid rgb(var(--color-primary) / 0.58);
+  background: linear-gradient(140deg, rgb(var(--color-primary-muted) / 0.42), rgb(var(--color-surface-base) / 0.94));
   padding: var(--space-7);
   display: grid;
   gap: var(--space-5);
