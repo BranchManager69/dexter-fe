@@ -1,11 +1,24 @@
+import type { Route } from 'next';
 import Link from 'next/link';
 import styles from './SupportPage.module.css';
 
-const quickLinks = [
+type ExternalQuickLink = {
+  label: string;
+  href: string;
+  external: true;
+};
+
+type InternalQuickLink = {
+  label: string;
+  href: Route;
+  external?: false;
+};
+
+const quickLinks: Array<ExternalQuickLink | InternalQuickLink> = [
   { label: 'Open a ticket', href: 'mailto:support@dexter.tools', external: true },
-  { label: 'Status page', href: '/status' },
-  { label: 'Roadmap', href: '/roadmap' },
-] as const;
+  { label: 'Status page', href: '/status' satisfies Route },
+  { label: 'Roadmap', href: '/roadmap' satisfies Route },
+];
 
 export default function SupportPage() {
   return (
@@ -29,15 +42,15 @@ export default function SupportPage() {
             </p>
           </article>
           <div className={styles.links}>
-            {quickLinks.map((link) => (
+            {quickLinks.map((link) =>
               link.external ? (
                 <a key={link.href} href={link.href} rel="noreferrer">
                   {link.label}
                 </a>
               ) : (
                 <Link key={link.href} href={link.href}>{link.label}</Link>
-              )
-            ))}
+              ),
+            )}
           </div>
         </div>
       </section>

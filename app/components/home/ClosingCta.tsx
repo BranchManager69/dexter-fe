@@ -11,7 +11,12 @@ export function ClosingCta() {
           <p>Hands-free voice beta in moments.</p>
         </div>
         <div className={styles.actions}>
-          <Link href="https://beta.dexter.cash" className="button button--primary" target="_blank" rel="noreferrer">
+          <Link
+            href="https://beta.dexter.cash"
+            className={`button button--primary ${styles.primaryButton}`}
+            target="_blank"
+            rel="noreferrer"
+          >
             Open the beta
           </Link>
         </div>

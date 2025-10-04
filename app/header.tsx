@@ -121,69 +121,50 @@ export function Header() {
     }
   };
 
+  const navItems = SITE.navigation;
+  const isGuest = !session;
+
   return (
     <header className="site-header">
       <div className="site-header__inner">
-        <Link href="/" className="site-header__brand" aria-label="Dexter home">
-          <span className="site-header__brand-logo">
-            <Image src="/assets/logos/logo_orange.png" alt="Dexter" width={36} height={36} priority />
-          </span>
-          <span className="site-header__brand-copy">
-            <span className="site-header__brand-name">Dexter</span>
+        <div className="site-header__slot site-header__slot--left" aria-hidden="true" />
+
+        <Link href="/" className="site-header__crest" aria-label="Dexter home">
+          <span className="site-header__crest-ring">
+            <Image src="/assets/logos/logo_orange.png" alt="Dexter" width={64} height={64} priority />
           </span>
         </Link>
 
-        <nav className="site-header__nav-row" aria-label="Primary">
-          {SITE.navigation.map((item) =>
-            item.external ? (
-              <a
-                key={item.href}
-                href={item.href}
-                className={navClass(item.href, true)}
-                target="_blank"
-                rel="noreferrer"
-              >
-                {item.label}
-              </a>
-            ) : (
-              <Link key={item.href} href={item.href} className={navClass(item.href)}>
-                {item.label}
-              </Link>
-            ),
-          )}
-          <Link
-            href="https://beta.dexter.cash"
-            className="site-header__launch"
-            target="_blank"
-            rel="noreferrer"
-            prefetch={false}
-            aria-label="Launch Dexter"
-          >
-            Launch
-          </Link>
-        </nav>
+        <div className="site-header__right">
+          <nav className="site-header__nav" aria-label="Primary">
+            {navItems.map((item) =>
+              item.external ? (
+                <a
+                  key={item.href}
+                  href={item.href}
+                  className={navClass(item.href, true)}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  {item.label}
+                </a>
+              ) : (
+                <Link key={item.href} href={item.href} className={navClass(item.href)}>
+                  {item.label}
+                </Link>
+              ),
+            )}
+          </nav>
 
-        <div className="account-menu" ref={accountRef}>
-          <button
-            type="button"
-            className="account-menu__trigger"
-            onClick={() => setAccountOpen((open) => !open)}
-            aria-expanded={accountOpen}
+          <div className="account-menu" ref={accountRef}>
+            <button
+              type="button"
+              className={`account-menu__trigger${isGuest ? ' account-menu__trigger--guest' : ''}`}
+              onClick={() => setAccountOpen((open) => !open)}
+              aria-expanded={accountOpen}
             >
-              <span className="account-menu__avatar" aria-hidden="true">{initials}</span>
-              <span className="account-menu__label">{accountLabel}</span>
-              <svg
-                className={`account-menu__chevron${accountOpen ? ' account-menu__chevron--open' : ''}`}
-                viewBox="0 0 20 20"
-                fill="currentColor"
-                aria-hidden="true"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M5.23 7.21a.75.75 0 011.06.02L10 10.44l3.71-3.21a.75.75 0 111.04 1.08l-4.25 3.65a.75.75 0 01-1.04 0L5.21 8.27a.75.75 0 01.02-1.06z"
-                  clipRule="evenodd"
-                />
-              </svg>
+              {!isGuest && <span className="account-menu__avatar" aria-hidden="true">{initials}</span>}
+              <span className="account-menu__label">{isGuest ? 'Sign in' : accountLabel}</span>
             </button>
 
             {accountOpen && (
@@ -262,6 +243,7 @@ export function Header() {
                 )}
               </div>
             )}
+          </div>
         </div>
       </div>
     </header>

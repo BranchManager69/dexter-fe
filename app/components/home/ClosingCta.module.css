@@ -3,15 +3,26 @@
 }
 
 .shell {
-  border-radius: var(--radius-lg);
-  border: 1px solid rgb(var(--color-primary) / 0.58);
-  background: linear-gradient(140deg, rgb(var(--color-primary-muted) / 0.42), rgb(var(--color-surface-base) / 0.94));
-  padding: var(--space-7);
+  position: relative;
+  border-radius: 0;
+  border: 1px solid rgb(var(--color-border-strong));
+  background: linear-gradient(165deg, rgb(var(--color-surface-base)), rgb(var(--color-background)) 78%);
+  padding: clamp(2.5rem, 3vw, 3.25rem);
   display: grid;
-  gap: var(--space-5);
+  gap: clamp(1.5rem, 2vw, 2.25rem);
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  box-shadow: var(--shadow-md);
+  box-shadow: 0 35px 0 -25px rgb(var(--color-border-strong) / 0.55);
+  overflow: hidden;
+}
+
+.shell::before {
+  content: '';
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  height: 6px;
+  background: linear-gradient(90deg, rgb(var(--color-primary)) 0%, rgb(var(--color-accent-info)) 48%, rgb(var(--color-accent-warn)) 100%);
 }
 
 .copy {
@@ -41,9 +52,23 @@
 
 .actions .button {
   font-size: 0.95rem;
-  padding-inline: clamp(1.5rem, 3vw, 2.4rem);
-  padding-block: 0.9rem;
-  letter-spacing: 0.18em;
+  padding-inline: clamp(1.6rem, 3vw, 2.8rem);
+  padding-block: 1rem;
+  letter-spacing: 0.16em;
+}
+
+.primaryButton {
+  border-radius: 0;
+  border-width: 2px;
+  border-color: rgb(var(--color-border-strong));
+  box-shadow: none;
+  text-transform: uppercase;
+}
+
+.primaryButton:hover,
+.primaryButton:focus-visible {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 0 -4px rgb(var(--color-primary) / 0.45);
 }
 
 @media (max-width: 720px) {

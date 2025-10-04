@@ -1,0 +1,205 @@
+:root {
+  color-scheme: light;
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --bg: #fbefe6;
+  --panel: #fff8f0;
+  --surface: #ffffff;
+  --surface-alt: #fff4e7;
+  --border-soft: rgba(57, 35, 18, 0.12);
+  --border-strong: rgba(57, 35, 18, 0.28);
+  --text: #2a160b;
+  --text-muted: rgba(42, 22, 11, 0.7);
+  --accent: #f26c18;
+  --accent-strong: #d75a0f;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  background: var(--bg);
+  color: var(--text);
+}
+
+body {
+  font-family: inherit;
+}
+
+.book,
+.book-body {
+  background: var(--bg);
+  color: var(--text);
+}
+
+.book-summary {
+  background: var(--surface-alt);
+  border-right: 1px solid var(--border-soft);
+}
+
+.book-summary ul.summary {
+  padding: 1.25rem 1.1rem 2rem;
+  margin: 0;
+}
+
+.book-summary .chapter {
+  margin-bottom: 0.35rem;
+}
+
+.book-summary .chapter > a,
+.book-summary .chapter > span {
+  display: block;
+  padding: 0.55rem 0.75rem;
+  border-radius: 4px;
+  color: var(--text-muted);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-size: 0.7rem;
+  transition: color 0.2s ease, background 0.2s ease;
+}
+
+.book-summary .chapter > a:hover {
+  color: var(--accent);
+  background: rgba(242, 108, 24, 0.12);
+}
+
+.book-summary .chapter.active > a {
+  color: var(--accent-strong);
+  background: rgba(242, 108, 24, 0.2);
+}
+
+.book-summary .articles {
+  margin: 0.25rem 0 0 0.35rem;
+  padding-left: 0.75rem;
+  border-left: 1px solid rgba(229, 107, 24, 0.16);
+}
+
+.book-summary .articles a {
+  display: block;
+  padding: 0.45rem 0 0.45rem 0.5rem;
+  margin: 0.05rem 0;
+  color: var(--text-muted);
+  font-size: 0.86rem;
+  border-radius: 4px;
+  transition: color 0.2s ease, background 0.2s ease;
+}
+
+.book-summary .articles a:hover {
+  color: var(--accent);
+  background: rgba(242, 108, 24, 0.12);
+}
+
+.book-summary .divider {
+  background: rgba(229, 107, 24, 0.12);
+}
+
+#book-search-input {
+  padding: 1rem 1rem 0.6rem;
+}
+
+#book-search-input input {
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  border-radius: 6px;
+  border: 1px solid var(--border-soft);
+  background: #ffffff;
+  color: var(--text);
+  font: inherit;
+}
+
+#book-search-input input::placeholder {
+  color: rgba(26, 18, 11, 0.4);
+}
+
+.book-header {
+  background: var(--surface-alt);
+  border-bottom: 1px solid var(--border-soft);
+  box-shadow: none;
+}
+
+.book-header h1 {
+  letter-spacing: 0.04em;
+}
+
+.book-header h1 a {
+  color: var(--text);
+}
+
+.page-wrapper {
+  background: var(--surface);
+  border: 1px solid var(--border-soft);
+  border-radius: 6px 0 0 6px;
+  box-shadow: 0 18px 36px rgba(57, 35, 18, 0.08);
+}
+
+.page-inner {
+  padding: clamp(2.1rem, 4vw, 3rem) clamp(1.8rem, 5vw, 3.3rem) clamp(2.4rem, 4vw, 3.2rem);
+  color: var(--text);
+  font-size: 1.03rem;
+  line-height: 1.7;
+}
+
+.markdown-section h1,
+.markdown-section h2,
+.markdown-section h3,
+.markdown-section h4 {
+  color: var(--text);
+  letter-spacing: -0.01em;
+}
+
+.markdown-section p,
+.markdown-section li {
+  color: var(--text-muted);
+}
+
+.markdown-section strong {
+  color: var(--text);
+}
+
+a {
+  color: var(--accent-strong);
+  text-decoration: underline;
+  text-decoration-color: rgba(242, 108, 24, 0.4);
+}
+
+a:hover {
+  color: var(--accent);
+  text-decoration-color: rgba(242, 108, 24, 0.7);
+}
+
+.landing-grid {
+  margin-top: 2.5rem;
+  display: grid;
+  gap: clamp(1.5rem, 2.5vw, 2.5rem);
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.landing-card {
+  display: block;
+  padding: clamp(1.6rem, 2.6vw, 2rem);
+  border: 1px solid var(--border-soft);
+  background: linear-gradient(150deg, rgba(255, 249, 240, 0.95), rgba(255, 244, 231, 0.98));
+  box-shadow: 0 14px 34px rgba(57, 35, 18, 0.12);
+  color: var(--text);
+  text-decoration: none;
+  transition: transform 0.25s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.landing-card h3 {
+  margin-top: 0;
+  margin-bottom: 0.6rem;
+  color: var(--accent-strong);
+  text-decoration: none;
+}
+
+.landing-card p {
+  margin: 0;
+  color: var(--text-muted);
+  text-decoration: none;
+}
+
+.landing-card:hover {
+  transform: translateY(-6px);
+  border-color: var(--accent);
+  box-shadow: 0 18px 40px rgba(57, 35, 18, 0.18);
+}
