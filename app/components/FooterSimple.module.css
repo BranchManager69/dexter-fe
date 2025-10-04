@@ -50,7 +50,9 @@
   justify-self: end;
   justify-content: flex-end;
   gap: var(--space-3);
-  font-size: 0.62rem;
+  font-size: 0.58rem;
+  align-items: center;
+  font-weight: 500;
 }
 
 .links a {
