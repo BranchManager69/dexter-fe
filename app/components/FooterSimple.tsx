@@ -5,7 +5,7 @@ export function FooterSimple() {
   return (
     <div className={styles.wrapper}>
       <a href="https://branch.bet" className={styles.branchLink} target="_blank" rel="noreferrer">
-        <svg width="36" height="36" viewBox="0 0 64 64" fill="none" aria-hidden="true">
+        <svg width="28" height="28" viewBox="0 0 64 64" fill="none" aria-hidden="true">
           <defs>
             <linearGradient id="branchFooterStroke" x1="18" y1="10" x2="50" y2="54" gradientUnits="userSpaceOnUse">
               <stop offset="0" stopColor="rgb(var(--color-primary-bright))" />
