@@ -6,9 +6,9 @@
   width: 100%;
   max-width: var(--max-width);
   margin: 0 auto;
-  padding: 6px var(--space-5);
-  font-size: 0.7rem;
-  letter-spacing: 0.12em;
+  padding: 2px var(--space-4);
+  font-size: 0.64rem;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: rgb(var(--color-neutral-200) / 0.66);
   font-weight: 600;
@@ -22,7 +22,7 @@
   text-decoration: none;
   justify-self: start;
   transition: color 0.2s ease;
-  font-size: 0.68rem;
+  font-size: 0.62rem;
 }
 
 .branchLink span {
@@ -39,18 +39,18 @@
 .centerpiece {
   justify-self: center;
   text-align: center;
-  font-size: 0.62rem;
-  letter-spacing: 0.16em;
+  font-size: 0.55rem;
+  letter-spacing: 0.14em;
   color: rgb(var(--color-neutral-200) / 0.6);
   width: 100%;
-  padding: 4px 0;
+  padding: 2px 0;
 }
 .links {
   display: flex;
   justify-self: end;
   justify-content: flex-end;
   gap: var(--space-3);
-  font-size: 0.68rem;
+  font-size: 0.62rem;
 }
 
 .links a {
