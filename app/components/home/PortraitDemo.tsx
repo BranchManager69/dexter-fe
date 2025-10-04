@@ -15,29 +15,29 @@ type Demo = {
 
 const DEMOS: Demo[] = [
   {
-    id: 'command',
-    label: 'Command Flow',
+    id: 'chatgpt',
+    label: 'ChatGPT',
     mp4: '/assets/video/portrait-demo.mp4',
     webm: '/assets/video/portrait-demo.webm',
     poster: '/assets/video/portrait-demo-poster.jpg',
-    placeholder: 'Add portrait-demo.mp4/.webm + poster',
+    placeholder: 'Add ChatGPT portrait demo assets',
     points: [
-      'Realtime voice orchestration driving a multi-venue swap.',
-      'Dexter narrates fills aloud while Discord + email stay in sync.',
-      'Proof packet autopublishes to your compliance workspace.',
+      'Voice relay instructs Dexter to route orders directly from ChatGPT.',
+      'User switches back to GPT while Dexter narrates fills in real time.',
+      'Transcript, receipts, and compliance packet sync automatically.',
     ],
   },
   {
-    id: 'handoff',
-    label: 'Desk Handoff',
+    id: 'claude',
+    label: 'Claude',
     mp4: '/assets/video/portrait-demo-alt.mp4',
     webm: '/assets/video/portrait-demo-alt.webm',
     poster: '/assets/video/portrait-demo-alt-poster.jpg',
-    placeholder: 'Add portrait-demo-alt assets',
+    placeholder: 'Add Claude portrait demo assets',
     points: [
-      'Operator summons Dexter from an iOS lock screen.',
-      'Voice confirmation routes the playbook to the trading desk.',
-      'Slack + email update the team while compliance receives proof.',
+      'Claude briefs the execution plan; Dexter confirms parameters aloud.',
+      'Swap executes while Slack + email updates trail instantly.',
+      'Voice wrap-up leaves the analyst back in Claude with receipts attached.',
     ],
   },
 ];
