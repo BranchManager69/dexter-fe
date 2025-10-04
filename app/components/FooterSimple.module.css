@@ -4,6 +4,8 @@
   align-items: center;
   gap: var(--space-4);
   width: 100%;
+  max-width: var(--max-width);
+  margin: 0 auto;
   padding: 0 var(--space-7);
   font-size: 0.74rem;
   letter-spacing: 0.15em;
@@ -46,8 +48,6 @@
   justify-self: end;
   justify-content: flex-end;
   gap: var(--space-4);
-  width: 100%;
-  max-width: 100%;
 }
 
 .links a {
