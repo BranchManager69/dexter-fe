@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState, type CSSProperties } from 'react';
 import { useAuth } from '../auth-context';
 import { Collapsible } from '../components/Collapsible';
+import { HealthStatus } from '../components/HealthStatus';
 
 type McpTool = {
   name?: string;
@@ -440,52 +441,9 @@ export default function ToolsPage() {
     return `Hide ${baseLabel} ${noun}`;
   };
 
-  const statusBannerStyle: CSSProperties = {
-    marginBottom: 28,
-    borderRadius: 12,
-    padding: '18px 22px',
-    background: `linear-gradient(135deg, ${withAlpha('--color-surface-base', 0.9)}, ${withAlpha('--color-surface-glass', 0.82)})`,
-    border: `1px solid ${withAlpha('--color-border-subtle', 0.55)}`,
-    boxShadow: '0 20px 44px rgba(20, 10, 6, 0.36)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 18,
-    flexWrap: 'wrap',
-  };
-
-  const statusLinkStyle: CSSProperties = {
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: 10,
-    padding: '10px 16px',
-    borderRadius: 10,
-    border: `1px solid ${withAlpha('--color-border-strong', 0.5)}`,
-    background: `linear-gradient(135deg, ${withAlpha('--color-primary', 0.22)}, ${withAlpha('--color-primary-bright', 0.18)})`,
-    color: solid('--color-neutral-100'),
-    textDecoration: 'none',
-    letterSpacing: '.16em',
-    textTransform: 'uppercase',
-    fontSize: 11,
-    fontWeight: 600,
-  };
-
   return (
     <div>
-      <section style={statusBannerStyle}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 6, minWidth: 220 }}>
-          <span style={{ fontSize: 11, letterSpacing: '.2em', textTransform: 'uppercase', color: withAlpha('--color-neutral-200', 0.7) }}>Live Status</span>
-          <span style={{ fontSize: 20, letterSpacing: '-0.01em', color: solid('--color-neutral-100'), fontWeight: 600 }}>
-            Check realtime uptime and incidents
-          </span>
-          <span style={{ fontSize: 13, color: withAlpha('--color-neutral-200', 0.75) }}>
-            We publish incident reports, maintenance windows, and recovery logs on our dedicated status site.
-          </span>
-        </div>
-        <a href="https://dexter.cash/status" target="_blank" rel="noreferrer" style={statusLinkStyle}>
-          View status page
-        </a>
-      </section>
+      <HealthStatus />
       <section className="catalog-hero" style={heroContainerStyle}>
         <div className="catalog-hero__top" style={{ display: 'flex', gap: 24, flexWrap: 'wrap', alignItems: 'flex-start' }}>
           <div className="catalog-hero__intro" style={{ flex: '1 1 360px', minWidth: 280, display: 'flex', flexDirection: 'column', gap: 12 }}>
