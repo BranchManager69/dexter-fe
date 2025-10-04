@@ -16,6 +16,7 @@
   border: 1px solid rgb(var(--color-border-strong) / 0.4);
   box-shadow: 0 20px 60px rgba(12, 6, 4, 0.46);
   background: rgb(var(--color-surface-glass));
+  aspect-ratio: 16 / 9;
 }
 
 .frame::after {
@@ -29,8 +30,33 @@
 .video {
   width: 100%;
   display: block;
-  aspect-ratio: 16 / 9;
   background: rgb(var(--color-surface-base));
+}
+
+.placeholder {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgb(var(--color-neutral-200) / 0.9);
+  font-size: 0.82rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  background: conic-gradient(
+    from 120deg,
+    rgba(255, 190, 120, 0.12),
+    rgba(242, 108, 24, 0.08),
+    rgba(30, 18, 10, 0.78),
+    rgba(255, 190, 120, 0.12)
+  );
+  animation: placeholderSweep 6s linear infinite;
+}
+
+.placeholder::after {
+  content: 'Drop command-demo.mp4 + poster here';
+  text-shadow: 0 1px 6px rgba(12, 6, 4, 0.45);
 }
 
 .copy {
@@ -104,4 +130,9 @@
     grid-template-columns: 1fr;
     gap: var(--space-6);
   }
+}
+
+@keyframes placeholderSweep {
+  0% { filter: hue-rotate(0deg); }
+  100% { filter: hue-rotate(360deg); }
 }

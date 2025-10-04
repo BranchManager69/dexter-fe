@@ -26,6 +26,8 @@ export function CommandScrollDemo() {
   const rafRef = useRef<number | null>(null);
   const boundsRef = useRef({ start: 0, end: 1, height: 1 });
   const durationRef = useRef<number>(1);
+  const [isVideoReady, setVideoReady] = useState(false);
+  const [progress, setProgress] = useState(0);
   const [activeStep, setActiveStep] = useState(0);
 
   const updateBounds = () => {
@@ -52,16 +54,15 @@ export function CommandScrollDemo() {
   const handleFrame = () => {
     const { start, end } = boundsRef.current;
     const scrollY = window.scrollY || window.pageYOffset;
-    const progress = clamp((scrollY - start) / (end - start), 0, 1);
+    const progressValue = clamp((scrollY - start) / (end - start), 0, 1);
     const video = videoRef.current;
     if (video && durationRef.current > 0) {
-      const targetTime = durationRef.current * progress;
+      const targetTime = durationRef.current * progressValue;
       if (Math.abs(video.currentTime - targetTime) > 0.05) {
         video.currentTime = targetTime;
       }
     }
-    const stepIndex = Math.min(STEPS.length - 1, Math.floor(progress * STEPS.length));
-    setActiveStep(stepIndex);
+    setProgress(progressValue);
     rafRef.current = requestAnimationFrame(handleFrame);
   };
 
@@ -72,12 +73,33 @@ export function CommandScrollDemo() {
     };
   }, []);
 
+  useEffect(() => {
+    const stepIndex = Math.min(STEPS.length - 1, Math.floor(progress * STEPS.length));
+    setActiveStep(stepIndex);
+  }, [progress]);
+
+  useEffect(() => {
+    if (isVideoReady) return;
+    let raf: number;
+    const loop = (time: number) => {
+      const fake = (time % 6000) / 6000;
+      setProgress(fake);
+      raf = requestAnimationFrame(loop);
+    };
+    raf = requestAnimationFrame(loop);
+    return () => cancelAnimationFrame(raf);
+  }, [isVideoReady]);
+
   const onLoadedMetadata = () => {
     if (videoRef.current?.duration) {
       durationRef.current = videoRef.current.duration;
       videoRef.current.pause();
       videoRef.current.currentTime = 0;
+      setVideoReady(true);
     }
+  };
+  const onVideoError = () => {
+    setVideoReady(false);
   };
 
   const stepElements = useMemo(() => (
@@ -98,18 +120,23 @@ export function CommandScrollDemo() {
   return (
     <section ref={sectionRef} className={styles.section}>
       <div className={styles.frame}>
-        <video
-          ref={videoRef}
-          className={styles.video}
-          playsInline
-          muted
-          preload="metadata"
-          poster="/assets/video/command-demo-poster.jpg"
-          onLoadedMetadata={onLoadedMetadata}
-        >
-          <source src="/assets/video/command-demo.mp4" type="video/mp4" />
-          <source src="/assets/video/command-demo.webm" type="video/webm" />
-        </video>
+        {isVideoReady ? (
+          <video
+            ref={videoRef}
+            className={styles.video}
+            playsInline
+            muted
+            preload="metadata"
+            poster="/assets/video/command-demo-poster.jpg"
+            onLoadedMetadata={onLoadedMetadata}
+            onError={onVideoError}
+          >
+            <source src="/assets/video/command-demo.mp4" type="video/mp4" />
+            <source src="/assets/video/command-demo.webm" type="video/webm" />
+          </video>
+        ) : (
+          <div className={styles.placeholder} />
+        )}
       </div>
       <div className={styles.copy}>
         <h2>See a trade execute as you scroll.</h2>
