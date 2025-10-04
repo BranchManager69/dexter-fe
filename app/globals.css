@@ -573,6 +573,9 @@ textarea {
 
 
 .site-footer {
+  position: sticky;
+  bottom: 0;
+  z-index: 110;
   padding: 6px var(--space-5) 8px;
   border-top: 1px solid rgb(var(--color-border-subtle) / 0.5);
   background: linear-gradient(180deg, rgb(var(--color-background) / 0.96) 0%, rgb(var(--color-surface-base) / 0.92) 100%);
