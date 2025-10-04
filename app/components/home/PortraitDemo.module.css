@@ -1,0 +1,122 @@
+.section {
+  margin: var(--space-10) auto;
+  max-width: 960px;
+  width: 100%;
+  padding: 0 var(--space-7);
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+  gap: var(--space-7);
+  align-items: center;
+}
+
+.copy {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.copy h3 {
+  margin: 0;
+  font-size: clamp(1.8rem, 2vw + 1rem, 2.2rem);
+  letter-spacing: -0.01em;
+  color: rgb(var(--color-neutral-100));
+}
+
+.copy p {
+  margin: 0;
+  color: rgb(var(--color-neutral-200) / 0.82);
+  font-size: 0.95rem;
+  line-height: 1.7;
+}
+
+.list {
+  display: grid;
+  gap: var(--space-3);
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.list li {
+  position: relative;
+  padding-left: 18px;
+  color: rgb(var(--color-neutral-200) / 0.78);
+  font-size: 0.9rem;
+}
+
+.list li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 9px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgb(var(--color-primary));
+}
+
+.frame {
+  position: relative;
+  border-radius: 20px;
+  overflow: hidden;
+  border: 1px solid rgb(var(--color-border-strong) / 0.4);
+  box-shadow: 0 18px 48px rgba(12, 6, 4, 0.45);
+  background: rgb(var(--color-surface-glass));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.video {
+  width: 100%;
+  display: block;
+  max-width: 340px;
+  aspect-ratio: 9 / 16;
+  border-radius: 16px;
+  background: rgb(var(--color-surface-base));
+}
+
+.placeholder {
+  width: 100%;
+  max-width: 340px;
+  aspect-ratio: 9 / 16;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgb(var(--color-neutral-200) / 0.88);
+  letter-spacing: 0.18em;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  background: linear-gradient(160deg, rgba(255, 190, 120, 0.18), rgba(18, 10, 6, 0.78));
+  animation: pulse 4s ease-in-out infinite;
+  text-align: center;
+  padding: 0 18px;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.75; }
+  50% { opacity: 1; }
+}
+
+@media (max-width: 880px) {
+  .section {
+    grid-template-columns: 1fr;
+    gap: var(--space-6);
+  }
+
+  .frame {
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 520px) {
+  .section {
+    margin: var(--space-9) auto;
+    padding: 0 var(--space-4);
+  }
+
+  .video,
+  .placeholder {
+    max-width: 100%;
+  }
+}
