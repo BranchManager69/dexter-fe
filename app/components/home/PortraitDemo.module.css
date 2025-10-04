@@ -1,12 +1,11 @@
-
 .section {
   margin: var(--space-10) auto;
-  max-width: 1040px;
+  max-width: 960px;
   width: 100%;
   padding: 0 var(--space-7);
   display: grid;
-  grid-template-columns: minmax(0, 1.35fr) minmax(0, 0.8fr);
-  gap: var(--space-9);
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 0.85fr);
+  gap: var(--space-8);
   align-items: center;
 }
 
@@ -55,29 +54,16 @@
   background: rgb(var(--color-primary));
 }
 
-
-.frame {
-  position: relative;
-  border-radius: 24px;
-  overflow: hidden;
-  border: 1px solid rgb(var(--color-border-strong) / 0.36);
-  box-shadow: 0 24px 56px rgba(12, 6, 4, 0.42);
-  background: rgb(var(--color-surface-glass) / 0.7);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 26px;
-}
-
-.phone {
+.visual {
   position: relative;
   width: min(340px, 100%);
   aspect-ratio: 9 / 16;
   border-radius: 22px;
   overflow: hidden;
-  border: 1px solid rgb(var(--color-border-strong) / 0.38);
+  border: 1px solid rgb(var(--color-border-strong) / 0.4);
   box-shadow: inset 0 3px 8px rgba(255, 255, 255, 0.12), 0 12px 28px rgba(12, 6, 4, 0.35);
   background: rgb(var(--color-surface-base));
+  margin: 0 auto;
 }
 
 .video,
@@ -93,14 +79,14 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: rgb(var(--color-neutral-200) / 0.88);
+  color: rgb(var(--color-neutral-200) / 0.9);
   letter-spacing: 0.2em;
   font-size: 0.72rem;
   text-transform: uppercase;
-  background: linear-gradient(160deg, rgba(255, 190, 120, 0.22), rgba(18, 10, 6, 0.82));
-  animation: pulse 4s ease-in-out infinite;
+  background: linear-gradient(160deg, rgba(255, 190, 120, 0.24), rgba(18, 10, 6, 0.82));
   text-align: center;
   padding: 0 20px;
+  animation: pulse 4s ease-in-out infinite;
   pointer-events: none;
 }
 
@@ -117,10 +103,11 @@
   .section {
     grid-template-columns: 1fr;
     gap: var(--space-7);
+    text-align: center;
   }
 
-  .frame {
-    justify-content: center;
+  .copy {
+    justify-items: center;
   }
 }
 
@@ -128,15 +115,5 @@
   .section {
     margin: var(--space-9) auto;
     padding: 0 var(--space-4);
-  }
-
-  .frame {
-    padding: 20px;
-  }
-}
-
-@media (max-width: 400px) {
-  .frame {
-    padding: 16px;
   }
 }
