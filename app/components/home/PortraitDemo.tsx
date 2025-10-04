@@ -46,21 +46,23 @@ export function PortraitDemo() {
         </ul>
       </div>
       <div className={styles.frame}>
-        <video
-          ref={videoRef}
-          className={styles.video}
-          playsInline
-          muted
-          loop
-          preload="metadata"
-          poster="/assets/video/portrait-demo-poster.jpg"
-          onCanPlay={() => setReady(true)}
-          onError={() => setReady(false)}
-        >
-          <source src="/assets/video/portrait-demo.mp4" type="video/mp4" />
-          <source src="/assets/video/portrait-demo.webm" type="video/webm" />
-        </video>
-        {!ready && <div className={styles.placeholder}>Add portrait-demo assets</div>}
+        <div className={styles.phone}>
+          <video
+            ref={videoRef}
+            className={ready ? styles.video : styles.hiddenVideo}
+            playsInline
+            muted
+            loop
+            preload="metadata"
+            poster="/assets/video/portrait-demo-poster.jpg"
+            onCanPlay={() => setReady(true)}
+            onError={() => setReady(false)}
+          >
+            <source src="/assets/video/portrait-demo.mp4" type="video/mp4" />
+            <source src="/assets/video/portrait-demo.webm" type="video/webm" />
+          </video>
+          {!ready && <div className={styles.placeholder}>Add portrait-demo assets</div>}
+        </div>
       </div>
     </section>
   );

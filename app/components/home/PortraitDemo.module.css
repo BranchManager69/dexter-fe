@@ -1,11 +1,12 @@
+
 .section {
   margin: var(--space-10) auto;
-  max-width: 960px;
+  max-width: 1040px;
   width: 100%;
   padding: 0 var(--space-7);
   display: grid;
-  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
-  gap: var(--space-7);
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, 0.8fr);
+  gap: var(--space-9);
   align-items: center;
 }
 
@@ -54,43 +55,57 @@
   background: rgb(var(--color-primary));
 }
 
+
 .frame {
   position: relative;
-  border-radius: 20px;
+  border-radius: 24px;
   overflow: hidden;
-  border: 1px solid rgb(var(--color-border-strong) / 0.4);
-  box-shadow: 0 18px 48px rgba(12, 6, 4, 0.45);
-  background: rgb(var(--color-surface-glass));
+  border: 1px solid rgb(var(--color-border-strong) / 0.36);
+  box-shadow: 0 24px 56px rgba(12, 6, 4, 0.42);
+  background: rgb(var(--color-surface-glass) / 0.7);
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 26px;
 }
 
-.video {
-  width: 100%;
-  display: block;
-  max-width: 340px;
+.phone {
+  position: relative;
+  width: min(340px, 100%);
   aspect-ratio: 9 / 16;
-  border-radius: 16px;
+  border-radius: 22px;
+  overflow: hidden;
+  border: 1px solid rgb(var(--color-border-strong) / 0.38);
+  box-shadow: inset 0 3px 8px rgba(255, 255, 255, 0.12), 0 12px 28px rgba(12, 6, 4, 0.35);
   background: rgb(var(--color-surface-base));
 }
 
+.video,
 .placeholder {
+  position: absolute;
+  inset: 0;
   width: 100%;
-  max-width: 340px;
-  aspect-ratio: 9 / 16;
-  border-radius: 16px;
+  height: 100%;
+  object-fit: cover;
+}
+
+.placeholder {
   display: flex;
   align-items: center;
   justify-content: center;
   color: rgb(var(--color-neutral-200) / 0.88);
-  letter-spacing: 0.18em;
-  font-size: 0.75rem;
+  letter-spacing: 0.2em;
+  font-size: 0.72rem;
   text-transform: uppercase;
-  background: linear-gradient(160deg, rgba(255, 190, 120, 0.18), rgba(18, 10, 6, 0.78));
+  background: linear-gradient(160deg, rgba(255, 190, 120, 0.22), rgba(18, 10, 6, 0.82));
   animation: pulse 4s ease-in-out infinite;
   text-align: center;
-  padding: 0 18px;
+  padding: 0 20px;
+  pointer-events: none;
+}
+
+.hiddenVideo {
+  display: none;
 }
 
 @keyframes pulse {
@@ -101,11 +116,11 @@
 @media (max-width: 880px) {
   .section {
     grid-template-columns: 1fr;
-    gap: var(--space-6);
+    gap: var(--space-7);
   }
 
   .frame {
-    justify-content: flex-start;
+    justify-content: center;
   }
 }
 
@@ -115,8 +130,13 @@
     padding: 0 var(--space-4);
   }
 
-  .video,
-  .placeholder {
-    max-width: 100%;
+  .frame {
+    padding: 20px;
+  }
+}
+
+@media (max-width: 400px) {
+  .frame {
+    padding: 16px;
   }
 }
