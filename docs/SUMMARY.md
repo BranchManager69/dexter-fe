@@ -3,7 +3,6 @@
 * [Overview](README.md)
 * [Product](product/README.md)
   * [Voice Agent Tour](product/voice-agent-tour.md)
-  * [Live Session Butler Mode](product/butler-mode.md)
 * [Build](build/README.md)
   * [Development Environment](build/dev-environment.md)
   * [Asset Guidelines](build/assets.md)

@@ -4,7 +4,6 @@ Dexter is a voice-first command surface for on-chain desks. Operators issue a si
 
 **What you can do here**
 - Get the short tour of the voice agent flow.
-- See how Butler Mode mirrors a live trading session.
 - Learn which chains and venues Dexter covers today.
 - Understand how the agent coordinates with MCP tools.
 

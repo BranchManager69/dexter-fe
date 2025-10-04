@@ -25,7 +25,7 @@ type McpTool = {
   };
 };
 
-type AccessLevel = 'guest' | 'pro' | 'holders';
+type AccessLevel = 'guest' | 'pro' | 'holders' | 'dev';
 
 type AccessFilter = 'all' | AccessLevel;
 
@@ -63,6 +63,7 @@ const ACCESS_LABELS: Record<AccessLevel, string> = {
   guest: 'Free',
   pro: 'Pro',
   holders: 'Holders',
+  dev: 'Dev',
 };
 
 const ACCESS_MAP: Record<string, AccessLevel> = {
@@ -72,11 +73,13 @@ const ACCESS_MAP: Record<string, AccessLevel> = {
   open: 'guest',
   pro: 'pro',
   paid: 'pro',
-  managed: 'pro',
+  restricted: 'pro',
+  managed: 'guest',
   internal: 'holders',
   holder: 'holders',
   holders: 'holders',
   premium: 'holders',
+  dev: 'dev',
 };
 
 const solid = (token: string) => `rgb(var(${token}))`;
@@ -98,6 +101,11 @@ const ACCESS_BADGE_STYLES: Record<AccessLevel, { background: string; border: str
     border: `1px solid ${withAlpha('--color-iris', 0.35)}`,
     color: solid('--color-neutral-100'),
   },
+  dev: {
+    background: `linear-gradient(135deg, ${withAlpha('--color-border-strong', 0.18)}, ${withAlpha('--color-neutral-800', 0.14)})`,
+    border: `1px solid ${withAlpha('--color-border-strong', 0.45)}`,
+    color: solid('--color-neutral-100'),
+  },
 };
 
 const TAG_STYLE: CSSProperties = {
@@ -116,6 +124,7 @@ const ACCESS_FILTER_OPTIONS: Array<{ id: AccessFilter; label: string }> = [
   { id: 'guest', label: ACCESS_LABELS.guest },
   { id: 'pro', label: ACCESS_LABELS.pro },
   { id: 'holders', label: ACCESS_LABELS.holders },
+  { id: 'dev', label: ACCESS_LABELS.dev },
 ];
 
 const DEFAULT_ICON = '/assets/logos/logo_orange.png';
