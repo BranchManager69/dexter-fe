@@ -3,8 +3,8 @@
   grid-template-columns: 0.3fr 0.4fr 0.3fr;
   align-items: center;
   gap: var(--space-4);
-  max-width: var(--max-width);
-  margin: 0 auto;
+  width: 100%;
+  padding: 0 var(--space-7);
   font-size: 0.74rem;
   letter-spacing: 0.15em;
   text-transform: uppercase;
@@ -46,6 +46,8 @@
   justify-self: end;
   justify-content: flex-end;
   gap: var(--space-4);
+  width: 100%;
+  max-width: 100%;
 }
 
 .links a {
