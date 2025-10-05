@@ -1,6 +1,5 @@
 'use client';
 
-import Image from 'next/image';
 import type { Route } from 'next';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -8,6 +7,8 @@ import { useEffect, useRef, useState } from 'react';
 import { SITE } from '../lib/site';
 import { useAuth } from './auth-context';
 import { resolveEmailProvider } from '../lib/emailProviders';
+import { DexterAnimatedCrest } from './components/DexterAnimatedCrest';
+
 import { TurnstileWidget } from './components/TurnstileWidget';
 
 export function Header() {
@@ -131,7 +132,7 @@ export function Header() {
 
         <Link href="/" className="site-header__crest" aria-label="Dexter home">
           <span className="site-header__crest-ring">
-            <Image src="/assets/logos/logo_orange.png" alt="Dexter" width={64} height={64} priority />
+            <DexterAnimatedCrest size={72} />
           </span>
         </Link>
 
