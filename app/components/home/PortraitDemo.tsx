@@ -109,6 +109,20 @@ export function PortraitDemo({ demos, activeIndex, onSelect }: PortraitDemoProps
         </p>
       </div>
       <div className={styles.visualGroup}>
+        <div className={styles.tabs} role="tablist" aria-label="Portrait demo selector">
+          {demos.map((item, index) => (
+            <button
+              key={item.id}
+              type="button"
+              role="tab"
+              aria-selected={index === activeIndex}
+              className={`${styles.tab} ${index === activeIndex ? styles.tabActive : ''}`}
+              onClick={() => onSelect(index)}
+            >
+              {item.label}
+            </button>
+          ))}
+        </div>
         <div
           className={styles.visual}
           role="button"
@@ -134,20 +148,6 @@ export function PortraitDemo({ demos, activeIndex, onSelect }: PortraitDemoProps
             {demo.webm && <source src={demo.webm} type="video/webm" />}
           </video>
           {!ready && <VideoLoadingOverlay label={`${demo.label} demo loading`} />}
-        </div>
-        <div className={styles.tabs} role="tablist" aria-label="Portrait demo selector">
-          {demos.map((item, index) => (
-            <button
-              key={item.id}
-              type="button"
-              role="tab"
-              aria-selected={index === activeIndex}
-              className={`${styles.tab} ${index === activeIndex ? styles.tabActive : ''}`}
-              onClick={() => onSelect(index)}
-            >
-              {item.label}
-            </button>
-          ))}
         </div>
       </div>
       <VideoLightbox
