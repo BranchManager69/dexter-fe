@@ -128,15 +128,7 @@ export function Header() {
   return (
     <header className="site-header">
       <div className="site-header__inner">
-        <div className="site-header__slot site-header__slot--left" aria-hidden="true" />
-
-        <Link href="/" className="site-header__crest" aria-label="Dexter home">
-          <span className="site-header__crest-ring">
-            <DexterAnimatedCrest size={72} />
-          </span>
-        </Link>
-
-        <div className="site-header__right">
+        <div className="site-header__left-tray">
           <nav className="site-header__nav" aria-label="Primary">
             {navItems.map((item) =>
               item.external ? (
@@ -156,7 +148,15 @@ export function Header() {
               ),
             )}
           </nav>
+        </div>
 
+        <Link href="/" className="site-header__crest" aria-label="Dexter home">
+          <span className="site-header__crest-ring">
+            <DexterAnimatedCrest size={72} />
+          </span>
+        </Link>
+
+        <div className="site-header__right">
           <div className="account-menu" ref={accountRef}>
             <button
               type="button"

@@ -3,6 +3,7 @@ import './globals.css';
 import { AuthProvider } from './auth-context';
 import { Header } from './header';
 import { Footer } from './footer';
+import { FlexFill } from './components/FlexFill';
 import { activeThemeVariables, sunrisePalette } from '../lib/theme/palette';
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.startsWith('http')
