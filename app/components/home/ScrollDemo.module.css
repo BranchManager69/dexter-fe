@@ -17,6 +17,7 @@
   box-shadow: 0 20px 60px rgba(214, 81, 5, 0.38);
   background: rgb(var(--color-surface-glass));
   aspect-ratio: 16 / 9;
+  transition: transform 0.2s ease;
 }
 
 .frame::after {
@@ -47,30 +48,17 @@
   pointer-events: none;
 }
 
-.placeholder {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: rgb(var(--color-neutral-200) / 0.9);
-  font-size: 0.82rem;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  background: conic-gradient(
-    from 120deg,
-    rgba(255, 220, 170, 0.2),
-    rgba(255, 166, 70, 0.32),
-    rgba(199, 69, 0, 0.68),
-    rgba(255, 220, 170, 0.2)
-  );
-  animation: placeholderSweep 6s linear infinite;
+.frame[data-interactive] {
+  cursor: pointer;
 }
 
-.placeholder::after {
-  content: 'Drop command-demo.mp4 + poster here';
-  text-shadow: 0 1px 6px rgba(158, 52, 0, 0.55);
+.frame[data-interactive]:hover {
+  transform: translateY(-3px);
+}
+
+.frame[data-interactive]:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.45);
+  outline-offset: 6px;
 }
 
 .copy {
@@ -144,9 +132,4 @@
     grid-template-columns: 1fr;
     gap: var(--space-6);
   }
-}
-
-@keyframes placeholderSweep {
-  0% { filter: hue-rotate(0deg); }
-  100% { filter: hue-rotate(360deg); }
 }

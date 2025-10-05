@@ -70,8 +70,7 @@
   background: rgb(var(--color-surface-base));
 }
 
-.video,
-.placeholder {
+.video {
   position: absolute;
   inset: 0;
   width: 100%;
@@ -79,23 +78,22 @@
   object-fit: cover;
 }
 
-.placeholder {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: rgb(var(--color-neutral-200) / 0.9);
-  letter-spacing: 0.18em;
-  font-size: 0.7rem;
-  text-transform: uppercase;
-  background: linear-gradient(160deg, rgba(255, 207, 150, 0.28), rgba(199, 69, 0, 0.8));
-  text-align: center;
-  padding: 0 22px;
-  animation: pulse 4s ease-in-out infinite;
-  pointer-events: none;
-}
-
 .hiddenVideo {
   display: none;
+}
+
+.visual[data-interactive] {
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.visual[data-interactive]:hover {
+  transform: translateY(-2px);
+}
+
+.visual[data-interactive]:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.4);
+  outline-offset: 4px;
 }
 
 .tabs {
@@ -121,11 +119,6 @@
 
 .tabActive {
   color: rgb(var(--color-neutral-100));
-}
-
-@keyframes pulse {
-  0%, 100% { opacity: 0.75; }
-  50% { opacity: 1; }
 }
 
 @media (max-width: 960px) {

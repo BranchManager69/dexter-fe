@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import styles from './PortraitDemo.module.css';
+import { VideoLightbox } from './VideoLightbox';
+import { VideoLoadingOverlay } from './VideoLoadingOverlay';
 
 type Demo = {
   id: string;
@@ -46,12 +48,14 @@ export function PortraitDemo() {
   const [activeIndex, setActiveIndex] = useState(0);
   const [videoEl, setVideoEl] = useState<HTMLVideoElement | null>(null);
   const [ready, setReady] = useState(false);
+  const [isLightboxOpen, setLightboxOpen] = useState(false);
 
   const demo = DEMOS[activeIndex];
 
   // Reset readiness whenever demo changes
   useEffect(() => {
     setReady(false);
+    setLightboxOpen(false);
     if (videoEl) {
       videoEl.load();
     }
@@ -76,6 +80,21 @@ export function PortraitDemo() {
     return () => observer.disconnect();
   }, [videoEl, demo.id]);
 
+  useEffect(() => {
+    if (!videoEl) {
+      return;
+    }
+
+    if (isLightboxOpen) {
+      videoEl.pause();
+      return;
+    }
+
+    if (ready) {
+      videoEl.play().catch(() => undefined);
+    }
+  }, [isLightboxOpen, ready, videoEl]);
+
   const handleVideoRef = useCallback((node: HTMLVideoElement | null) => {
     if (!node) {
       setVideoEl(null);
@@ -86,6 +105,20 @@ export function PortraitDemo() {
   }, []);
 
   const points = useMemo(() => demo.points, [demo]);
+
+  const handleExpand = () => {
+    if (!ready) {
+      return;
+    }
+    setLightboxOpen(true);
+  };
+
+  const handleKeyDown: React.KeyboardEventHandler<HTMLDivElement> = event => {
+    if ((event.key === 'Enter' || event.key === ' ') && ready) {
+      event.preventDefault();
+      setLightboxOpen(true);
+    }
+  };
 
   return (
     <section className={styles.section}>
@@ -102,7 +135,15 @@ export function PortraitDemo() {
         </ul>
       </div>
       <div className={styles.visualGroup}>
-        <div className={styles.visual}>
+        <div
+          className={styles.visual}
+          role="button"
+          tabIndex={0}
+          aria-label={`Expand ${demo.label} demo`}
+          onClick={handleExpand}
+          onKeyDown={handleKeyDown}
+          data-interactive
+        >
           <video
             key={demo.id}
             ref={handleVideoRef}
@@ -118,7 +159,7 @@ export function PortraitDemo() {
             <source src={demo.mp4} type="video/mp4" />
             {demo.webm && <source src={demo.webm} type="video/webm" />}
           </video>
-          {!ready && <div className={styles.placeholder}>{demo.placeholder}</div>}
+          {!ready && <VideoLoadingOverlay label={`${demo.label} demo loading`} />}
         </div>
         <div className={styles.tabs} role="tablist" aria-label="Portrait demo selector">
           {DEMOS.map((item, index) => (
@@ -135,6 +176,16 @@ export function PortraitDemo() {
           ))}
         </div>
       </div>
+      <VideoLightbox
+        open={isLightboxOpen}
+        onClose={() => setLightboxOpen(false)}
+        title={`${demo.label} portrait demo`}
+        poster={demo.poster}
+        sources={[
+          { src: demo.mp4, type: 'video/mp4' },
+          ...(demo.webm ? [{ src: demo.webm, type: 'video/webm' }] : []),
+        ]}
+      />
     </section>
   );
 }

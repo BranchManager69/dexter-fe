@@ -51,13 +51,20 @@ body {
   margin: 0;
 }
 
+html {
+  background: var(--color-bg-gradient);
+  background-color: rgb(var(--color-background));
+}
+
 body {
   min-height: 100vh;
+  min-height: 100dvh;
   font-family: var(--font-sans);
   color: var(--color-text-primary);
   background: var(--color-bg-gradient);
   letter-spacing: -0.01em;
   -webkit-font-smoothing: antialiased;
+  overscroll-behavior-y: none;
 }
 
 body.overlay-mode {
@@ -91,8 +98,19 @@ textarea {
 
 .page-shell {
   min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
+}
+
+@supports (min-height: 100svh) {
+  body {
+    min-height: 100svh;
+  }
+
+  .page-shell {
+    min-height: 100svh;
+  }
 }
 
 .site-header {
@@ -605,34 +623,36 @@ textarea {
 @media (max-width: 720px) {
   .site-header__inner {
     grid-template-columns: 1fr;
-    padding: 16px 16px 26px;
-    gap: 18px;
+    padding: 12px 16px 18px;
+    gap: 12px;
   }
 
   .site-header__nav {
     justify-content: center;
-    gap: 14px;
+    gap: 12px;
   }
 
   .site-header__nav-link {
-    font-size: 0.68rem;
-    letter-spacing: 0.18em;
+    font-size: 0.62rem;
+    letter-spacing: 0.16em;
+    padding: 4px 0;
   }
 
   .site-header__crest {
-    width: 88px;
-    height: 88px;
-    margin-block: -32px;
+    width: 74px;
+    height: 74px;
+    margin-block: -20px;
+    border-width: 3px;
   }
 
   .site-header__crest-ring {
-    width: 78px;
-    height: 78px;
+    width: 64px;
+    height: 64px;
   }
 
   .site-header__right {
     flex-direction: column;
-    gap: 14px;
+    gap: 12px;
   }
 
   .account-menu {
@@ -643,6 +663,9 @@ textarea {
   .account-menu__trigger {
     width: 100%;
     justify-content: center;
+    padding: 6px 12px;
+    font-size: 0.66rem;
+    letter-spacing: 0.16em;
   }
 
   .account-menu__dropdown {
@@ -650,12 +673,25 @@ textarea {
     transform: translateX(50%);
   }
 
+  .account-menu__avatar {
+    width: 22px;
+    height: 22px;
+  }
+
+  .account-menu__trigger--guest {
+    padding: 6px 12px;
+  }
+
   .main-content {
-    padding: var(--space-7) var(--space-4) var(--space-8);
+    padding: var(--space-6) var(--space-4) var(--space-7);
   }
 
   .section {
     padding: var(--space-6) 0;
+  }
+
+  .site-footer {
+    padding: 8px var(--space-4) calc(10px + env(safe-area-inset-bottom));
   }
 }
 

@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import styles from './ScrollDemo.module.css';
+import { VideoLightbox } from './VideoLightbox';
+import { VideoLoadingOverlay } from './VideoLoadingOverlay';
 
 const STEPS = [
   {
@@ -24,6 +26,7 @@ export function CommandScrollDemo() {
   const rafRef = useRef<number | null>(null);
   const [isVideoReady, setVideoReady] = useState(false);
   const [activeStep, setActiveStep] = useState(0);
+  const [isLightboxOpen, setLightboxOpen] = useState(false);
 
   useEffect(() => {
     videoRef.current?.load();
@@ -49,8 +52,22 @@ export function CommandScrollDemo() {
     const video = videoRef.current;
     if (!video) return;
 
+    if (isLightboxOpen) {
+      video.pause();
+      return;
+    }
+
+    if (isVideoReady) {
+      video.play().catch(() => undefined);
+    }
+  }, [isLightboxOpen, isVideoReady]);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
     const updateStep = () => {
-      if (!video) return;
+      if (!video || isLightboxOpen) return;
       const duration = durationRef.current || video.duration || 1;
       if (!duration) return;
       const cycle = STEPS.length * 5;
@@ -71,7 +88,7 @@ export function CommandScrollDemo() {
     };
 
     const startTracking = () => {
-      if (rafRef.current === null) {
+      if (rafRef.current === null && !isLightboxOpen) {
         rafRef.current = requestAnimationFrame(updateStep);
       }
     };
@@ -79,7 +96,7 @@ export function CommandScrollDemo() {
     const observer = new IntersectionObserver(
       entries => {
         const isVisible = entries[0]?.isIntersecting;
-        if (isVisible) {
+        if (isVisible && !isLightboxOpen) {
           video.play().catch(() => undefined);
           startTracking();
         } else {
@@ -96,7 +113,7 @@ export function CommandScrollDemo() {
     video.addEventListener('play', handlePlay);
     video.addEventListener('pause', stopTimer);
     observer.observe(video);
-    if (!video.paused) {
+    if (!video.paused && !isLightboxOpen) {
       startTracking();
     }
 
@@ -106,7 +123,7 @@ export function CommandScrollDemo() {
       video.removeEventListener('pause', stopTimer);
       observer.disconnect();
     };
-  }, [isVideoReady]);
+  }, [isVideoReady, isLightboxOpen]);
 
   const stepElements = useMemo(() => (
     STEPS.map((step, index) => (
@@ -123,9 +140,29 @@ export function CommandScrollDemo() {
     ))
   ), [activeStep]);
 
+  const handleExpand = () => {
+    if (!isVideoReady) return;
+    setLightboxOpen(true);
+  };
+
+  const handleKeyDown: React.KeyboardEventHandler<HTMLDivElement> = (event) => {
+    if ((event.key === 'Enter' || event.key === ' ') && isVideoReady) {
+      event.preventDefault();
+      setLightboxOpen(true);
+    }
+  };
+
   return (
     <section className={styles.section}>
-      <div className={styles.frame}>
+      <div
+        className={styles.frame}
+        role="button"
+        tabIndex={0}
+        aria-label="Expand command demo video"
+        onClick={handleExpand}
+        onKeyDown={handleKeyDown}
+        data-interactive
+      >
         <video
           ref={videoRef}
           className={isVideoReady ? styles.video : styles.videoHidden}
@@ -140,7 +177,7 @@ export function CommandScrollDemo() {
           <source src="/assets/video/command-demo.mp4" type="video/mp4" />
           <source src="/assets/video/command-demo.webm" type="video/webm" />
         </video>
-        {!isVideoReady && <div className={styles.placeholder} />}
+        {!isVideoReady && <VideoLoadingOverlay label="Command demo loading" />}
       </div>
       <div className={styles.copy}>
         <h2>Watch a trade execute in real time.</h2>
@@ -150,6 +187,16 @@ export function CommandScrollDemo() {
         </p>
         <div className={styles.steps}>{stepElements}</div>
       </div>
+      <VideoLightbox
+        open={isLightboxOpen}
+        onClose={() => setLightboxOpen(false)}
+        title="Dexter command demo"
+        poster="/assets/video/command-demo-poster.jpg"
+        sources={[
+          { src: '/assets/video/command-demo.mp4', type: 'video/mp4' },
+          { src: '/assets/video/command-demo.webm', type: 'video/webm' },
+        ]}
+      />
     </section>
   );
 }
