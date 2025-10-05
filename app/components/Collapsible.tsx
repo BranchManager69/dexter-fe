@@ -43,7 +43,14 @@ export function Collapsible({
   }, [open, disabled, height, children]);
 
   return (
-    <div style={{ border: '1px solid #2c3242', borderRadius: 8, background: '#05060d', overflow: 'hidden' }}>
+    <div
+      style={{
+        border: '1px solid rgba(var(--color-border-strong), 0.35)',
+        borderRadius: 8,
+        background: 'rgba(var(--color-surface-base), 0.88)',
+        overflow: 'hidden',
+      }}
+    >
       <button
         type="button"
         onClick={() => {

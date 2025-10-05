@@ -8,3 +8,12 @@ docs/_book/
 examples/openai-realtime-agents/.env
 screenshots/
 scripts/dexter-stream/config.local.json
+
+# Large source captures (keep out of git)
+public/assets/video/source/
+
+# Pre-rendered demo videos (ignore binaries; keep markdown notes)
+public/assets/video/*.mp4
+public/assets/video/*.webm
+public/assets/video/*.mov
+public/assets/video/*.mkv

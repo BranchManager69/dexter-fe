@@ -137,7 +137,19 @@ export default function VoicePage() {
       <p style={{opacity:.8, marginTop:8}}>Connects to OpenAI Realtime via ephemeral key from dexter-api.</p>
       <div style={{marginTop:12}}>
         <div style={{fontSize:12, opacity:.8, marginBottom:4}}>Debug log</div>
-        <textarea readOnly value={debug} style={{width:'100%', height:200, background:'#0b0c10', color:'#9fb2c8', border:'1px solid #2c3242', borderRadius:4, padding:8}} />
+        <textarea
+          readOnly
+          value={debug}
+          style={{
+            width: '100%',
+            height: 200,
+            background: 'rgba(var(--color-surface-base), 0.82)',
+            color: 'rgb(var(--color-text-secondary))',
+            border: '1px solid rgba(var(--color-border-strong), 0.35)',
+            borderRadius: 4,
+            padding: 8,
+          }}
+        />
       </div>
     </div>
   );

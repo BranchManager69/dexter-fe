@@ -6,8 +6,10 @@ export default function Home() {
   return (
     <>
       <ClosingCta />
-      <CommandScrollDemo />
-      <PortraitDemo />
+      <div className="dark-text">
+        <CommandScrollDemo />
+        <PortraitDemo />
+      </div>
     </>
   );
 }

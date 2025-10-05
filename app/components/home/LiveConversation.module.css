@@ -33,7 +33,7 @@
   border-radius: 24px;
   background: var(--bubble-bg);
   color: var(--bubble-text);
-  box-shadow: 0 22px 48px rgba(5, 8, 18, 0.42);
+  box-shadow: 0 22px 48px rgba(199, 69, 0, 0.36);
   opacity: 0;
   transform: translateY(26px) scale(0.98);
   animation: bubbleIn 0.65s cubic-bezier(0.24, 0.82, 0.19, 1) forwards;

@@ -18,89 +18,95 @@ const STEPS = [
   }
 ];
 
-const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max);
-
 export function CommandScrollDemo() {
-  const sectionRef = useRef<HTMLElement | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
-  const rafRef = useRef<number | null>(null);
-  const boundsRef = useRef({ start: 0, end: 1, height: 1 });
   const durationRef = useRef<number>(1);
+  const rafRef = useRef<number | null>(null);
   const [isVideoReady, setVideoReady] = useState(false);
-  const [progress, setProgress] = useState(0);
   const [activeStep, setActiveStep] = useState(0);
 
-  const updateBounds = () => {
-    if (!sectionRef.current) return;
-    const rect = sectionRef.current.getBoundingClientRect();
-    const scrollTop = window.scrollY || window.pageYOffset;
-    const start = scrollTop + rect.top - window.innerHeight * 0.25;
-    const height = rect.height + window.innerHeight * 0.5;
-    boundsRef.current = {
-      start,
-      end: start + height,
-      height
-    };
-  };
-
   useEffect(() => {
-    updateBounds();
-    window.addEventListener('resize', updateBounds, { passive: true });
-    return () => {
-      window.removeEventListener('resize', updateBounds);
-    };
+    videoRef.current?.load();
   }, []);
-
-  const handleFrame = () => {
-    const { start, end } = boundsRef.current;
-    const scrollY = window.scrollY || window.pageYOffset;
-    const progressValue = clamp((scrollY - start) / (end - start), 0, 1);
-    const video = videoRef.current;
-    if (video && durationRef.current > 0) {
-      const targetTime = durationRef.current * progressValue;
-      if (Math.abs(video.currentTime - targetTime) > 0.05) {
-        video.currentTime = targetTime;
-      }
-    }
-    setProgress(progressValue);
-    rafRef.current = requestAnimationFrame(handleFrame);
-  };
-
-  useEffect(() => {
-    rafRef.current = requestAnimationFrame(handleFrame);
-    return () => {
-      if (rafRef.current) cancelAnimationFrame(rafRef.current);
-    };
-  }, []);
-
-  useEffect(() => {
-    const stepIndex = Math.min(STEPS.length - 1, Math.floor(progress * STEPS.length));
-    setActiveStep(stepIndex);
-  }, [progress]);
-
-  useEffect(() => {
-    if (isVideoReady) return;
-    let raf: number;
-    const loop = (time: number) => {
-      const fake = (time % 6000) / 6000;
-      setProgress(fake);
-      raf = requestAnimationFrame(loop);
-    };
-    raf = requestAnimationFrame(loop);
-    return () => cancelAnimationFrame(raf);
-  }, [isVideoReady]);
 
   const onLoadedMetadata = () => {
-    if (videoRef.current?.duration) {
-      durationRef.current = videoRef.current.duration;
-      videoRef.current.pause();
-      videoRef.current.currentTime = 0;
-      setVideoReady(true);
-    }
+    const video = videoRef.current;
+    if (!video) return;
+    durationRef.current = video.duration || 1;
+    setVideoReady(true);
+    setActiveStep(0);
+    video.play().catch(() => undefined);
   };
   const onVideoError = () => {
     setVideoReady(false);
+    if (rafRef.current !== null) {
+      cancelAnimationFrame(rafRef.current);
+      rafRef.current = null;
+    }
   };
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    const updateStep = () => {
+      if (!video) return;
+      const duration = durationRef.current || video.duration || 1;
+      if (!duration) return;
+      const cycle = STEPS.length * 5;
+      const position = video.currentTime % cycle;
+      const stepIndex = Math.min(
+        STEPS.length - 1,
+        Math.floor(position / 5)
+      );
+      setActiveStep(prev => (prev === stepIndex ? prev : stepIndex));
+      rafRef.current = requestAnimationFrame(updateStep);
+    };
+
+    const stopTimer = () => {
+      if (rafRef.current !== null) {
+        cancelAnimationFrame(rafRef.current);
+        rafRef.current = null;
+      }
+    };
+
+    const startTracking = () => {
+      if (rafRef.current === null) {
+        rafRef.current = requestAnimationFrame(updateStep);
+      }
+    };
+
+    const observer = new IntersectionObserver(
+      entries => {
+        const isVisible = entries[0]?.isIntersecting;
+        if (isVisible) {
+          video.play().catch(() => undefined);
+          startTracking();
+        } else {
+          video.pause();
+          stopTimer();
+        }
+      },
+      { threshold: 0.35 }
+    );
+    const handlePlay = () => {
+      startTracking();
+    };
+
+    video.addEventListener('play', handlePlay);
+    video.addEventListener('pause', stopTimer);
+    observer.observe(video);
+    if (!video.paused) {
+      startTracking();
+    }
+
+    return () => {
+      stopTimer();
+      video.removeEventListener('play', handlePlay);
+      video.removeEventListener('pause', stopTimer);
+      observer.disconnect();
+    };
+  }, [isVideoReady]);
 
   const stepElements = useMemo(() => (
     STEPS.map((step, index) => (
@@ -118,31 +124,29 @@ export function CommandScrollDemo() {
   ), [activeStep]);
 
   return (
-    <section ref={sectionRef} className={styles.section}>
+    <section className={styles.section}>
       <div className={styles.frame}>
-        {isVideoReady ? (
-          <video
-            ref={videoRef}
-            className={styles.video}
-            playsInline
-            muted
-            preload="metadata"
-            poster="/assets/video/command-demo-poster.jpg"
-            onLoadedMetadata={onLoadedMetadata}
-            onError={onVideoError}
-          >
-            <source src="/assets/video/command-demo.mp4" type="video/mp4" />
-            <source src="/assets/video/command-demo.webm" type="video/webm" />
-          </video>
-        ) : (
-          <div className={styles.placeholder} />
-        )}
+        <video
+          ref={videoRef}
+          className={isVideoReady ? styles.video : styles.videoHidden}
+          playsInline
+          muted
+          loop
+          preload="auto"
+          poster="/assets/video/command-demo-poster.jpg"
+          onLoadedMetadata={onLoadedMetadata}
+          onError={onVideoError}
+        >
+          <source src="/assets/video/command-demo.mp4" type="video/mp4" />
+          <source src="/assets/video/command-demo.webm" type="video/webm" />
+        </video>
+        {!isVideoReady && <div className={styles.placeholder} />}
       </div>
       <div className={styles.copy}>
-        <h2>See a trade execute as you scroll.</h2>
+        <h2>Watch a trade execute in real time.</h2>
         <p>
-          Scroll to scrub through a live command—Dexter hears the instruction, spins up execution across desks, and hands back
-          proof without clicking into dashboards.
+          The full command runs end-to-end—Dexter hears the instruction, routes the work across desks, and returns proof without
+          the dashboards.
         </p>
         <div className={styles.steps}>{stepElements}</div>
       </div>

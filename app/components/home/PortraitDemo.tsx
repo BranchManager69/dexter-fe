@@ -52,7 +52,10 @@ export function PortraitDemo() {
   // Reset readiness whenever demo changes
   useEffect(() => {
     setReady(false);
-  }, [demo.id]);
+    if (videoEl) {
+      videoEl.load();
+    }
+  }, [demo.id, videoEl]);
 
   // Auto play/pause when in view
   useEffect(() => {
@@ -74,7 +77,12 @@ export function PortraitDemo() {
   }, [videoEl, demo.id]);
 
   const handleVideoRef = useCallback((node: HTMLVideoElement | null) => {
+    if (!node) {
+      setVideoEl(null);
+      return;
+    }
     setVideoEl(node);
+    node.load();
   }, []);
 
   const points = useMemo(() => demo.points, [demo]);
@@ -102,9 +110,9 @@ export function PortraitDemo() {
             playsInline
             muted
             loop
-            preload="metadata"
+            preload="auto"
             poster={demo.poster}
-            onCanPlay={() => setReady(true)}
+            onLoadedMetadata={() => setReady(true)}
             onError={() => setReady(false)}
           >
             <source src={demo.mp4} type="video/mp4" />
