@@ -1,40 +1,79 @@
+'use client';
+
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import styles from './LandingHero.module.css';
+import { StartConversationButton } from '../StartConversationButton';
+import { DexterAnimatedCrest } from '../DexterAnimatedCrest';
+
+const metrics = [
+  {
+    label: 'Speed',
+    value: 'Voice to execution in ≈2.5s',
+  },
+  {
+    label: 'Coverage',
+    value: 'Ethereum · Solana · Base',
+  },
+  {
+    label: 'Receipts',
+    value: 'Every action logged + shipped',
+  },
+];
 
 export function LandingHero() {
+  const router = useRouter();
+
   return (
     <section className={`section ${styles.hero}`}>
       <div className={styles.layout}>
         <div className={styles.content}>
-          <span className={styles.kicker}>Talk to Dexter. It handles your crypto desk.</span>
-          <h1>Give a voice command, get the trade done.</h1>
-          <p>
-            Say what you need once. Dexter routes the orders, updates the team, and hands back a record without making
-            you click through another dashboard.
-          </p>
-          <div className={styles.actions}>
-            <Link href="/tools" className="button button--primary">
-              See how Dexter works
-            </Link>
+          <div className={styles.kickerRow}>
+            <span className={styles.kicker}>Voice command · trading desk</span>
+            <span className={styles.badge}>Realtime beta</span>
           </div>
+          <h1>Issue one command. Dexter does the rest.</h1>
+          <p>
+            Dexter is the desk operator that never sleeps: it joins your huddle, captures intent, executes across chains,
+            and drops receipts back where your team already lives.
+          </p>
+
+          <div className={styles.primaryAction}>
+            <div className={styles.primaryButton}>
+              <StartConversationButton onClick={() => router.push('/voice')} />
+            </div>
+            <div className={styles.primaryCopy}>
+              <h2>Launch Dexter now</h2>
+              <p>
+                The voice agent boots in seconds. Say it once—Dexter handles trading, notifications, and summaries with
+                zero dashboard hopping.
+              </p>
+              <Link href="/support" className={styles.secondaryLink}>
+                View onboarding &rarr;
+              </Link>
+            </div>
+          </div>
+
           <dl className={styles.metrics}>
-            <div>
-              <dt>Speed</dt>
-              <dd>Orders placed and confirmed in under 3 seconds</dd>
-            </div>
-            <div>
-              <dt>Coverage</dt>
-              <dd>Supports Ethereum, Solana, and Base</dd>
-            </div>
-            <div>
-              <dt>Receipts</dt>
-              <dd>Every action logged and ready to share</dd>
-            </div>
+            {metrics.map((item) => (
+              <div key={item.label}>
+                <dt>{item.label}</dt>
+                <dd>{item.value}</dd>
+              </div>
+            ))}
           </dl>
         </div>
 
-        <div className={styles.console} aria-hidden="true">
-          <span className={styles.consoleLabel}>Live command feed</span>
+        <aside className={styles.console} aria-labelledby="hero-demo-title">
+          <div className={styles.consoleHeader}>
+            <DexterAnimatedCrest className={styles.consoleCrest} size={68} />
+            <div>
+              <span id="hero-demo-title" className={styles.consoleLabel}>
+                Live voice session
+              </span>
+              <p className={styles.consoleDescription}>Sample flow from the trading floor.</p>
+            </div>
+          </div>
           <div className={styles.waveform}>
             <span />
             <span />
@@ -46,19 +85,21 @@ export function LandingHero() {
           <ul className={styles.consoleLog}>
             <li>
               <span className={styles.consoleSpeaker}>Operator</span>
-              <p>Dexter, sell 4 ETH for USDC and send the report.</p>
+              <p>Dexter, offload 4 ETH to USDC and notify finance.</p>
             </li>
             <li>
               <span className={styles.consoleSpeaker}>Dexter</span>
-              <p>Order filled at the best price. Final confirmation in 2.6s.</p>
+              <p>Routing to best venue… execution cleared in 2.4 seconds.</p>
             </li>
             <li>
               <span className={styles.consoleSpeaker}>Dexter</span>
-              <p>Trade summary and compliance log sent to your inbox.</p>
+              <p>Invoice and compliance log delivered to shared channel.</p>
             </li>
           </ul>
-        </div>
+        </aside>
       </div>
     </section>
   );
 }
+
+export default LandingHero;

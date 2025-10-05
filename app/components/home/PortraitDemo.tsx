@@ -5,6 +5,11 @@ import styles from './PortraitDemo.module.css';
 import { VideoLightbox } from './VideoLightbox';
 import { VideoLoadingOverlay } from './VideoLoadingOverlay';
 
+type DemoPoint = {
+  title: string;
+  body: string;
+};
+
 type Demo = {
   id: string;
   label: string;
@@ -12,7 +17,7 @@ type Demo = {
   webm?: string;
   poster: string;
   placeholder: string;
-  points: string[];
+  points: DemoPoint[];
 };
 
 const DEMOS: Demo[] = [
@@ -24,9 +29,18 @@ const DEMOS: Demo[] = [
     poster: '/assets/video/portrait-demo-poster.jpg',
     placeholder: 'Add ChatGPT portrait demo assets',
     points: [
-      'Voice relay instructs Dexter to route orders directly from ChatGPT.',
-      'User switches back to GPT while Dexter narrates fills in real time.',
-      'Transcript, receipts, and compliance packet sync automatically.',
+      {
+        title: 'Route orders right inside ChatGPT',
+        body: 'Voice relay hands Dexter the instructions without leaving the GPT thread.',
+      },
+      {
+        title: 'Stay focused while Dexter talks fills',
+        body: 'You stay in the conversation while Dexter narrates every execution in real time.',
+      },
+      {
+        title: 'Compliance packet shows up instantly',
+        body: 'Transcript, receipts, and approvals file themselves the moment the trade lands.',
+      },
     ],
   },
   {
@@ -37,9 +51,18 @@ const DEMOS: Demo[] = [
     poster: '/assets/video/portrait-demo-alt-poster.jpg',
     placeholder: 'Add Claude portrait demo assets',
     points: [
-      'Claude briefs the execution plan; Dexter confirms parameters aloud.',
-      'Swap executes while Slack + email updates trail instantly.',
-      'Voice wrap-up leaves the analyst back in Claude with receipts attached.',
+      {
+        title: 'Claude drafts, Dexter confirms',
+        body: 'Claude tees up the execution plan while Dexter reads back size, venue, and guardrails aloud.',
+      },
+      {
+        title: 'Updates hit every channel',
+        body: 'Slack, email, and the blotter light up the moment the swap completes.',
+      },
+      {
+        title: 'Return to research with proof attached',
+        body: 'Claude stays in flow while Dexter drops the transcript, fills, and receipts back into the chat.',
+      },
     ],
   },
 ];
@@ -49,6 +72,7 @@ export function PortraitDemo() {
   const [videoEl, setVideoEl] = useState<HTMLVideoElement | null>(null);
   const [ready, setReady] = useState(false);
   const [isLightboxOpen, setLightboxOpen] = useState(false);
+  const [highlightIndex, setHighlightIndex] = useState(0);
 
   const demo = DEMOS[activeIndex];
 
@@ -56,6 +80,7 @@ export function PortraitDemo() {
   useEffect(() => {
     setReady(false);
     setLightboxOpen(false);
+    setHighlightIndex(0);
     if (videoEl) {
       videoEl.load();
     }
@@ -106,6 +131,27 @@ export function PortraitDemo() {
 
   const points = useMemo(() => demo.points, [demo]);
 
+  useEffect(() => {
+    if (points.length <= 1) return undefined;
+    const id = window.setInterval(() => {
+      setHighlightIndex((prev) => (prev + 1) % points.length);
+    }, 3000);
+    return () => window.clearInterval(id);
+  }, [points.length]);
+
+  const orderedPoints = useMemo(() => {
+    const total = points.length;
+    return points.map((point, slot) => {
+      const pointIndex = (slot + highlightIndex) % total;
+      const source = points[pointIndex];
+      return {
+        ...source,
+        slot,
+        key: `${source.title}-${pointIndex}`,
+      };
+    });
+  }, [points, highlightIndex]);
+
   const handleExpand = () => {
     if (!ready) {
       return;
@@ -129,8 +175,11 @@ export function PortraitDemo() {
           finishes with proof on every channel.
         </p>
         <ul className={styles.list}>
-          {points.map(point => (
-            <li key={point}>{point}</li>
+          {orderedPoints.map(point => (
+            <li key={point.key} data-slot={point.slot}>
+              <span className={styles.listTitle}>{point.title}</span>
+              <p>{point.body}</p>
+            </li>
           ))}
         </ul>
       </div>
