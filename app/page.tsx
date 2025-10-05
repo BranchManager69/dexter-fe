@@ -1,6 +1,6 @@
 import { ClosingCta } from './components/home/ClosingCta';
 import { CommandScrollDemo } from './components/home/CommandScrollDemo';
-import { PortraitDemo } from './components/home/PortraitDemo';
+import { PortraitShowcase } from './components/home/PortraitShowcase';
 
 export default function Home() {
   return (
@@ -8,7 +8,7 @@ export default function Home() {
       <ClosingCta />
       <div className="dark-text">
         <CommandScrollDemo />
-        <PortraitDemo />
+        <PortraitShowcase />
       </div>
     </>
   );
