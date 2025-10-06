@@ -1,3 +1,4 @@
+import GradientPanel from '../components/GradientPanel';
 import styles from './RoadmapPage.module.css';
 
 const roadmap = [
@@ -59,10 +60,10 @@ export default function RoadmapPage() {
           </div>
           <div className={styles.columns}>
             {roadmap.map((bucket) => (
-              <article key={bucket.phase} className={styles.column}>
-                <header>
-                  <h2>{bucket.phase}</h2>
-                  <p className={styles.meta}>{bucket.meta}</p>
+              <GradientPanel key={bucket.phase} className={styles.column} tight>
+                <header className={styles.header}>
+                  <span className={styles.phase}>{bucket.phase}</span>
+                  <span className={styles.meta}>{bucket.meta}</span>
                 </header>
                 <div className={styles.list}>
                   {bucket.items.map((item) => (
@@ -72,7 +73,7 @@ export default function RoadmapPage() {
                     </div>
                   ))}
                 </div>
-              </article>
+              </GradientPanel>
             ))}
           </div>
         </div>

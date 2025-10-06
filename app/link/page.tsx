@@ -41,22 +41,21 @@ export default function LinkPage() {
             Dexter connector, and approve the sign-in popup powered by Supabase.
           </p>
         )}
-        <div className={styles['copy-block']}>
-          <code className={styles['copy-url']}>https://dexter.cash/mcp</code>
-          <button type="button" className={styles['copy-button']} onClick={handleCopy}>
+        <div className={styles.copyRow}>
+          <code className={styles.copyUrl}>https://dexter.cash/mcp</code>
+          <button type="button" className={styles.copyButton} onClick={handleCopy}>
             {copyState === 'copied' ? 'Copied!' : copyState === 'error' ? 'Copy failed' : 'Copy URL'}
           </button>
         </div>
         <ol className={styles.steps}>
           <li className={styles.step}>
-            ChatGPT: Settings → Connectors → “Add” → paste the Dexter MCP server URL.
+            <span className={styles.stepLabel}>ChatGPT</span> · Settings → Connectors → “Add” → paste the Dexter MCP server URL.
           </li>
           <li className={styles.step}>
-            Claude: Settings → Tools → “Add tool” → paste the Dexter MCP URL from your dashboard.
+            <span className={styles.stepLabel}>Claude</span> · Settings → Tools → “Add tool” → paste the Dexter MCP URL from your dashboard.
           </li>
           <li className={styles.step}>
-            When the browser prompt appears, approve the Dexter OAuth popup. Wallet access syncs automatically after
-            approval.
+            When the browser prompt appears, approve the Dexter OAuth popup. Wallet access syncs automatically after approval.
           </li>
         </ol>
         <p className={styles.footer}>

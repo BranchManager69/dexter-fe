@@ -161,11 +161,11 @@ export function CatalogHero({
       <div
         className="catalog-hero__controls"
         style={{
-          marginTop: 26,
-          paddingTop: 20,
-          borderTop: `1px solid ${withAlpha('--color-border-subtle', 0.4)}`,
+          marginTop: 12,
+          paddingTop: 10,
+          borderTop: `1px solid ${withAlpha('--color-border-subtle', 0.35)}`,
           display: 'flex',
-          gap: 14,
+          gap: 12,
           flexWrap: 'wrap',
           alignItems: 'flex-start',
         }}
@@ -270,9 +270,9 @@ export function CatalogHero({
             flex-direction: column;
             align-items: stretch !important;
             gap: 10px;
-            border-top: 1px solid rgb(var(--color-border-subtle) / 0.32);
-            padding-top: 14px;
-            margin-top: 18px;
+            border-top: 1px solid rgb(var(--color-border-subtle) / 0.3);
+            padding-top: 8px;
+            margin-top: 8px;
           }
 
           .catalog-hero__filter {

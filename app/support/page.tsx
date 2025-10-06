@@ -1,5 +1,6 @@
 import type { Route } from 'next';
 import Link from 'next/link';
+import GradientPanel from '../components/GradientPanel';
 import styles from './SupportPage.module.css';
 
 type ExternalQuickLink = {
@@ -32,23 +33,26 @@ export default function SupportPage() {
               Reach us anytime for account changes, incident reports, or bespoke trading desks. We reply within one business day (faster for holders).
             </p>
           </div>
-          <article className={styles.card}>
+          <GradientPanel className={styles.card}>
             <h2>Fastest path: email</h2>
             <p>
-              Send context, wallet IDs, and screenshots to <a href="mailto:support@dexter.tools">support@dexter.tools</a>. Urgent production blockers should include “SEV1” in the subject.
+              Send context, wallet IDs, and screenshots to <a href="mailto:support@dexter.tools">support@dexter.tools</a>. Urgent production blockers should include “SEV1” in the subject line.
             </p>
             <p>
               We’re available 08:00–22:00 ET on weekdays, and on-call teams monitor voice incidents 24/7.
             </p>
-          </article>
+          </GradientPanel>
           <div className={styles.links}>
             {quickLinks.map((link) =>
               link.external ? (
-                <a key={link.href} href={link.href} rel="noreferrer">
+                <a key={link.href} href={link.href} rel="noreferrer" className={styles.linkChip}>
                   {link.label}
+                  <span aria-hidden>↗</span>
                 </a>
               ) : (
-                <Link key={link.href} href={link.href}>{link.label}</Link>
+                <Link key={link.href} href={link.href} className={styles.linkChip}>
+                  {link.label}
+                </Link>
               ),
             )}
           </div>

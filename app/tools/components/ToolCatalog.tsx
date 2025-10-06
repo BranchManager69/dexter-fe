@@ -2,19 +2,15 @@
 
 import type { CSSProperties } from 'react';
 import { Collapsible } from '../../components/Collapsible';
-import { ACCESS_BADGE_STYLES, ACCESS_LABELS, TAG_STYLE } from '../constants';
+import { ACCESS_LABELS, CARD_THEMES } from '../constants';
 import { safeStringify, solid, withAlpha } from '../utils';
 import type { CatalogGroup, CatalogTool, AccessLevel } from '../types';
 
 const groupContainerStyle: CSSProperties = {
-  borderRadius: 12,
-  padding: '22px 22px 20px',
-  background: `linear-gradient(135deg, ${withAlpha('--color-surface-base', 0.92)}, ${withAlpha('--color-surface-glass', 0.88)})`,
-  border: `1px solid ${withAlpha('--color-border-subtle', 0.6)}`,
-  boxShadow: '0 16px 32px rgba(20, 10, 6, 0.32)',
   display: 'flex',
   flexDirection: 'column',
   gap: 18,
+  padding: '18px 4px 16px',
 };
 
 const groupGridStyle: CSSProperties = {
@@ -28,7 +24,7 @@ const groupLabelStyle: CSSProperties = {
   fontSize: 15,
   letterSpacing: '.18em',
   textTransform: 'uppercase',
-  color: withAlpha('--color-neutral-100', 0.88),
+  color: solid('--color-neutral-900'),
   display: 'inline-flex',
   alignItems: 'center',
   gap: 10,
@@ -39,21 +35,7 @@ const groupCountStyle: CSSProperties = {
   opacity: 0.72,
   minWidth: 86,
   textAlign: 'right',
-  color: withAlpha('--color-neutral-200', 0.72),
-};
-
-const toolCardStyle: CSSProperties = {
-  border: `1px solid ${withAlpha('--color-border-subtle', 0.55)}`,
-  borderRadius: 8,
-  padding: 18,
-  background: `linear-gradient(135deg, ${withAlpha('--color-surface-raised', 0.92)}, ${withAlpha('--color-surface-glass', 0.88)})`,
-  display: 'flex',
-  flexDirection: 'column',
-  gap: 12,
-  minHeight: 240,
-  maxWidth: 360,
-  width: '100%',
-  boxShadow: '0 12px 28px rgba(20, 10, 6, 0.3)',
+  color: solid('--color-neutral-900'),
 };
 
 export type ToolCatalogProps = {
@@ -131,12 +113,12 @@ export function ToolCatalog({ groups, openGroups, onToggleGroup }: ToolCatalogPr
       }
 
       .tool-group__overlay--collapsed {
-        height: 110px;
+        height: 96px;
         background: linear-gradient(
           180deg,
           rgb(var(--color-background) / 0) 0%,
-          rgb(var(--color-background) / 0.85) 45%,
-          rgb(var(--color-surface-base) / 0.94) 100%
+          rgb(var(--color-background) / 0.55) 40%,
+          rgb(var(--color-surface-base) / 0.5) 100%
         );
       }
 
@@ -146,24 +128,25 @@ export function ToolCatalog({ groups, openGroups, onToggleGroup }: ToolCatalogPr
         padding-bottom: 12px;
       }
 
-      .tool-group__overlay-button {
-        border: none;
-        background: transparent;
-        color: rgb(var(--color-neutral-100));
-        font-size: 12px;
-        letter-spacing: .18em;
-        text-transform: uppercase;
-        font-weight: 600;
-        padding: 10px 18px;
-        border-radius: 999px;
-        cursor: pointer;
-        box-shadow: none;
-        transition: background 0.2s ease, transform 0.2s ease;
-        pointer-events: auto;
-      }
+        .tool-group__overlay-button {
+          border: none;
+          background: transparent;
+          color: rgba(42, 22, 11, 0.82);
+          font-size: 12px;
+          letter-spacing: .18em;
+          text-transform: uppercase;
+          font-weight: 600;
+          padding: 10px 18px;
+          border-radius: 8px;
+          cursor: pointer;
+          box-shadow: none;
+          transition: background 0.2s ease, transform 0.2s ease;
+          pointer-events: auto;
+        }
 
       .tool-group__overlay-button:hover {
         transform: translateY(-1px);
+        background: transparent;
       }
 
       .tool-group__overlay-button:focus-visible {
@@ -178,12 +161,13 @@ export function ToolCatalog({ groups, openGroups, onToggleGroup }: ToolCatalogPr
         }
 
         .tool-group__grid {
-          grid-template-columns: minmax(0, 1fr) !important;
+          grid-template-columns: minmax(280px, 1fr) !important;
+          justify-items: center;
           gap: 12px !important;
         }
 
         .tool-card {
-          max-width: none !important;
+          width: min(320px, 100%) !important;
           padding: 16px !important;
           border-radius: 8px;
         }
@@ -210,54 +194,62 @@ function buildShowLabel(group: CatalogGroup) {
   return `Show ${count} ${baseLabel} ${noun}`;
 }
 
+type CardTheme = typeof CARD_THEMES[keyof typeof CARD_THEMES];
+
 function ToolCard({ tool }: { tool: CatalogTool }) {
+  const theme = CARD_THEMES[tool.access];
+  const cardStyle: CSSProperties = {
+    border: theme.border,
+    borderRadius: 10,
+    padding: 18,
+    background: theme.background,
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 14,
+    minHeight: 240,
+    maxWidth: 360,
+    width: '100%',
+    boxShadow: '0 16px 32px rgba(0, 0, 0, 0.26)',
+    color: theme.text,
+  };
+
   return (
-    <div className="tool-card" style={toolCardStyle}>
+    <div className="tool-card" style={cardStyle}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
         <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
           <div style={{ width: 44, height: 44, borderRadius: 8, overflow: 'hidden', background: withAlpha('--color-surface-glass', 0.62), flexShrink: 0 }}>
             <img src={tool.icon} alt={`${tool.displayName} icon`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           </div>
           <div>
-            <div style={{ fontWeight: 600, fontSize: 16 }}>{tool.displayName}</div>
-            <div style={{ fontSize: 12, opacity: 0.65, marginTop: 2 }}>{tool.rawName}</div>
+            <div style={{ fontWeight: 600, fontSize: 16, color: theme.text }}>{tool.displayName}</div>
+            <div style={{ fontSize: 12, color: theme.muted, marginTop: 2 }}>{tool.rawName}</div>
           </div>
         </div>
         <AccessBadge level={tool.access} />
       </div>
       {tool.description ? (
-        <div style={{ color: withAlpha('--color-neutral-100', 0.82), lineHeight: 1.5 }}>{tool.description}</div>
-      ) : null}
-      {tool.tags.length ? (
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-          {tool.tags.map(tag => (
-            <span key={tag} style={TAG_STYLE}>{tag}</span>
-          ))}
-        </div>
+        <div style={{ color: theme.text, opacity: 0.9, lineHeight: 1.6 }}>{tool.description}</div>
       ) : null}
       <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column' }}>
-        <SchemaBlock title="Input Schema" value={tool.input} />
-        <SchemaBlock title="Output Schema" value={tool.output} />
+        <SchemaBlock title="Input Schema" value={tool.input} theme={theme} />
+        <SchemaBlock title="Output Schema" value={tool.output} theme={theme} />
       </div>
     </div>
   );
 }
 
 function AccessBadge({ level }: { level: AccessLevel }) {
-  const style = ACCESS_BADGE_STYLES[level];
+  const theme = CARD_THEMES[level];
   return (
     <span
       style={{
         fontSize: 11,
         textTransform: 'uppercase',
         letterSpacing: '.18em',
-        padding: '4px 10px',
-        borderRadius: 999,
         display: 'inline-flex',
         alignItems: 'center',
-        gap: 6,
         fontWeight: 600,
-        ...style,
+        color: theme.badgeColor,
       }}
     >
       {ACCESS_LABELS[level]}
@@ -265,7 +257,7 @@ function AccessBadge({ level }: { level: AccessLevel }) {
   );
 }
 
-function SchemaBlock({ title, value }: { title: string; value: any }) {
+function SchemaBlock({ title, value, theme }: { title: string; value: any; theme: CardTheme }) {
   const hasValue = value !== null && value !== undefined;
   return (
     <div style={{ marginTop: 12 }}>
@@ -273,9 +265,9 @@ function SchemaBlock({ title, value }: { title: string; value: any }) {
         <pre
           style={{
             whiteSpace: 'pre-wrap',
-            background: withAlpha('--color-surface-base', 0.9),
-            color: withAlpha('--color-neutral-100', 0.82),
-            border: `1px solid ${withAlpha('--color-border-subtle', 0.5)}`,
+            background: theme.schemaBg,
+            color: theme.schemaText,
+            border: theme.schemaBorder,
             borderRadius: 8,
             padding: 10,
             margin: 0,

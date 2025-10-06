@@ -18,8 +18,8 @@ type NavItem = InternalNavItem | ExternalNavItem;
 
 const navigation = [
   { label: 'MCP', href: '/tools' satisfies Route },
-  { label: 'Docs', href: 'https://docs.dexter.cash', external: true },
   { label: 'Link', href: '/link' satisfies Route },
+  { label: 'Docs', href: 'https://docs.dexter.cash', external: true },
 ] satisfies NavItem[];
 
 const footerLinks = [

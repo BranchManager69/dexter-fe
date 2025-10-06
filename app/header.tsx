@@ -24,6 +24,7 @@ export function Header() {
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const [turnstileKey, setTurnstileKey] = useState(0);
   const [turnstileVisible, setTurnstileVisible] = useState(() => Boolean(siteKey));
+  const [turnstileReady, setTurnstileReady] = useState(false);
   const accountRef = useRef<HTMLDivElement | null>(null);
   const providerInfo = resolveEmailProvider(email);
   const inboxUrl = providerInfo?.inboxUrl ?? '';
@@ -32,6 +33,7 @@ export function Header() {
     if (!accountOpen && siteKey) {
       setCaptchaToken(null);
       setTurnstileVisible(Boolean(siteKey));
+      setTurnstileReady(false);
       setTurnstileKey((key) => key + 1);
     }
   }, [accountOpen, siteKey]);
@@ -165,7 +167,7 @@ export function Header() {
               aria-expanded={accountOpen}
             >
               {!isGuest && <span className="account-menu__avatar" aria-hidden="true">{initials}</span>}
-              <span className="account-menu__label">{isGuest ? 'Sign in' : accountLabel}</span>
+              <span className="account-menu__label">{isGuest ? 'Log in' : accountLabel}</span>
             </button>
 
             {accountOpen && (
@@ -189,12 +191,49 @@ export function Header() {
                         placeholder="you@example.com"
                         value={email}
                         onChange={(event) => setEmail(event.target.value)}
+                        disabled={Boolean(siteKey) && !turnstileReady}
                       />
+                    </div>
+
+                    {siteKey && (
+                      <div className="account-menu__section account-menu__section--turnstile">
+                        {turnstileVisible ? (
+                          <div className={`account-menu__turnstile-outer${turnstileReady ? ' account-menu__turnstile-outer--ready' : ''}`}>
+                            <div className="account-menu__turnstile-placeholder">
+                              <span className="account-menu__turnstile-spinner" aria-hidden />
+                              <span>Authenticating…</span>
+                            </div>
+                            <TurnstileWidget
+                              refreshKey={turnstileKey}
+                              siteKey={siteKey}
+                              onToken={(token) => setCaptchaToken(token)}
+                              className="account-menu__turnstile"
+                              theme="light"
+                              onWidgetLoad={() => setTurnstileReady(true)}
+                            />
+                          </div>
+                        ) : (
+                          <button
+                            type="button"
+                            className="account-menu__action"
+                            onClick={() => {
+                              setTurnstileVisible(true);
+                              setTurnstileReady(false);
+                              setTurnstileKey((key) => key + 1);
+                            }}
+                          >
+                            Verify again
+                          </button>
+                        )}
+                      </div>
+                    )}
+
+                    <div className="account-menu__section">
                       <button
                         type="button"
                         className="account-menu__action account-menu__action--primary"
                         onClick={handleSendMagicLink}
-                        disabled={magicLinkBusy}
+                        disabled={magicLinkBusy || (siteKey ? !turnstileReady : false)}
                       >
                         {magicLinkBusy ? 'Sending…' : 'Email me a link'}
                       </button>
@@ -213,30 +252,6 @@ export function Header() {
                               <span className="account-menu__message-hint">Try Gmail, Outlook, Proton, or check Spam</span>
                             )}
                           </span>
-                        )}
-                      </div>
-                    )}
-
-                    {siteKey && (
-                      <div className="account-menu__section">
-                        {turnstileVisible ? (
-                          <TurnstileWidget
-                            refreshKey={turnstileKey}
-                            siteKey={siteKey}
-                            onToken={(token) => setCaptchaToken(token)}
-                            className="account-menu__turnstile"
-                          />
-                        ) : (
-                          <button
-                            type="button"
-                            className="account-menu__action"
-                            onClick={() => {
-                              setTurnstileVisible(true);
-                              setTurnstileKey((key) => key + 1);
-                            }}
-                          >
-                            Verify again
-                          </button>
                         )}
                       </div>
                     )}
