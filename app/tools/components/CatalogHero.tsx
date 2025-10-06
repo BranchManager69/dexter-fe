@@ -2,7 +2,8 @@
 
 import type { CSSProperties, ChangeEvent } from 'react';
 import { solid, withAlpha } from '../utils';
-import type { AccessFilter, AccessLevel } from '../types';
+import type { AccessFilter } from '../types';
+import GradientPanel from '../../components/GradientPanel';
 
 export type AccessFilterOption = {
   id: AccessFilter;
@@ -25,15 +26,6 @@ export type CatalogHeroProps = {
   canViewUser: boolean;
   canViewDemo: boolean;
   loading: boolean;
-};
-
-const heroContainerStyle: CSSProperties = {
-  borderRadius: 12,
-  padding: '28px 28px 26px',
-  background: `linear-gradient(135deg, ${withAlpha('--color-surface-base', 0.94)}, ${withAlpha('--color-surface-glass', 0.88)})`,
-  border: `1px solid ${withAlpha('--color-border-subtle', 0.6)}`,
-  boxShadow: '0 20px 48px rgba(20, 10, 6, 0.4)',
-  marginBottom: 32,
 };
 
 const heroPrimaryButtonStyle: CSSProperties = {
@@ -137,12 +129,12 @@ export function CatalogHero({
   };
 
   return (
-    <>
-    <section className="catalog-hero" style={heroContainerStyle}>
+    <GradientPanel className="catalog-hero" style={{ marginBottom: 32 }}>
       <div className="catalog-hero__top" style={{ display: 'flex', gap: 24, flexWrap: 'wrap', alignItems: 'flex-start' }}>
         <div className="catalog-hero__intro" style={{ flex: '1 1 360px', minWidth: 280, display: 'flex', flexDirection: 'column', gap: 8 }}>
-          <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <span style={{ fontSize: 11, letterSpacing: '.2em', textTransform: 'uppercase', color: withAlpha('--color-neutral-200', 0.72) }}>Dexter MCP</span>
+            <span style={{ flex: 1 }} />
             <span style={modeBadgeStyle(mode)}>{modeLabel}</span>
           </div>
           <h1 style={{ margin: 0, fontSize: 32, letterSpacing: '-0.01em', color: solid('--color-neutral-100') }}>Tool Catalog</h1>
@@ -229,111 +221,112 @@ export function CatalogHero({
           </div>
         </div>
       </div>
-    </section>
-    <style jsx>{`
-      .catalog-hero__actions-buttons button {
-        min-width: 148px;
-      }
-
-      @media (max-width: 992px) {
-        .catalog-hero {
-          padding: 24px 20px 22px;
-        }
-      }
-
-      @media (max-width: 768px) {
-        .catalog-hero {
-          padding: 20px 16px 18px;
-          border-radius: 10px;
-        }
-
-        .catalog-hero__top {
-          flex-direction: column;
-          gap: 8px;
-        }
-
-        .catalog-hero__intro {
-          min-width: 100% !important;
-        }
-
-        .catalog-hero__actions {
-          min-width: 100% !important;
-          align-items: stretch !important;
-          gap: 10px !important;
-          margin-top: 0 !important;
-        }
-
-        .catalog-hero__actions-buttons {
-          width: 100%;
-          justify-content: center;
-          gap: 10px;
-          flex-wrap: wrap;
-        }
-
+      <style jsx>{`
         .catalog-hero__actions-buttons button {
-          flex: 1 1 160px;
-          min-width: 0;
+          min-width: 148px;
         }
 
-        .catalog-hero__controls {
-          flex-direction: column;
-          align-items: stretch !important;
-          gap: 10px;
-          border-top: 1px solid rgb(var(--color-border-subtle) / 0.32);
-          padding-top: 14px;
-          margin-top: 18px;
+        @media (max-width: 992px) {
+          .catalog-hero {
+            padding: 24px 20px 22px;
+          }
+
+          .catalog-hero__actions-buttons button {
+            flex: 1 1 160px;
+            min-width: 0;
+          }
         }
 
-        .catalog-hero__filter {
-          min-width: 100% !important;
-          flex: 1 1 100% !important;
+        @media (max-width: 768px) {
+          .catalog-hero {
+            padding: 20px 16px 18px;
+            border-radius: 10px;
+          }
+
+          .catalog-hero__top {
+            flex-direction: column;
+            gap: 8px;
+          }
+
+          .catalog-hero__intro {
+            min-width: 100% !important;
+          }
+
+          .catalog-hero__actions {
+            min-width: 100% !important;
+            align-items: stretch !important;
+            gap: 10px !important;
+            margin-top: 0 !important;
+          }
+
+          .catalog-hero__actions-buttons {
+            width: 100%;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+          }
+
+          .catalog-hero__controls {
+            flex-direction: column;
+            align-items: stretch !important;
+            gap: 10px;
+            border-top: 1px solid rgb(var(--color-border-subtle) / 0.32);
+            padding-top: 14px;
+            margin-top: 18px;
+          }
+
+          .catalog-hero__filter {
+            min-width: 100% !important;
+            flex: 1 1 100% !important;
+          }
+
+          .catalog-hero__chip-row {
+            width: 100%;
+            align-items: center;
+          }
+
+          .catalog-hero__access {
+            flex: 1 1 auto;
+          }
+
+          .catalog-hero__count {
+            justify-content: center;
+            border-radius: 18px;
+            padding: 8px 14px;
+          }
         }
 
-        .catalog-hero__chip-row {
-          width: 100%;
-          align-items: center;
+        @media (max-width: 480px) {
+          .catalog-hero {
+            padding: 18px 14px 16px;
+          }
+
+          .catalog-hero__actions-buttons {
+            flex-direction: column;
+          }
+
+          .catalog-hero__actions-buttons button,
+          .catalog-hero__access button {
+            width: 100%;
+            flex: 1 1 auto;
+          }
+
+          .catalog-hero__access {
+            gap: 6px;
+          }
+
+          .catalog-hero__count {
+            padding: 10px 14px;
+            font-size: 12px;
+          }
         }
 
-        .catalog-hero__access {
-          flex: 1 1 auto;
+        .catalog-hero__access::-webkit-scrollbar {
+          display: none;
         }
-
-        .catalog-hero__count {
-          justify-content: center;
-          border-radius: 18px;
-          padding: 8px 14px;
-        }
-      }
-
-      @media (max-width: 480px) {
-        .catalog-hero {
-          padding: 18px 14px 16px;
-        }
-
-        .catalog-hero__actions-buttons {
-          flex-direction: column;
-        }
-
-        .catalog-hero__actions-buttons button,
-        .catalog-hero__access button {
-          width: 100%;
-          flex: 1 1 auto;
-        }
-
-        .catalog-hero__access {
-          gap: 6px;
-        }
-
-        .catalog-hero__count {
-          padding: 10px 14px;
-          font-size: 12px;
-        }
-      }
-
-      .catalog-hero__access::-webkit-scrollbar {
-        display: none;
-      }
-    `}</style>
-    </>
+      `}</style>
+    </GradientPanel>
   );
 }
+
+export default CatalogHero;

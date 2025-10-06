@@ -13,14 +13,6 @@
   width: min(520px, 100%);
   display: grid;
   gap: var(--space-5);
-  padding: var(--space-6);
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--color-border);
-  background: var(--color-surface-elevated);
-  box-shadow: var(--shadow-lg);
-  color: var(--page-text-primary);
-  --color-text-primary: var(--page-text-primary);
-  --color-text-secondary: var(--page-text-muted);
 }
 
 .heading {

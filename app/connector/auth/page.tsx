@@ -4,6 +4,7 @@ import { Suspense, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useAuth } from '../../auth-context';
 import { TurnstileWidget } from '../../components/TurnstileWidget';
+import GradientPanel from '../../components/GradientPanel';
 import { resolveEmailProvider } from '../../../lib/emailProviders';
 import styles from './styles.module.css';
 
@@ -316,7 +317,7 @@ function ConnectorAuthContent() {
 
   return (
     <div className={styles.wrapper}>
-      <div className={styles.card}>
+      <GradientPanel className={styles.card}>
         <div>
           <h1 className={styles.heading}>{header}</h1>
           <p className={styles.subheading}>
@@ -377,7 +378,7 @@ function ConnectorAuthContent() {
             Signed in as <span className={styles.highlight}>{session.user?.email}</span>. Completing authorization…
           </p>
         )}
-      </div>
+      </GradientPanel>
     </div>
   );
 }
