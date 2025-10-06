@@ -18,26 +18,26 @@ function ConnectorAuthContent() {
   const searchParams = useSearchParams();
   const requestId = searchParams.get('request_id');
 
-  const { supabase, session, loading, error, sendMagicLink, signInWithTwitter, signInWithSolanaWallet } = useAuth();
+  const { supabase, session, loading, error, sendMagicLink } = useAuth();
   const [email, setEmail] = useState('');
   const [requestInfo, setRequestInfo] = useState<AuthRequestInfo | null>(null);
   const [status, setStatus] = useState<'init' | 'fetching' | 'waiting' | 'sending' | 'exchanging' | 'redirecting' | 'manual' | 'error'>('init');
   const [message, setMessage] = useState<string>('');
   const [magicLinkSent, setMagicLinkSent] = useState(false);
   const [magicError, setMagicError] = useState<string>('');
-  const [code, setCode] = useState('');
-  const [verifyingCode, setVerifyingCode] = useState(false);
-  const [codeStatus, setCodeStatus] = useState<'idle' | 'success' | 'error'>('idle');
-  const [codeMessage, setCodeMessage] = useState('');
   const [exchangeError, setExchangeError] = useState<string>('');
   const [exchangeAttempted, setExchangeAttempted] = useState(false);
   const [redirectUrl, setRedirectUrl] = useState<string | null>(null);
   const [copyState, setCopyState] = useState<'idle' | 'copied' | 'error'>('idle');
-  const [oauthBusy, setOauthBusy] = useState<'twitter' | 'solana' | null>(null);
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const [turnstileKey, setTurnstileKey] = useState(0);
+  const [turnstileReady, setTurnstileReady] = useState(false);
   const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || '';
   const providerInfo = useMemo(() => resolveEmailProvider(email), [email]);
+
+  useEffect(() => {
+    setTurnstileReady(false);
+  }, [turnstileKey]);
 
   useEffect(() => {
     if (!requestId) {
@@ -167,10 +167,13 @@ function ConnectorAuthContent() {
     };
   }, [requestId, requestInfo, session, supabase, exchangeAttempted]);
 
+  const fatalRequestError = status === 'error' && !requestInfo;
+
   const header = useMemo(() => {
+    if (fatalRequestError) return 'Dexter connection expired';
     if (requestInfo?.scope?.includes('voice')) return 'Connect Dexter Voice';
     return 'Authorize Dexter Connector';
-  }, [requestInfo]);
+  }, [fatalRequestError, requestInfo]);
 
   const connectorName = useMemo(() => {
     if (!requestInfo) return 'Connector';
@@ -229,15 +232,12 @@ function ConnectorAuthContent() {
       return;
     }
     setMagicError('');
-    setCodeStatus('idle');
-    setCodeMessage('');
     setMagicLinkSent(false);
     setStatus('sending');
     const redirectPath = requestId ? `${window.location.origin}/connector/auth?request_id=${encodeURIComponent(requestId)}` : undefined;
     const result = await sendMagicLink(email.trim(), { redirectTo: redirectPath, captchaToken: captchaToken || undefined });
     if (result.success) {
       setMagicLinkSent(true);
-      setCodeMessage('Check your inbox for the six-digit code and enter it below to finish signing in.');
     } else {
       setMagicError(result.message);
     }
@@ -245,144 +245,36 @@ function ConnectorAuthContent() {
     if (siteKey) {
       setCaptchaToken(null);
       setTurnstileKey((key) => key + 1);
-    }
-  };
-
-  const redirectPathForRequest = () => (requestId ? `${window.location.origin}/connector/auth?request_id=${encodeURIComponent(requestId)}` : undefined);
-
-  const handleVerifyCode = async () => {
-    if (!supabase) {
-      setCodeStatus('error');
-      setCodeMessage('Authentication not initialized. Refresh and try again.');
-      return;
-    }
-
-    const trimmedEmail = email.trim().toLowerCase();
-    if (!trimmedEmail) {
-      setCodeStatus('error');
-      setCodeMessage('Enter the email you used above before verifying the code.');
-      return;
-    }
-
-    const numericCode = code.replace(/[^0-9]/g, '');
-    if (numericCode.length !== 6) {
-      setCodeStatus('error');
-      setCodeMessage('Enter the six-digit code from your email.');
-      return;
-    }
-
-    try {
-      setVerifyingCode(true);
-      setCodeStatus('idle');
-      setCodeMessage('Verifying code…');
-      const { error: verifyError } = await supabase.auth.verifyOtp({
-        email: trimmedEmail,
-        token: numericCode,
-        type: 'email',
-      } as any);
-
-      if (verifyError) {
-        throw verifyError;
-      }
-
-      setCodeStatus('success');
-      setCodeMessage('Code accepted! Returning you to the connector…');
-      setMagicLinkSent(true);
-      setStatus('waiting');
-      setCode(numericCode);
-    } catch (err: any) {
-      const message = err?.message || 'Unable to verify the code. Double-check and try again.';
-      setCodeStatus('error');
-      setCodeMessage(message);
-    } finally {
-      setVerifyingCode(false);
-    }
-  };
-
-  const handleTwitterLogin = async () => {
-    if (siteKey && !captchaToken) {
-      setMagicError('Complete the verification challenge to continue.');
-      setStatus('waiting');
-      return;
-    }
-    setMagicError('');
-    setMagicLinkSent(false);
-    setOauthBusy('twitter');
-    try {
-      const result = await signInWithTwitter({ redirectTo: redirectPathForRequest(), captchaToken: captchaToken || undefined });
-      if (!result.success && result.message) {
-        setMagicError(result.message);
-        setStatus('waiting');
-      }
-    } catch (err: any) {
-      setMagicError(err?.message || 'Unable to sign in with Twitter.');
-      setStatus('waiting');
-    } finally {
-      setOauthBusy(null);
-      if (siteKey) {
-        setCaptchaToken(null);
-        setTurnstileKey((key) => key + 1);
-      }
-    }
-  };
-
-  const handleSolanaLogin = async () => {
-    if (siteKey && !captchaToken) {
-      setMagicError('Complete the verification challenge to continue.');
-      setStatus('waiting');
-      return;
-    }
-    setMagicError('');
-    setMagicLinkSent(false);
-    setOauthBusy('solana');
-    try {
-      const result = await signInWithSolanaWallet({ redirectTo: redirectPathForRequest(), captchaToken: captchaToken || undefined });
-      if (!result.success && result.message) {
-        setMagicError(result.message);
-        setStatus('waiting');
-      }
-    } catch (err: any) {
-      setMagicError(err?.message || 'Unable to sign in with Solana wallet.');
-      setStatus('waiting');
-    } finally {
-      setOauthBusy(null);
-      if (siteKey) {
-        setCaptchaToken(null);
-        setTurnstileKey((key) => key + 1);
-      }
+      setTurnstileReady(false);
     }
   };
 
   const renderLoginForm = () => (
     <div className={styles['login-form']}>
       <p className={styles['login-copy']}>
-        Send a magic link to your inbox, then enter the six-digit code below to finish connecting. The link works too, but the code keeps everything inside this window (perfect for Claude and ChatGPT).
+        Enter your email address and we’ll send a magic link so you can finish the connection in this window.
       </p>
-      <div className={styles['provider-buttons']}>
-        <button
-          type="button"
-          onClick={handleTwitterLogin}
-          disabled={!!oauthBusy || status === 'sending'}
-          className={`${styles['provider-btn']} ${styles['provider-btn--twitter']}`}
-        >
-          {oauthBusy === 'twitter' ? 'Connecting…' : 'Continue with Twitter'}
-        </button>
-        <button
-          type="button"
-          onClick={handleSolanaLogin}
-          disabled={!!oauthBusy || status === 'sending'}
-          className={`${styles['provider-btn']} ${styles['provider-btn--wallet']}`}
-        >
-          {oauthBusy === 'solana' ? 'Connecting…' : 'Sign in with Solana wallet'}
-        </button>
-      </div>
       {siteKey && (
-        <TurnstileWidget
-          refreshKey={turnstileKey}
-          siteKey={siteKey}
-          onToken={setCaptchaToken}
-          className={styles['turnstile-container']}
-        />
+        <div className={styles['turnstile-shell']} data-ready={turnstileReady ? 'true' : 'false'}>
+          {!turnstileReady && (
+            <div className={styles['turnstile-placeholder']} role="status" aria-live="polite">
+              <span className={styles['turnstile-spinner']} aria-hidden="true" />
+              <span>Loading verification…</span>
+            </div>
+          )}
+          <TurnstileWidget
+            refreshKey={turnstileKey}
+            siteKey={siteKey}
+            onToken={(token) => {
+              setCaptchaToken(token);
+              if (token) setTurnstileReady(true);
+            }}
+            onWidgetLoad={() => setTurnstileReady(true)}
+            className={styles['turnstile-frame']}
+            theme="light"
+            appearance="always"
+          />
+        </div>
       )}
       <div className={styles['login-row']}>
         <input
@@ -395,7 +287,7 @@ function ConnectorAuthContent() {
         <button
           type="button"
           onClick={handleSendMagicLink}
-          disabled={!email.trim() || status === 'sending' || !!oauthBusy}
+          disabled={!email.trim() || status === 'sending'}
           className={styles['send-btn']}
         >
           {status === 'sending' ? 'Sending…' : 'Send magic link'}
@@ -404,7 +296,7 @@ function ConnectorAuthContent() {
       {magicLinkSent && (
         <div className={styles['copy-block']}>
           <p className={styles['status-text']}>
-            Magic link sent! Enter the six-digit code from that email below or open the link in this browser.
+            Magic link sent! Open it in this browser to continue.
           </p>
           {providerInfo && (
             <a
@@ -419,52 +311,6 @@ function ConnectorAuthContent() {
         </div>
       )}
       {magicError && <p className={`${styles['status-text']} ${styles['status-error']}`}>{magicError}</p>}
-      <div className={styles['code-panel']}>
-        <div className={styles['code-header']}>
-          <h3 className={styles['code-title']}>Have the code?</h3>
-          <p className={styles['code-copy']}>
-            Enter the six digits from your email to complete sign-in without leaving this window.
-          </p>
-        </div>
-        <div className={styles['code-row']}>
-          <input
-            type="text"
-            inputMode="numeric"
-            pattern="[0-9]*"
-            maxLength={6}
-            placeholder="123456"
-            value={code}
-            onChange={(event) => setCode(event.target.value.replace(/[^0-9]/g, ''))}
-            onKeyDown={(event) => {
-              if (event.key === 'Enter') {
-                event.preventDefault();
-                handleVerifyCode();
-              }
-            }}
-            className={styles['code-input']}
-            aria-label="Six digit verification code"
-          />
-          <button
-            type="button"
-            onClick={handleVerifyCode}
-            disabled={verifyingCode || !email.trim() || code.replace(/[^0-9]/g, '').length < 6}
-            className={styles['code-btn']}
-          >
-            {verifyingCode ? 'Verifying…' : 'Verify code'}
-          </button>
-        </div>
-        {codeMessage && (
-          <p
-            className={
-              codeStatus === 'error'
-                ? `${styles['status-text']} ${styles['status-error']}`
-                : `${styles['status-text']} ${styles['status-success']}`
-            }
-          >
-            {codeMessage}
-          </p>
-        )}
-      </div>
     </div>
   );
 
@@ -474,22 +320,34 @@ function ConnectorAuthContent() {
         <div>
           <h1 className={styles.heading}>{header}</h1>
           <p className={styles.subheading}>
-            {requestInfo
-              ? 'Approve access so Dexter can work with your wallets and tools inside the connector.'
-              : 'Preparing authorization…'}
+            {fatalRequestError
+              ? 'We couldn’t link your Dexter account.'
+              : requestInfo
+                ? 'Approve access so Dexter can work with your wallets and tools inside the connector.'
+                : 'Preparing authorization…'}
           </p>
         </div>
 
-        {error && <p className={`${styles.message} ${styles['message--error']}`}>{error}</p>}
-        {message && <p className={`${styles.message} ${styles['message--error']}`}>{message}</p>}
-        {exchangeError && <p className={`${styles.message} ${styles['message--error']}`}>{exchangeError}</p>}
-        {status === 'redirecting' && redirectUrl && (
+        {fatalRequestError ? (
+          <p className={`${styles.message} ${styles['message--error']}`}>
+            Close this tab and retry the <strong>Connect to Dexter</strong> flow from the external app.
+          </p>
+        ) : (
+          <>
+            {error && <p className={`${styles.message} ${styles['message--error']}`}>{error}</p>}
+            {message && <p className={`${styles.message} ${styles['message--error']}`}>{message}</p>}
+          </>
+        )}
+        {!fatalRequestError && exchangeError && (
+          <p className={`${styles.message} ${styles['message--error']}`}>{exchangeError}</p>
+        )}
+        {!fatalRequestError && status === 'redirecting' && redirectUrl && (
           <p className={styles['redirect-hint']}>
             Redirecting… If nothing happens, <a href={redirectUrl}>click here to continue</a>.
           </p>
         )}
 
-        {status === 'manual' && redirectUrl && (
+        {status === 'manual' && redirectUrl && !fatalRequestError && (
           <div className={styles['manual-panel']}>
             <div>
               <h2 className={styles['manual-title']}>Finish in {connectorName}</h2>
@@ -512,7 +370,7 @@ function ConnectorAuthContent() {
           </div>
         )}
 
-        {!session && !loading && renderLoginForm()}
+        {!session && !loading && !fatalRequestError && renderLoginForm()}
         {loading && <p className={styles['status-text']}>Loading authentication…</p>}
         {session && requestInfo && status !== 'manual' && (
           <p className={styles['status-text']}>
