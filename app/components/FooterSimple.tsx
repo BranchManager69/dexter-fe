@@ -22,7 +22,13 @@ export function FooterSimple() {
         <span>branch.bet</span>
       </a>
 
-      <div className={styles.centerpiece} aria-hidden="true">$DEXTER coming soon</div>
+      <div className={styles.centerpiece} aria-hidden="true">
+        <img
+          src="/assets/icons/jup.svg"
+          alt="Jupiter token"
+          className={styles.centerpieceIcon}
+        />
+      </div>
 
       <nav className={styles.links} aria-label="Footer links">
         {SITE.footerLinks.map((item) => (

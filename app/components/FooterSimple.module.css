@@ -45,6 +45,12 @@
   width: 100%;
   padding: 2px 0;
 }
+
+.centerpieceIcon {
+  display: inline-block;
+  width: 24px;
+  height: auto;
+}
 .links {
   display: flex;
   justify-self: end;

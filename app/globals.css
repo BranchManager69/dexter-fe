@@ -431,7 +431,7 @@ textarea {
   background: rgba(255, 249, 242, 0.95);
   padding: 10px 12px;
   color: rgba(42, 22, 11, 0.85);
-  font-size: 0.85rem;
+  font-size: 1rem;
 }
 
 .account-menu__input:focus-visible {
