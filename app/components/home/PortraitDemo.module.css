@@ -1,5 +1,6 @@
 .section {
-  margin: var(--space-10) auto;
+  margin: 0 auto;
+  margin-block: clamp(4rem, 11vh, 6.5rem);
   max-width: var(--max-width);
   width: 100%;
   padding: 0 var(--space-7);
@@ -146,7 +147,7 @@
 
 @media (max-width: 520px) {
   .section {
-    margin: var(--space-9) auto;
+    margin-block: clamp(3.2rem, 12vh, 4.5rem);
     padding: 0 var(--space-4);
   }
 }

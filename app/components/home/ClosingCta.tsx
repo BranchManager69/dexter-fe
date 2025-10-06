@@ -3,24 +3,26 @@ import styles from './ClosingCta.module.css';
 
 export function ClosingCta() {
   return (
-    <section className={`section ${styles.wrapper}`}>
-      <div className={styles.shell}>
+    <aside className={styles.floating} aria-label="Launch Dexter beta">
+      <div className={styles.glow} aria-hidden="true" />
+      <div className={styles.card} data-floating>
         <div className={styles.copy}>
-          <span className="eyebrow">Ready when you are</span>
-          <h2>Launch Dexter now.</h2>
-          <p>Hands-free voice beta in moments.</p>
+          <h2>
+            Dexter Voice <span className={styles.betaMarker}>beta</span>
+          </h2>
+          <p>Crypto's first talking agent.</p>
         </div>
         <div className={styles.actions}>
           <Link
             href="https://beta.dexter.cash"
-            className={`button button--primary ${styles.primaryButton}`}
+            className={`button ${styles.primaryButton}`}
             target="_blank"
             rel="noreferrer"
           >
-            Open the beta
+            Try now
           </Link>
         </div>
       </div>
-    </section>
+    </aside>
   );
 }

@@ -70,7 +70,6 @@ body {
   letter-spacing: -0.01em;
   -webkit-font-smoothing: antialiased;
   overscroll-behavior-y: none;
-  padding-bottom: var(--footer-height);
 }
 
 body.overlay-mode {
@@ -500,8 +499,8 @@ textarea {
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: #111;
-  background: rgba(255, 244, 232, 0.85);
-  border: 1px solid rgba(242, 108, 24, 0.18);
+  background: transparent;
+  border: none;
   pointer-events: none;
   z-index: 0;
 }
@@ -634,7 +633,7 @@ textarea {
 
 .main-content {
   flex: 1;
-  padding: var(--space-7) var(--space-7) calc(var(--space-8) + var(--footer-height));
+  padding: var(--space-7) var(--space-7) calc(var(--space-7) + var(--footer-height) + env(safe-area-inset-bottom, 0px));
   color: var(--page-text-primary);
 }
 
@@ -769,7 +768,7 @@ textarea {
   }
 
   .main-content {
-    padding: var(--space-6) var(--space-4) calc(var(--space-7) + var(--footer-height));
+    padding: var(--space-6) var(--space-4) calc(var(--space-5) + var(--footer-height) + env(safe-area-inset-bottom, 0px));
   }
 
   .section {

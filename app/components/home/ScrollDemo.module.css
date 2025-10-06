@@ -1,5 +1,6 @@
 .section {
-  margin: var(--space-9) auto;
+  margin: 0 auto;
+  margin-block: clamp(3.5rem, 9vh, 5rem);
   max-width: 1080px;
   width: 100%;
   padding: 0 var(--space-7);
