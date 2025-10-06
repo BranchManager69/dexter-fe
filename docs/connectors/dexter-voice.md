@@ -1,4 +1,4 @@
-# Voice Agent Tour
+# Dexter Voice
 
 Dexter’s baseline voice flow is built around three phases that happen inside a single command window.
 
@@ -13,3 +13,5 @@ Dexter’s baseline voice flow is built around three phases that happen inside a
 - Every action is logged so you can replay or share with auditors.
 
 Want to see this in motion? Trigger the CTA on the homepage (`Open the beta`) to open the shared demo tenant, or request production access from the ops team.
+
+_TODO: Add configuration steps, API hooks, and launch checklist._

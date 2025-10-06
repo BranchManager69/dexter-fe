@@ -31,10 +31,56 @@ type DeepResponse = {
 };
 
 const CONNECTOR_LABELS: Record<string, string> = {
-  realtime: 'Realtime Voice',
-  alexa: 'Alexa Skill',
+  realtime: 'Dexter Voice (beta)',
   chatgpt: 'ChatGPT Connector',
   claude: 'Claude Connector',
+  alexa: 'Alexa Skill',
+};
+
+type ReleaseTone = 'available' | 'development' | 'future';
+
+const RELEASE_STATES: Record<string, { tone: ReleaseTone; text: string }> = {
+  realtime: { tone: 'available', text: 'Available now' },
+  chatgpt: { tone: 'development', text: 'In development' },
+  claude: { tone: 'available', text: 'Available now' },
+  alexa: { tone: 'future', text: 'Future release' },
+};
+
+const DOC_LINKS: Record<string, string> = {
+  realtime: '/docs/#/connectors/dexter-voice',
+  chatgpt: '/docs/#/connectors/chatgpt-connector',
+  claude: '/docs/#/connectors/claude-connector',
+  alexa: '/docs/#/connectors/alexa-skill',
+};
+
+const RELEASE_TONE_STYLE: Record<ReleaseTone, { background: string; color: string; borderTop: string; shadow: string }> = {
+  available: {
+    background: 'linear-gradient(120deg, rgba(36, 142, 88, 0.95), rgba(18, 109, 68, 0.85))',
+    color: '#d8ffee',
+    borderTop: '1px solid rgba(214, 255, 236, 0.55)',
+    shadow: '0 -6px 18px rgba(18, 109, 68, 0.42)',
+  },
+  development: {
+    background: 'linear-gradient(120deg, rgba(230, 162, 32, 0.96), rgba(192, 118, 14, 0.86))',
+    color: '#fff5e1',
+    borderTop: '1px solid rgba(255, 231, 189, 0.55)',
+    shadow: '0 -6px 18px rgba(192, 118, 14, 0.38)',
+  },
+  future: {
+    background: 'linear-gradient(120deg, rgba(204, 58, 58, 0.96), rgba(151, 33, 40, 0.9))',
+    color: '#ffe4e4',
+    borderTop: '1px solid rgba(255, 204, 204, 0.55)',
+    shadow: '0 -6px 18px rgba(151, 33, 40, 0.45)',
+  },
+};
+
+type ConnectorEntry = {
+  key: string;
+  label: string;
+  status: ConnectorStatus;
+  tone: ReleaseTone;
+  releaseText: string;
+  href: string | null;
 };
 
 const ADMIN_ROLES = new Set(['admin', 'superadmin']);
@@ -140,23 +186,39 @@ export function HealthStatus() {
   }, []);
 
   const connectorEntries = useMemo(() => {
-    if (!snapshot) return [] as Array<{ key: string; label: string; status: ConnectorStatus }>;
-    const entries: Array<{ key: string; label: string; status: ConnectorStatus }> = [];
-    const realtime = snapshot.realtime;
-    if (realtime) {
-      entries.push({ key: 'realtime', label: CONNECTOR_LABELS.realtime, status: realtime });
-    }
+    if (!snapshot) return [] as ConnectorEntry[];
     const connectors = snapshot.connectors ?? {};
-    for (const key of ['alexa', 'chatgpt', 'claude']) {
-      const status = connectors[key];
+    const orderedKeys = ['realtime', 'chatgpt', 'claude', 'alexa'];
+    const entries: ConnectorEntry[] = [];
+
+    for (const key of orderedKeys) {
+      const status = key === 'realtime' ? snapshot.realtime : connectors[key];
       if (!status) continue;
-      entries.push({ key, label: CONNECTOR_LABELS[key], status });
+      const release = RELEASE_STATES[key] ?? { tone: 'available' as ReleaseTone, text: 'Available now' };
+      entries.push({
+        key,
+        label: CONNECTOR_LABELS[key] ?? key,
+        status,
+        tone: release.tone,
+        releaseText: release.text,
+        href: DOC_LINKS[key] ?? null,
+      });
     }
-    // include any other connectors dynamically
+
     for (const [key, status] of Object.entries(connectors)) {
-      if (['alexa', 'chatgpt', 'claude'].includes(key)) continue;
-      entries.push({ key, label: CONNECTOR_LABELS[key] ?? key, status: status ?? { ok: false } });
+      if (orderedKeys.includes(key)) continue;
+      if (!status) continue;
+      const release = RELEASE_STATES[key] ?? { tone: 'available' as ReleaseTone, text: 'Available now' };
+      entries.push({
+        key,
+        label: CONNECTOR_LABELS[key] ?? key,
+        status,
+        tone: release.tone,
+        releaseText: release.text,
+        href: DOC_LINKS[key] ?? null,
+      });
     }
+
     return entries;
   }, [snapshot]);
 
@@ -192,10 +254,10 @@ export function HealthStatus() {
           const errorData = JSON.parse(text);
           if (errorData?.error === 'probe_rate_limited') {
             const retryMs = Number(errorData.retry_after_ms) || 0;
-            const retryMinutes = Math.ceil(retryMs / 60000);
-            message = retryMinutes > 0
-              ? `Probe recently ran. Try again in about ${retryMinutes} minute${retryMinutes === 1 ? '' : 's'}.`
-              : 'Probe recently ran. Try again soon.';
+            const lastRunLabel = typeof errorData.last_run === 'string' ? formatTimestamp(errorData.last_run) : null;
+            message = lastRunLabel
+              ? `Dexter Deep Health was refreshed less than 15 minutes ago (last checked ${lastRunLabel}). Please try again later.`
+              : 'Dexter Deep Health was refreshed less than 15 minutes ago. Please try again later.';
           } else if (typeof errorData?.error === 'string') {
             message = errorData.error;
           }
@@ -221,9 +283,13 @@ export function HealthStatus() {
     if (canTriggerProbe) {
       runDeepProbe();
     } else {
+      const message = lastRun
+        ? `Dexter Deep Health was refreshed less than 15 minutes ago (last checked ${lastRun}). Please try again later.`
+        : 'Dexter Deep Health was refreshed less than 15 minutes ago. Please try again later.';
+      setRunError(message);
       setRefreshIndex(prev => prev + 1);
     }
-  }, [canTriggerProbe, loading, running, runDeepProbe]);
+  }, [canTriggerProbe, lastRun, loading, running, runDeepProbe]);
 
   return (
     <section
@@ -250,34 +316,48 @@ export function HealthStatus() {
             </div>
           </div>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
-          <div style={{ fontSize: 12, opacity: 0.7 }}>
-            Last run · <span style={{ color: '#3c1900', fontWeight: 600 }}>{lastRun}</span>
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'minmax(0, 1fr) auto',
+          alignItems: 'center',
+          gap: 12,
+          width: '100%',
+        }}>
+          <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 2 }}>
+            <span style={{ fontSize: 11, letterSpacing: '.12em', textTransform: 'uppercase', opacity: 0.65, textAlign: 'left' }}>
+              Last checked
+            </span>
+            <span style={{ fontSize: 12, color: '#3c1900', fontWeight: 500, whiteSpace: 'nowrap', textAlign: 'left' }}>{lastRun}</span>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+            <button
+              type="button"
+              onClick={handleRefresh}
+              style={{
+                padding: '8px 14px',
+                borderRadius: 4,
+                border: canTriggerProbe
+                  ? '1px solid rgba(134, 42, 0, 0.55)'
+                  : '1px solid rgba(134, 42, 0, 0.35)',
+                background: canTriggerProbe
+                  ? 'linear-gradient(135deg, rgba(240, 108, 0, 0.95), rgba(186, 58, 0, 0.88))'
+                  : 'rgba(240, 108, 0, 0.26)',
+                color: '#fff3e0',
+                fontSize: 11,
+                letterSpacing: '.11em',
+                textTransform: 'uppercase',
+                lineHeight: 1,
+                whiteSpace: 'nowrap',
+                flexShrink: 0,
+              }}
+              disabled={loading || running}
+            >
+              {loading || running ? 'Refreshing…' : 'Refresh'}
+            </button>
           </div>
           {runError && (
-            <div style={{ fontSize: 11, color: '#6b1600' }}>{runError}</div>
+            <div style={{ fontSize: 11, color: '#6b1600', gridColumn: '1 / -1' }}>{runError}</div>
           )}
-          <button
-            type="button"
-            onClick={handleRefresh}
-            style={{
-              padding: '8px 12px',
-              borderRadius: 10,
-              border: canTriggerProbe
-                ? '1px solid rgba(255, 214, 153, 0.55)'
-                : '1px solid rgba(255, 173, 96, 0.35)',
-              background: canTriggerProbe
-                ? 'linear-gradient(135deg, rgba(255, 229, 180, 0.35), rgba(255, 188, 120, 0.28))'
-                : 'rgba(255, 240, 224, 0.32)',
-              color: '#4c1d00',
-              fontSize: 12,
-              letterSpacing: '.14em',
-              textTransform: 'uppercase',
-            }}
-            disabled={loading || running}
-          >
-            {loading || running ? 'Refreshing…' : 'Refresh status'}
-          </button>
         </div>
       </header>
 
@@ -303,19 +383,40 @@ export function HealthStatus() {
               key={entry.key}
               style={{
                 borderRadius: 10,
-                border: '1px solid rgba(255, 189, 128, 0.4)',
-                background: 'rgba(255, 238, 216, 0.55)',
+                border: 'none',
+                background: 'transparent',
                 padding: '16px 18px',
                 display: 'flex',
                 flexDirection: 'column',
                 gap: 8,
+                overflow: 'hidden',
               }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, justifyContent: 'space-between' }}>
-                <div style={{ fontSize: 14, fontWeight: 600, color: '#4c1d00' }}>{entry.label}</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                 <StatusLight ok={entry.status.ok} />
+                {entry.href ? (
+                  <a
+                    href={entry.href}
+                    style={{
+                      fontSize: 14,
+                      fontWeight: 600,
+                      color: '#4c1d00',
+                      textDecoration: 'none',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 6,
+                    }}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    {entry.label}
+                    <span style={{ fontSize: 12, opacity: 0.7 }}>↗</span>
+                  </a>
+                ) : (
+                  <span style={{ fontSize: 14, fontWeight: 600, color: '#4c1d00' }}>{entry.label}</span>
+                )}
               </div>
-              <div style={{ fontSize: 12, opacity: 0.7 }}>Duration: {formatDuration(entry.status.duration_ms)}</div>
+              <div style={{ fontSize: 12, opacity: 0.7 }}>Latency: {formatDuration(entry.status.duration_ms)}</div>
               {entry.status.error && (
                 <div style={{
                   fontSize: 12,
@@ -328,6 +429,28 @@ export function HealthStatus() {
                   {entry.status.error}
                 </div>
               )}
+              {(() => {
+                const toneStyle = RELEASE_TONE_STYLE[entry.tone];
+                return (
+                  <div
+                    style={{
+                      marginTop: 'auto',
+                      padding: '7px 0',
+                      textAlign: 'center',
+                      fontSize: 11,
+                      fontWeight: 700,
+                      letterSpacing: '.12em',
+                      textTransform: 'uppercase',
+                      color: toneStyle.color,
+                      background: toneStyle.background,
+                      borderTop: toneStyle.borderTop,
+                      boxShadow: toneStyle.shadow,
+                    }}
+                  >
+                    {entry.releaseText}
+                  </div>
+                );
+              })()}
             </div>
           ))}
           {!connectorEntries.length && !loading && (

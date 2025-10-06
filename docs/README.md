@@ -3,17 +3,21 @@
 Pick the lane that matches what you need right now. Everything in this book renders at [docs.dexter.cash](https://docs.dexter.cash) once it is published.
 
 <div class="landing-grid">
-  <a class="landing-card" href="product/">
-    <h3>Product</h3>
-    <p>Understand the Dexter voice agent, key use cases, and workflows you can run today.</p>
+  <a class="landing-card" href="welcome/">
+    <h3>Welcome</h3>
+    <p>Start with the big picture, quick-start guides, and token fundamentals.</p>
+  </a>
+  <a class="landing-card" href="connectors/">
+    <h3>Dexter Connectors</h3>
+    <p>Deep dives for each connector, including Dexter Voice, ChatGPT, Claude, and Alexa.</p>
   </a>
   <a class="landing-card" href="build/">
-    <h3>Build</h3>
-    <p>Spin up the frontend, add assets, and extend the MCP + voice stack in development.</p>
+    <h3>Build &amp; Operations</h3>
+    <p>Stand up environments, manage assets, and review system architecture.</p>
   </a>
-  <a class="landing-card" href="reference/">
-    <h3>Reference</h3>
-    <p>Design direction, architecture notes, and links out to the broader Dexter platform.</p>
+  <a class="landing-card" href="appendix/">
+    <h3>Appendix</h3>
+    <p>Glossary, API pointers, and release notes you can reference at any time.</p>
   </a>
 </div>
 
