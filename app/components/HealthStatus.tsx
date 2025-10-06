@@ -293,19 +293,35 @@ export function HealthStatus() {
 
   return (
     <section
+      className="deep-health-panel"
       style={{
+        position: 'relative',
         marginBottom: 28,
-        borderRadius: 12,
-        padding: '22px 24px 20px',
-        background: 'linear-gradient(135deg, rgba(255, 122, 18, 0.22), rgba(255, 177, 82, 0.2))',
-        border: '1px solid rgba(255, 173, 96, 0.45)',
-        boxShadow: '0 24px 48px rgba(255, 108, 24, 0.28)',
+        padding: '22px 28px 20px',
         display: 'flex',
         flexDirection: 'column',
         gap: 18,
         color: '#2b1400',
       }}
     >
+      <div aria-hidden style={{
+        position: 'absolute',
+        inset: '-16px',
+        borderRadius: 24,
+        background: 'linear-gradient(130deg, rgba(255, 138, 76, 0.12), rgba(255, 203, 148, 0.08))',
+        boxShadow: '0 36px 64px rgba(255, 116, 28, 0.28)',
+        filter: 'blur(0px)',
+        opacity: 0.92,
+        pointerEvents: 'none',
+      }} />
+      <div aria-hidden style={{
+        position: 'absolute',
+        inset: '-26px',
+        borderRadius: 36,
+        background: 'radial-gradient(70% 90% at 50% 0%, rgba(255, 208, 173, 0.25), rgba(255, 142, 80, 0) 70%)',
+        pointerEvents: 'none',
+      }} />
+      <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', gap: 18 }}>
       <header style={{ display: 'flex', flexWrap: 'wrap', gap: 16, alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <StatusLight ok={overallOk} />
@@ -315,49 +331,6 @@ export function HealthStatus() {
               {loading ? 'Checking…' : overallOk ? 'All systems operational' : 'Attention required'}
             </div>
           </div>
-        </div>
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'minmax(0, 1fr) auto',
-          alignItems: 'center',
-          gap: 12,
-          width: '100%',
-        }}>
-          <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 2 }}>
-            <span style={{ fontSize: 11, letterSpacing: '.12em', textTransform: 'uppercase', opacity: 0.65, textAlign: 'left' }}>
-              Last checked
-            </span>
-            <span style={{ fontSize: 12, color: '#3c1900', fontWeight: 500, whiteSpace: 'nowrap', textAlign: 'left' }}>{lastRun}</span>
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-            <button
-              type="button"
-              onClick={handleRefresh}
-              style={{
-                padding: '8px 14px',
-                borderRadius: 4,
-                border: canTriggerProbe
-                  ? '1px solid rgba(134, 42, 0, 0.55)'
-                  : '1px solid rgba(134, 42, 0, 0.35)',
-                background: canTriggerProbe
-                  ? 'linear-gradient(135deg, rgba(240, 108, 0, 0.95), rgba(186, 58, 0, 0.88))'
-                  : 'rgba(240, 108, 0, 0.26)',
-                color: '#fff3e0',
-                fontSize: 11,
-                letterSpacing: '.11em',
-                textTransform: 'uppercase',
-                lineHeight: 1,
-                whiteSpace: 'nowrap',
-                flexShrink: 0,
-              }}
-              disabled={loading || running}
-            >
-              {loading || running ? 'Refreshing…' : 'Refresh'}
-            </button>
-          </div>
-          {runError && (
-            <div style={{ fontSize: 11, color: '#6b1600', gridColumn: '1 / -1' }}>{runError}</div>
-          )}
         </div>
       </header>
 
@@ -468,6 +441,63 @@ export function HealthStatus() {
           )}
         </div>
       )}
+      <footer style={{
+        marginTop: 12,
+        display: 'grid',
+        gridTemplateColumns: 'auto minmax(0, 1fr)',
+        gap: 16,
+        alignItems: 'center',
+      }}>
+        <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
+          <button
+            type="button"
+            onClick={handleRefresh}
+            style={{
+              padding: '8px 16px',
+              borderRadius: 4,
+              border: canTriggerProbe
+                ? '1px solid rgba(134, 42, 0, 0.55)'
+                : '1px solid rgba(134, 42, 0, 0.35)',
+              background: canTriggerProbe
+                ? 'linear-gradient(135deg, rgba(240, 108, 0, 0.95), rgba(186, 58, 0, 0.88))'
+                : 'rgba(240, 108, 0, 0.26)',
+              color: '#fff3e0',
+              fontSize: 11,
+              letterSpacing: '.11em',
+              textTransform: 'uppercase',
+              lineHeight: 1,
+              whiteSpace: 'nowrap',
+              flexShrink: 0,
+            }}
+            disabled={loading || running}
+          >
+            {loading || running ? 'Refreshing…' : 'Refresh'}
+          </button>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'flex-end', gap: 2 }}>
+          <span style={{ fontSize: 11, letterSpacing: '.12em', textTransform: 'uppercase', opacity: 0.65, textAlign: 'right' }}>
+            Last checked
+          </span>
+          <span style={{ fontSize: 12, color: '#3c1900', fontWeight: 500, whiteSpace: 'nowrap', textAlign: 'right' }}>{lastRun}</span>
+        </div>
+        {runError && (
+          <div style={{ fontSize: 11, color: '#6b1600', gridColumn: '1 / -1' }}>{runError}</div>
+        )}
+      </footer>
+      <style jsx>{`
+        @media (max-width: 720px) {
+          .deep-health-panel {
+            padding: 18px 16px 16px;
+          }
+        }
+
+        @media (max-width: 480px) {
+          .deep-health-panel {
+            padding: 16px 14px 14px;
+          }
+        }
+      `}</style>
+      </div>
     </section>
   );
 }

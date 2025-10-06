@@ -13,7 +13,7 @@
     "dexter-stream:restart": "pm2 restart dexter-stream",
     "dexter-stream:status": "pm2 show dexter-stream",
     "docs:serve": "honkit serve docs --port 3055",
-    "docs:build": "honkit build docs docs/_book",
+    "docs:build": "honkit build docs docs/_book && bash docs/tools/postbuild.sh",
     "docs:deploy": "bash docs/tools/docs-deploy.sh"
   },
   "dependencies": {

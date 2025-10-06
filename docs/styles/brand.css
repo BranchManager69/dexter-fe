@@ -48,24 +48,27 @@ body {
 .book-summary .chapter > a,
 .book-summary .chapter > span {
   display: block;
-  padding: 0.55rem 0.75rem;
-  border-radius: 4px;
-  color: var(--text-muted);
-  font-weight: 600;
-  letter-spacing: 0.06em;
+  padding: 0.65rem 0.85rem;
+  border-radius: 6px;
+  color: rgba(42, 22, 11, 0.72);
+  font-weight: 700;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  font-size: 0.7rem;
-  transition: color 0.2s ease, background 0.2s ease;
+  font-size: 0.82rem;
+  transition: color 0.2s ease, background 0.2s ease, transform 0.2s ease;
 }
 
 .book-summary .chapter > a:hover {
   color: var(--accent);
-  background: rgba(242, 108, 24, 0.12);
+  background: rgba(242, 108, 24, 0.14);
+  transform: translateX(2px);
 }
 
-.book-summary .chapter.active > a {
+.book-summary .chapter.active > a,
+.book-summary .chapter.active > span {
   color: var(--accent-strong);
-  background: rgba(242, 108, 24, 0.2);
+  background: rgba(242, 108, 24, 0.18);
+  box-shadow: inset 0 0 0 1px rgba(242, 108, 24, 0.3);
 }
 
 .book-summary .articles {
@@ -76,10 +79,11 @@ body {
 
 .book-summary .articles a {
   display: block;
-  padding: 0.45rem 0 0.45rem 0.5rem;
+  padding: 0.5rem 0 0.5rem 0.55rem;
   margin: 0.05rem 0;
-  color: var(--text-muted);
-  font-size: 0.86rem;
+  color: rgba(42, 22, 11, 0.78);
+  font-size: 0.96rem;
+  font-weight: 500;
   border-radius: 4px;
   transition: color 0.2s ease, background 0.2s ease;
 }

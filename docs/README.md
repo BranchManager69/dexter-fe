@@ -11,10 +11,6 @@ Pick the lane that matches what you need right now. Everything in this book rend
     <h3>Dexter Connectors</h3>
     <p>Deep dives for each connector, including Dexter Voice, ChatGPT, Claude, and Alexa.</p>
   </a>
-  <a class="landing-card" href="build/">
-    <h3>Build &amp; Operations</h3>
-    <p>Stand up environments, manage assets, and review system architecture.</p>
-  </a>
   <a class="landing-card" href="appendix/">
     <h3>Appendix</h3>
     <p>Glossary, API pointers, and release notes you can reference at any time.</p>
@@ -22,5 +18,7 @@ Pick the lane that matches what you need right now. Everything in this book rend
 </div>
 
 The navigation in the left rail mirrors this layout. Add a new chapter by committing a markdown file and wiring it into `SUMMARY.md`.
+
+> Internal guides (build playbooks, brand assets) now live under `docs/internal/` and are not published.
 
 > Have a request for new docs? File an issue in the `dexter-fe` repo or drop a note in `#dexter-docs`.
