@@ -140,23 +140,18 @@ export function CatalogHero({
     <>
     <section className="catalog-hero" style={heroContainerStyle}>
       <div className="catalog-hero__top" style={{ display: 'flex', gap: 24, flexWrap: 'wrap', alignItems: 'flex-start' }}>
-        <div className="catalog-hero__intro" style={{ flex: '1 1 360px', minWidth: 280, display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <div className="catalog-hero__intro" style={{ flex: '1 1 360px', minWidth: 280, display: 'flex', flexDirection: 'column', gap: 8 }}>
           <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
             <span style={{ fontSize: 11, letterSpacing: '.2em', textTransform: 'uppercase', color: withAlpha('--color-neutral-200', 0.72) }}>Dexter MCP</span>
             <span style={modeBadgeStyle(mode)}>{modeLabel}</span>
           </div>
           <h1 style={{ margin: 0, fontSize: 32, letterSpacing: '-0.01em', color: solid('--color-neutral-100') }}>Tool Catalog</h1>
-          <p style={{ margin: '4px 0 0', color: withAlpha('--color-neutral-100', 0.82), maxWidth: 520 }}>
+          <p style={{ margin: 0, color: withAlpha('--color-neutral-100', 0.82), maxWidth: 520 }}>
             Browse the live tool inventory powering Dexter automations. Filter, inspect schemas, and queue actions straight into your workflows.
           </p>
-          <p style={{ margin: '6px 0 0', fontSize: 13, color: withAlpha('--color-neutral-200', 0.76) }}>{modeHelper}</p>
+          <p style={{ margin: 0, fontSize: 13, color: withAlpha('--color-neutral-200', 0.76) }}>{modeHelper}</p>
         </div>
         <div className="catalog-hero__actions" style={{ flex: '0 0 auto', minWidth: 220, display: 'flex', flexDirection: 'column', gap: 10, alignItems: 'flex-end' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: withAlpha('--color-neutral-200', 0.7), fontSize: 11, letterSpacing: '.18em', textTransform: 'uppercase' }}>
-            <span>Catalog mode</span>
-            <span style={{ opacity: 0.5 }}>•</span>
-            <span>{mode === 'user' ? 'Personal' : mode === 'demo' ? 'Demo' : 'Loading'}</span>
-          </div>
           <div className="catalog-hero__actions-buttons" style={{ display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
             {canViewUser && (
               <button type="button" onClick={onViewUserCatalog} style={heroPrimaryButtonStyle} disabled={loading}>

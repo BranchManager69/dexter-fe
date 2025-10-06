@@ -161,7 +161,12 @@ export function HealthStatus() {
   }, [snapshot]);
 
   const overallOk = snapshot?.ok ?? false;
-  const lastRun = formatTimestamp(snapshot?.timestamp ?? null);
+  const lastRunTimestamp = snapshot?.timestamp ?? null;
+  const lastRunDate = lastRunTimestamp ? new Date(lastRunTimestamp) : null;
+  const lastRun = formatTimestamp(lastRunTimestamp);
+  const fifteenMinutes = 15 * 60 * 1000;
+  const isStale = !lastRunDate || Date.now() - lastRunDate.getTime() > fifteenMinutes;
+  const canTriggerProbe = isAdmin || isStale;
 
   const runDeepProbe = useCallback(async () => {
     try {
@@ -182,7 +187,23 @@ export function HealthStatus() {
       });
       const text = await response.text();
       if (!response.ok) {
-        throw new Error(`${response.status} ${response.statusText} — ${text.slice(0, 200)}`);
+        let message = `${response.status} ${response.statusText}`;
+        try {
+          const errorData = JSON.parse(text);
+          if (errorData?.error === 'probe_rate_limited') {
+            const retryMs = Number(errorData.retry_after_ms) || 0;
+            const retryMinutes = Math.ceil(retryMs / 60000);
+            message = retryMinutes > 0
+              ? `Probe recently ran. Try again in about ${retryMinutes} minute${retryMinutes === 1 ? '' : 's'}.`
+              : 'Probe recently ran. Try again soon.';
+          } else if (typeof errorData?.error === 'string') {
+            message = errorData.error;
+          }
+        } catch {
+          // ignore JSON parse errors and fall back to default message
+        }
+        setRunError(message);
+        return;
       }
       const data: DeepResponse = JSON.parse(text);
       const nextSnapshot = data.snapshot ?? (data as unknown as DeepSnapshot);
@@ -195,73 +216,68 @@ export function HealthStatus() {
     }
   }, []);
 
+  const handleRefresh = useCallback(() => {
+    if (loading || running) return;
+    if (canTriggerProbe) {
+      runDeepProbe();
+    } else {
+      setRefreshIndex(prev => prev + 1);
+    }
+  }, [canTriggerProbe, loading, running, runDeepProbe]);
+
   return (
     <section
       style={{
         marginBottom: 28,
         borderRadius: 12,
         padding: '22px 24px 20px',
-        background: 'linear-gradient(135deg, rgba(6, 12, 26, 0.9), rgba(18, 36, 63, 0.86))',
-        border: '1px solid rgba(123, 139, 255, 0.26)',
-        boxShadow: '0 20px 44px rgba(5, 10, 24, 0.54)',
+        background: 'linear-gradient(135deg, rgba(255, 122, 18, 0.22), rgba(255, 177, 82, 0.2))',
+        border: '1px solid rgba(255, 173, 96, 0.45)',
+        boxShadow: '0 24px 48px rgba(255, 108, 24, 0.28)',
         display: 'flex',
         flexDirection: 'column',
         gap: 18,
+        color: '#2b1400',
       }}
     >
       <header style={{ display: 'flex', flexWrap: 'wrap', gap: 16, alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <StatusLight ok={overallOk} />
           <div>
-            <div style={{ fontSize: 13, letterSpacing: '.18em', textTransform: 'uppercase', opacity: 0.7 }}>Dexter Deep Health</div>
-            <div style={{ fontSize: 22, color: '#f4f7ff', fontWeight: 600 }}>
+            <div style={{ fontSize: 13, letterSpacing: '.18em', textTransform: 'uppercase', opacity: 0.65 }}>Dexter Deep Health</div>
+            <div style={{ fontSize: 22, color: '#311400', fontWeight: 600 }}>
               {loading ? 'Checking…' : overallOk ? 'All systems operational' : 'Attention required'}
             </div>
           </div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
-          <div style={{ fontSize: 12, opacity: 0.72 }}>
-            Last run · <span style={{ color: '#dce5ff' }}>{lastRun}</span>
+          <div style={{ fontSize: 12, opacity: 0.7 }}>
+            Last run · <span style={{ color: '#3c1900', fontWeight: 600 }}>{lastRun}</span>
           </div>
           {runError && (
-            <div style={{ fontSize: 11, color: '#ffd7d7' }}>{runError}</div>
+            <div style={{ fontSize: 11, color: '#6b1600' }}>{runError}</div>
           )}
           <button
             type="button"
-            onClick={() => setRefreshIndex(prev => prev + 1)}
+            onClick={handleRefresh}
             style={{
               padding: '8px 12px',
               borderRadius: 10,
-              border: '1px solid rgba(123, 139, 255, 0.34)',
-              background: 'rgba(10, 18, 42, 0.74)',
-              color: '#dce5ff',
+              border: canTriggerProbe
+                ? '1px solid rgba(255, 214, 153, 0.55)'
+                : '1px solid rgba(255, 173, 96, 0.35)',
+              background: canTriggerProbe
+                ? 'linear-gradient(135deg, rgba(255, 229, 180, 0.35), rgba(255, 188, 120, 0.28))'
+                : 'rgba(255, 240, 224, 0.32)',
+              color: '#4c1d00',
               fontSize: 12,
               letterSpacing: '.14em',
               textTransform: 'uppercase',
             }}
-            disabled={loading}
+            disabled={loading || running}
           >
-            {loading ? 'Refreshing…' : 'Refresh'}
+            {loading || running ? 'Refreshing…' : 'Refresh status'}
           </button>
-          {isAdmin && (
-            <button
-              type="button"
-              onClick={runDeepProbe}
-              style={{
-                padding: '8px 12px',
-                borderRadius: 10,
-                border: '1px solid rgba(114, 242, 175, 0.4)',
-                background: 'linear-gradient(135deg, rgba(114, 242, 175, 0.18), rgba(76, 189, 143, 0.14))',
-                color: '#e8fff3',
-                fontSize: 12,
-                letterSpacing: '.14em',
-                textTransform: 'uppercase',
-              }}
-              disabled={running}
-            >
-              {running ? 'Running…' : 'Run Deep Probe'}
-            </button>
-          )}
         </div>
       </header>
 
@@ -269,9 +285,9 @@ export function HealthStatus() {
         <div style={{
           padding: '14px 16px',
           borderRadius: 10,
-          border: '1px solid rgba(255, 153, 153, 0.45)',
-          background: 'linear-gradient(135deg, rgba(255, 120, 120, 0.18), rgba(76, 20, 20, 0.24))',
-          color: '#ffe3e3',
+          border: '1px solid rgba(255, 146, 120, 0.45)',
+          background: 'linear-gradient(135deg, rgba(255, 179, 140, 0.35), rgba(255, 122, 18, 0.22))',
+          color: '#5c1a00',
           fontSize: 13,
         }}>
           {error}
@@ -287,8 +303,8 @@ export function HealthStatus() {
               key={entry.key}
               style={{
                 borderRadius: 10,
-                border: '1px solid rgba(123, 139, 255, 0.22)',
-                background: 'rgba(8, 16, 32, 0.76)',
+                border: '1px solid rgba(255, 189, 128, 0.4)',
+                background: 'rgba(255, 238, 216, 0.55)',
                 padding: '16px 18px',
                 display: 'flex',
                 flexDirection: 'column',
@@ -296,16 +312,16 @@ export function HealthStatus() {
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, justifyContent: 'space-between' }}>
-                <div style={{ fontSize: 14, fontWeight: 600, color: '#f0f5ff' }}>{entry.label}</div>
+                <div style={{ fontSize: 14, fontWeight: 600, color: '#4c1d00' }}>{entry.label}</div>
                 <StatusLight ok={entry.status.ok} />
               </div>
               <div style={{ fontSize: 12, opacity: 0.7 }}>Duration: {formatDuration(entry.status.duration_ms)}</div>
               {entry.status.error && (
                 <div style={{
                   fontSize: 12,
-                  color: '#ffd4d4',
-                  background: 'rgba(255, 120, 120, 0.08)',
-                  border: '1px solid rgba(255, 120, 120, 0.28)',
+                  color: '#6b1600',
+                  background: 'rgba(255, 180, 140, 0.16)',
+                  border: '1px solid rgba(255, 160, 120, 0.35)',
                   borderRadius: 8,
                   padding: '8px 10px',
                 }}>
@@ -321,8 +337,8 @@ export function HealthStatus() {
               opacity: 0.7,
               padding: '12px 14px',
               borderRadius: 8,
-              border: '1px solid rgba(123, 139, 255, 0.2)',
-              background: 'rgba(10, 18, 38, 0.6)',
+              border: '1px solid rgba(255, 189, 128, 0.4)',
+              background: 'rgba(255, 238, 216, 0.55)',
             }}>
               No deep-health snapshot recorded yet.
             </div>

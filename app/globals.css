@@ -192,9 +192,9 @@ textarea {
   width: 102px;
   height: 102px;
   border-radius: 999px;
-  background: linear-gradient(135deg, rgb(var(--color-primary-bright)) 0%, rgb(var(--color-primary)) 100%);
-  border: 4px solid rgba(255, 230, 188, 0.85);
-  box-shadow: 0 22px 40px rgba(224, 110, 16, 0.45), inset 0 5px 14px rgba(255, 250, 236, 0.18);
+  background: transparent;
+  border: none;
+  box-shadow: none;
   margin-block: -40px;
   text-decoration: none;
   overflow: visible;
@@ -202,24 +202,11 @@ textarea {
 }
 
 .site-header__crest::before {
-  content: '';
-  position: absolute;
-  inset: -6px;
-  border-radius: 999px;
-  border: 1px solid rgba(255, 226, 176, 0.85);
-  pointer-events: none;
+  content: none;
 }
 
 .site-header__crest::after {
-  content: '';
-  position: absolute;
-  inset: -28px;
-  border-radius: 999px;
-  background: radial-gradient(circle at 50% 35%, rgba(255, 234, 200, 0.75), rgba(255, 120, 16, 0) 68%);
-  filter: blur(14px);
-  opacity: 0.65;
-  animation: crestGlow 6s ease-in-out infinite;
-  z-index: -1;
+  content: none;
 }
 
 .site-header__crest-ring {
@@ -230,9 +217,13 @@ textarea {
   width: 92px;
   height: 92px;
   border-radius: 999px;
-  background: linear-gradient(135deg, rgb(var(--color-primary-bright)) 0%, rgb(var(--color-primary)) 100%);
-  overflow: hidden;
+  background: transparent;
+  overflow: visible;
   z-index: 1;
+}
+
+.site-header__crest-ring img {
+  filter: drop-shadow(0 12px 18px rgba(255, 128, 40, 0.28)) drop-shadow(0 4px 8px rgba(0, 0, 0, 0.18));
 }
 
 .site-header__nav-link {

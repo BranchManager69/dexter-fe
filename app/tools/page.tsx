@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../auth-context';
 import { Collapsible } from '../components/Collapsible';
-import { HealthStatus } from '../components/HealthStatus';
 import { CatalogHero, type AccessFilterOption } from './components/CatalogHero';
 import { ToolCatalog } from './components/ToolCatalog';
 import { ACCESS_LABELS, ACCESS_MAP } from './constants';
@@ -237,7 +236,6 @@ export default function ToolsPage() {
 
   return (
     <div>
-      <HealthStatus />
       <CatalogHero
         mode={mode}
         modeLabel={modeLabel}
