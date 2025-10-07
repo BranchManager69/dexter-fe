@@ -45,9 +45,9 @@ export function Collapsible({
   return (
     <div
       style={{
-        border: '1px solid rgba(var(--color-border-strong), 0.35)',
+        border: '1px solid rgba(11, 6, 3, 0.14)',
         borderRadius: 8,
-        background: 'rgba(var(--color-surface-base), 0.88)',
+        background: 'rgba(255, 255, 255, 0.82)',
         overflow: 'hidden',
       }}
     >
@@ -63,7 +63,7 @@ export function Collapsible({
           padding: '12px 14px',
           background: 'transparent',
           border: 'none',
-          color: '#cdd5ff',
+          color: 'var(--page-text-primary)',
           fontSize: 12,
           letterSpacing: '.16em',
           textTransform: 'uppercase',
@@ -75,7 +75,7 @@ export function Collapsible({
         }}
       >
         <span>{title}</span>
-        <span style={{ fontSize: 11, opacity: 0.8 }}>
+        <span style={{ fontSize: 11, color: 'var(--page-text-soft)' }}>
           {disabled ? disabledLabel : open ? 'Hide' : 'Show'}
         </span>
       </button>

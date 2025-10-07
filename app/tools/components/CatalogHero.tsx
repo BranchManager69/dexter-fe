@@ -311,14 +311,19 @@ export function CatalogHero({
             flex-direction: column;
           }
 
-          .catalog-hero__actions-buttons button,
-          .catalog-hero__access button {
+          .catalog-hero__actions-buttons button {
             width: 100%;
             flex: 1 1 auto;
           }
 
           .catalog-hero__access {
             gap: 6px;
+            justify-content: flex-start;
+          }
+
+          .catalog-hero__access button {
+            flex: 0 1 auto;
+            min-width: 110px;
           }
 
           .catalog-hero__count {
