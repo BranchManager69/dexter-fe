@@ -1,9 +1,7 @@
 'use client';
 
 import type { CSSProperties, ChangeEvent } from 'react';
-import { solid, withAlpha } from '../utils';
 import type { AccessFilter } from '../types';
-import GradientPanel from '../../components/GradientPanel';
 
 export type AccessFilterOption = {
   id: AccessFilter;
@@ -28,12 +26,17 @@ export type CatalogHeroProps = {
   loading: boolean;
 };
 
+const TEXT_PRIMARY = 'var(--page-text-primary)';
+const TEXT_MUTED = 'var(--page-text-muted)';
+const TEXT_SOFT = 'var(--page-text-soft)';
+const BORDER_SOFT = 'rgba(11, 6, 3, 0.12)';
+
 const heroPrimaryButtonStyle: CSSProperties = {
   padding: '10px 16px',
   borderRadius: 8,
-  border: `1px solid ${withAlpha('--color-border-strong', 0.5)}`,
-  background: `linear-gradient(135deg, ${withAlpha('--color-primary', 0.26)}, ${withAlpha('--color-primary-bright', 0.22)})`,
-  color: solid('--color-neutral-100'),
+  border: '1px solid rgba(24, 128, 96, 0.35)',
+  background: 'linear-gradient(135deg, rgba(32, 180, 131, 0.95), rgba(18, 140, 102, 0.88))',
+  color: '#fff4ea',
   fontSize: 12,
   letterSpacing: '.14em',
   textTransform: 'uppercase',
@@ -44,9 +47,9 @@ const heroPrimaryButtonStyle: CSSProperties = {
 const heroSecondaryButtonStyle: CSSProperties = {
   padding: '10px 16px',
   borderRadius: 8,
-  border: `1px solid ${withAlpha('--color-border-subtle', 0.55)}`,
-  background: `linear-gradient(135deg, ${withAlpha('--color-surface-glass', 0.85)}, ${withAlpha('--color-surface-base', 0.92)})`,
-  color: withAlpha('--color-neutral-100', 0.82),
+  border: `1px solid ${BORDER_SOFT}`,
+  background: 'rgba(255, 255, 255, 0.86)',
+  color: TEXT_PRIMARY,
   fontSize: 12,
   letterSpacing: '.14em',
   textTransform: 'uppercase',
@@ -57,42 +60,50 @@ const heroSecondaryButtonStyle: CSSProperties = {
 function modeBadgeStyle(mode: 'user' | 'demo' | null): CSSProperties {
   const isDemo = mode === 'demo';
   const isUser = mode === 'user';
-  return {
+  const base: CSSProperties = {
     fontSize: 11,
     letterSpacing: '.18em',
     textTransform: 'uppercase',
     padding: '4px 12px',
     borderRadius: 14,
-    border: isDemo
-      ? `1px solid ${withAlpha('--color-iris', 0.38)}`
-      : isUser
-        ? `1px solid ${withAlpha('--color-success', 0.4)}`
-        : `1px solid ${withAlpha('--color-border-subtle', 0.4)}`,
-    background: isDemo
-      ? `linear-gradient(135deg, ${withAlpha('--color-iris', 0.22)}, ${withAlpha('--color-iris', 0.12)})`
-      : isUser
-        ? `linear-gradient(135deg, ${withAlpha('--color-success', 0.22)}, ${withAlpha('--color-success', 0.14)})`
-        : withAlpha('--color-surface-glass', 0.5),
-    color: isDemo || isUser ? solid('--color-neutral-100') : withAlpha('--color-neutral-200', 0.82),
+  };
+
+  if (isDemo) {
+    return {
+      ...base,
+      border: '1px solid rgba(24, 92, 175, 0.35)',
+      background: 'rgba(24, 92, 175, 0.16)',
+      color: TEXT_PRIMARY,
+    };
+  }
+
+  if (isUser) {
+    return {
+      ...base,
+      border: '1px solid rgba(24, 128, 96, 0.32)',
+      background: 'rgba(24, 128, 96, 0.16)',
+      color: TEXT_PRIMARY,
+    };
+  }
+
+  return {
+    ...base,
+    border: `1px solid ${BORDER_SOFT}`,
+    background: 'rgba(255, 255, 255, 0.72)',
+    color: TEXT_MUTED,
   };
 }
 
 function accessFilterButtonStyle(active: boolean, tier: AccessFilter): CSSProperties {
-  const isAll = tier === 'all';
-  const activeBackground = isAll
-    ? `linear-gradient(135deg, ${withAlpha('--color-iris', 0.2)}, ${withAlpha('--color-iris', 0.14)})`
-    : `linear-gradient(135deg, ${withAlpha('--color-success', 0.2)}, ${withAlpha('--color-success', 0.14)})`;
-  const activeBorder = isAll
-    ? `1px solid ${withAlpha('--color-iris', 0.4)}`
-    : `1px solid ${withAlpha('--color-success', 0.42)}`;
-  const activeColor = solid('--color-neutral-100');
+  const activeBackground = tier === 'all' ? 'rgba(24, 92, 175, 0.18)' : 'rgba(24, 128, 96, 0.18)';
+  const activeBorder = tier === 'all' ? '1px solid rgba(24, 92, 175, 0.35)' : '1px solid rgba(24, 128, 96, 0.32)';
 
   return {
     padding: '8px 12px',
     borderRadius: 14,
-    border: active ? activeBorder : `1px solid ${withAlpha('--color-border-subtle', 0.5)}`,
-    background: active ? activeBackground : withAlpha('--color-surface-glass', 0.65),
-    color: active ? activeColor : withAlpha('--color-neutral-200', 0.78),
+    border: active ? activeBorder : `1px solid ${BORDER_SOFT}`,
+    background: active ? activeBackground : 'rgba(255, 255, 255, 0.7)',
+    color: active ? TEXT_PRIMARY : TEXT_MUTED,
     fontSize: 12,
     letterSpacing: '.12em',
     textTransform: 'uppercase',
@@ -129,19 +140,19 @@ export function CatalogHero({
   };
 
   return (
-    <GradientPanel className="catalog-hero" style={{ marginBottom: 32 }}>
+    <div className="catalog-hero">
       <div className="catalog-hero__top" style={{ display: 'flex', gap: 24, flexWrap: 'wrap', alignItems: 'flex-start' }}>
         <div className="catalog-hero__intro" style={{ flex: '1 1 360px', minWidth: 280, display: 'flex', flexDirection: 'column', gap: 8 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <span style={{ fontSize: 11, letterSpacing: '.2em', textTransform: 'uppercase', color: withAlpha('--color-neutral-200', 0.72) }}>Dexter MCP</span>
+            <span style={{ fontSize: 11, letterSpacing: '.2em', textTransform: 'uppercase', color: TEXT_MUTED }}>Dexter MCP</span>
             <span style={{ flex: 1 }} />
             <span style={modeBadgeStyle(mode)}>{modeLabel}</span>
           </div>
-          <h1 style={{ margin: 0, fontSize: 32, letterSpacing: '-0.01em', color: solid('--color-neutral-100') }}>Tool Catalog</h1>
-          <p style={{ margin: 0, color: withAlpha('--color-neutral-100', 0.82), maxWidth: 520 }}>
+          <h1 style={{ margin: 0, fontSize: 32, letterSpacing: '-0.01em', color: TEXT_PRIMARY }}>Tool Catalog</h1>
+          <p style={{ margin: 0, color: TEXT_MUTED, maxWidth: 520 }}>
             Browse the live tool inventory powering Dexter automations. Filter, inspect schemas, and queue actions straight into your workflows.
           </p>
-          <p style={{ margin: 0, fontSize: 13, color: withAlpha('--color-neutral-200', 0.76) }}>{modeHelper}</p>
+          <p style={{ margin: 0, fontSize: 13, color: TEXT_SOFT }}>{modeHelper}</p>
         </div>
         <div className="catalog-hero__actions" style={{ flex: '0 0 auto', minWidth: 220, display: 'flex', flexDirection: 'column', gap: 10, alignItems: 'flex-end' }}>
           <div className="catalog-hero__actions-buttons" style={{ display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
@@ -163,7 +174,7 @@ export function CatalogHero({
         style={{
           marginTop: 12,
           paddingTop: 10,
-          borderTop: `1px solid ${withAlpha('--color-border-subtle', 0.35)}`,
+          borderTop: `1px solid ${BORDER_SOFT}`,
           display: 'flex',
           gap: 12,
           flexWrap: 'wrap',
@@ -175,17 +186,17 @@ export function CatalogHero({
             placeholder="Filter by name or description"
             value={filter}
             onChange={handleFilterChange}
-            style={{
-              width: '100%',
-              padding: '12px 14px',
-              background: withAlpha('--color-surface-base', 0.85),
-              color: solid('--color-neutral-100'),
-              border: `1px solid ${withAlpha('--color-border-subtle', 0.58)}`,
-              borderRadius: 8,
-              fontSize: 14,
-              outline: 'none',
-            }}
-          />
+                style={{
+                  width: '100%',
+                  padding: '12px 14px',
+                  background: 'rgba(255, 255, 255, 0.85)',
+                  color: TEXT_PRIMARY,
+                  border: `1px solid ${BORDER_SOFT}`,
+                  borderRadius: 8,
+                  fontSize: 14,
+                  outline: 'none',
+                }}
+              />
         </div>
         <div className="catalog-hero__chip-row" style={{ display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
           <div className="catalog-hero__access" style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
@@ -207,9 +218,9 @@ export function CatalogHero({
             gap: 8,
             padding: '8px 16px',
             borderRadius: 18,
-            background: withAlpha('--color-surface-glass', 0.72),
-            border: `1px solid ${withAlpha('--color-border-subtle', 0.5)}`,
-            color: withAlpha('--color-neutral-100', 0.82),
+            background: 'rgba(255, 255, 255, 0.7)',
+            border: `1px solid ${BORDER_SOFT}`,
+            color: TEXT_PRIMARY,
             fontSize: 12,
             letterSpacing: '.16em',
             textTransform: 'uppercase',
@@ -222,15 +233,19 @@ export function CatalogHero({
         </div>
       </div>
       <style jsx>{`
+        .catalog-hero {
+          display: flex;
+          flex-direction: column;
+          gap: 24px;
+          margin-bottom: 32px;
+          color: ${TEXT_PRIMARY};
+        }
+
         .catalog-hero__actions-buttons button {
           min-width: 148px;
         }
 
         @media (max-width: 992px) {
-          .catalog-hero {
-            padding: 24px 20px 22px;
-          }
-
           .catalog-hero__actions-buttons button {
             flex: 1 1 160px;
             min-width: 0;
@@ -238,14 +253,9 @@ export function CatalogHero({
         }
 
         @media (max-width: 768px) {
-          .catalog-hero {
-            padding: 20px 16px 18px;
-            border-radius: 10px;
-          }
-
           .catalog-hero__top {
             flex-direction: column;
-            gap: 8px;
+            gap: 12px;
           }
 
           .catalog-hero__intro {
@@ -270,7 +280,7 @@ export function CatalogHero({
             flex-direction: column;
             align-items: stretch !important;
             gap: 10px;
-            border-top: 1px solid rgb(var(--color-border-subtle) / 0.3);
+            border-top: 1px solid ${BORDER_SOFT};
             padding-top: 8px;
             margin-top: 8px;
           }
@@ -297,10 +307,6 @@ export function CatalogHero({
         }
 
         @media (max-width: 480px) {
-          .catalog-hero {
-            padding: 18px 14px 16px;
-          }
-
           .catalog-hero__actions-buttons {
             flex-direction: column;
           }
@@ -325,7 +331,7 @@ export function CatalogHero({
           display: none;
         }
       `}</style>
-    </GradientPanel>
+    </div>
   );
 }
 
