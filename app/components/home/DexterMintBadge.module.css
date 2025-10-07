@@ -1,17 +1,17 @@
 .badge {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  margin: 12px auto 0;
+  gap: 10px;
+  margin: 16px auto 0;
   padding: 0;
-  border: none;
   background: transparent;
+  border: none;
   color: #d13f00;
-  font-size: clamp(0.7rem, 0.9vw, 0.88rem);
-  letter-spacing: 0.06em;
+  font-size: clamp(0.78rem, 1.15vw, 1.1rem);
+  letter-spacing: 0.1em;
   cursor: pointer;
   transition: color 0.2s ease;
-  max-width: min(92vw, 440px);
+  max-width: min(92vw, 640px);
 }
 
 .badge:hover,
@@ -22,25 +22,25 @@
 
 .value {
   font-family: 'JetBrains Mono', 'SFMono-Regular', monospace;
-  font-size: 0.64rem;
-  letter-spacing: 0.1em;
+  font-size: inherit;
+  letter-spacing: 0.08em;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: clamp(220px, 65vw, 520px);
+  max-width: clamp(260px, 70vw, 520px);
   white-space: nowrap;
 }
 
 .icon {
-  width: 14px;
-  height: 14px;
+  width: 16px;
+  height: 16px;
 }
 
 .wrapper {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
-  position: relative;
+  gap: 6px;
 }
 
 .toast {
@@ -48,13 +48,13 @@
   top: 100%;
   left: 50%;
   transform: translate(-50%, -6px);
-  margin-top: 10px;
-  padding: 6px 12px;
+  margin-top: 12px;
+  padding: 7px 16px;
   border-radius: 999px;
-  background: rgba(11, 6, 3, 0.88);
+  background: rgba(11, 6, 3, 0.9);
   color: #fff4e8;
-  font-size: 0.58rem;
-  letter-spacing: 0.16em;
+  font-size: 0.62rem;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
   opacity: 0;
   transition: opacity 0.2s ease, transform 0.2s ease;
@@ -64,4 +64,10 @@
 .toastVisible {
   opacity: 1;
   transform: translate(-50%, 0);
+}
+
+@media (min-width: 900px) {
+  .value {
+    max-width: none;
+  }
 }
