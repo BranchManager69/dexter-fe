@@ -14,17 +14,28 @@ type DexterWordmarkProps = {
 const letters = ['D', 'E', 'X', 'T', 'E', 'R'];
 const letterDelays = [0.05, 0.18, 0.26, 0.34, 0.42, 0.5];
 
+const fallbackDelay = (index: number) => index * 0.04;
+
 export function DexterWordmark({ animate = true, className = '', ariaLabel = 'Dexter wordmark', style }: DexterWordmarkProps) {
   const wrapperClass = `${styles.wrapper}${className ? ` ${className}` : ''}`;
-  const [shouldAnimate, setShouldAnimate] = useState(false);
+  const [animationMode, setAnimationMode] = useState<'full' | 'partial' | 'none'>('none');
 
   useEffect(() => {
-    if (!animate) return;
+    if (!animate) {
+      setAnimationMode('none');
+      return;
+    }
 
     const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
     const update = () => {
       const mobile = window.innerWidth <= 720;
-      setShouldAnimate(!motionQuery.matches && !mobile);
+      if (motionQuery.matches) {
+        setAnimationMode('none');
+      } else if (mobile) {
+        setAnimationMode('partial');
+      } else {
+        setAnimationMode('full');
+      }
     };
 
     update();
@@ -37,13 +48,17 @@ export function DexterWordmark({ animate = true, className = '', ariaLabel = 'De
     };
   }, [animate]);
 
-  const initial = animate && shouldAnimate ? { opacity: 0, y: 32 } : false;
-  const sectionTransition = animate && shouldAnimate ? { duration: 0.8, ease: 'easeInOut' as const } : { duration: 0 };
+  const sectionTransition =
+    animationMode === 'full'
+      ? { duration: 0.75, ease: [0.19, 1.0, 0.22, 1.0] as const }
+      : animationMode === 'partial'
+        ? { duration: 0.65, ease: [0.25, 0.9, 0.3, 1.0] as const }
+        : { duration: 0 };
 
   return (
     <motion.section
       className={wrapperClass}
-      initial={initial}
+      initial={animationMode === 'none' ? false : { opacity: 0, y: animationMode === 'full' ? 28 : 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={sectionTransition}
       aria-label={ariaLabel}
@@ -51,13 +66,19 @@ export function DexterWordmark({ animate = true, className = '', ariaLabel = 'De
     >
       <motion.h1 className={styles.wordmark}>
         {letters.map((letter, index) => {
-          const letterTransition =
-            animate && shouldAnimate
-              ? { duration: index === 0 ? 0.5 : 0.34, delay: letterDelays[index], ease: 'easeOut' as const }
-              : { duration: 0 };
+          let initialLetter;
+          let letterTransition;
 
-          const initialLetter =
-            animate && shouldAnimate ? { opacity: 0, y: index === 0 ? -16 : 14, scale: index === 0 ? 1.3 : 1 } : false;
+          if (animationMode === 'full') {
+            initialLetter = { opacity: 0, y: index === 0 ? -18 : 14, scale: index === 0 ? 1.32 : 1 }; 
+            letterTransition = { duration: index === 0 ? 0.42 : 0.3, delay: letterDelays[index], ease: 'easeOut' as const };
+          } else if (animationMode === 'partial') {
+            initialLetter = { opacity: 0, y: 12, scale: 1.08 };
+            letterTransition = { duration: 0.28, delay: fallbackDelay(index), ease: 'easeOut' as const };
+          } else {
+            initialLetter = false;
+            letterTransition = { duration: 0 };
+          }
 
           return (
             <motion.span
