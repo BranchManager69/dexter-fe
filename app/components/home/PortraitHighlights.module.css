@@ -1,7 +1,7 @@
 .section {
   margin: 0 auto;
   margin-block-start: clamp(3rem, 8vh, 4.5rem);
-  margin-block-end: clamp(4rem, 10vh, 5.8rem);
+  margin-block-end: clamp(7rem, 16vh, 9.4rem);
   max-width: var(--max-width);
   width: 100%;
   padding: 0 var(--space-7);

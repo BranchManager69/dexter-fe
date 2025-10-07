@@ -8,7 +8,7 @@
   pointer-events: none;
   z-index: 320;
   padding-inline: var(--space-7);
-  animation: floatUp 0.9s cubic-bezier(0.22, 0.9, 0.4, 1) 80ms both;
+  animation: floatUp 0.9s cubic-bezier(0.16, 0.92, 0.34, 1.12) 80ms both;
 }
 
 .glow {
@@ -26,9 +26,11 @@
   opacity: 0.8;
   pointer-events: none;
   z-index: -1;
+  transition: opacity 0.35s ease, transform 0.35s ease;
 }
 
 .card {
+  position: relative;
   pointer-events: auto;
   display: flex;
   align-items: center;
@@ -36,12 +38,14 @@
   padding: clamp(1.4rem, 3vw, 1.9rem) clamp(1.6rem, 4vw, 2.3rem);
   border-radius: 0;
   border: 1px solid rgb(var(--color-border-strong) / 0.6);
-  background: linear-gradient(160deg, rgb(var(--color-surface-base) / 0.7) 0%, rgb(var(--color-background) / 0.58) 100%);
+  background: linear-gradient(160deg, rgb(var(--color-neutral-800) / 0.82) 0%, rgb(var(--color-neutral-700) / 0.68) 100%);
   box-shadow: 0 22px 70px rgba(12, 5, 3, 0.26);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   width: min(640px, 100%);
   flex-wrap: nowrap;
+  transform-origin: bottom center;
+  transition: transform 0.42s cubic-bezier(0.2, 0.82, 0.25, 1.2), opacity 0.32s ease;
 }
 
 .card::before {
@@ -61,6 +65,72 @@
     linear-gradient(#000 0 0);
   mask-composite: exclude;
   pointer-events: none;
+}
+
+.dismiss {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  width: 24px;
+  height: 24px;
+  border: none;
+  background: transparent;
+  color: rgba(24, 12, 4, 0.72);
+  font-size: 0.92rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: color 0.18s ease, transform 0.18s ease;
+  padding: 0;
+}
+
+.dismiss:hover,
+.dismiss:focus-visible {
+  color: rgba(12, 6, 2, 0.92);
+  transform: scale(1.08);
+}
+
+.chip {
+  pointer-events: none;
+  opacity: 0;
+  transform: translate3d(0, 16px, 0);
+  transition: opacity 0.28s ease, transform 0.32s ease;
+  border-radius: 999px;
+  border: 1px solid rgba(242, 136, 52, 0.65);
+  background: linear-gradient(135deg, rgba(242, 108, 24, 0.92), rgba(186, 58, 0, 0.88));
+  color: #fff3eb;
+  font-size: 0.68rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  padding: 0.55rem 1.4rem;
+  margin-left: auto;
+  margin-top: clamp(0.6rem, 1.5vw, 1rem);
+  box-shadow: 0 14px 32px rgba(186, 58, 0, 0.32);
+}
+
+.chip:hover,
+.chip:focus-visible {
+  box-shadow: 0 18px 36px rgba(186, 58, 0, 0.38);
+}
+
+.collapsed .glow {
+  opacity: 0;
+  transform: translateY(28px);
+}
+
+.collapsed .card {
+  transform: translate3d(0, 24px, 0) scale(0.9);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.collapsed .card::before {
+  opacity: 0;
+}
+
+.collapsed .chip {
+  pointer-events: auto;
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
 }
 
 .copy {
@@ -137,14 +207,19 @@
 }
 
 @keyframes floatUp {
-  from {
+  0% {
     opacity: 0;
-    transform: translate3d(0, 36px, 0);
+    transform: translate3d(18px, 48px, 0) scale(0.96);
   }
 
-  to {
+  65% {
     opacity: 1;
-    transform: translate3d(0, 0, 0);
+    transform: translate3d(-6px, -6px, 0) scale(1.02);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
   }
 }
 
