@@ -3,7 +3,6 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import { useAuth } from '../auth-context';
-import GradientPanel from '../components/GradientPanel';
 import styles from './styles.module.css';
 
 export default function LinkPage() {
@@ -24,7 +23,7 @@ export default function LinkPage() {
 
   return (
     <div className={styles.wrapper}>
-      <GradientPanel className={styles.card} grid>
+      <div className={styles.card}>
         <h1 className={styles.heading}>Link your Dexter account externally</h1>
         {session ? (
           <p className={styles.copy}>
@@ -62,7 +61,7 @@ export default function LinkPage() {
           Need help? Check the <Link href="/tools" className={styles.link}>Tools</Link> page or contact the team in
           Discord.
         </p>
-      </GradientPanel>
+      </div>
     </div>
   );
 }

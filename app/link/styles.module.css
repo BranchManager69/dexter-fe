@@ -13,22 +13,6 @@
   width: min(620px, 100%);
   display: grid;
   gap: clamp(18px, 2.8vw, 26px);
-  position: relative;
-}
-
-.card::after {
-  content: '';
-  position: absolute;
-  inset: -20px;
-  border-radius: 28px;
-  background: radial-gradient(120% 140% at 50% 0%, rgba(255, 210, 170, 0.28), rgba(255, 140, 70, 0));
-  pointer-events: none;
-  z-index: 0;
-}
-
-.card > * {
-  position: relative;
-  z-index: 1;
 }
 
 .heading {

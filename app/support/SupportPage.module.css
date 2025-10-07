@@ -4,6 +4,13 @@
   max-width: 640px;
 }
 
+.eyebrowAccent {
+  font-size: 0.78rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: rgba(242, 108, 24, 0.82);
+}
+
 .contacts {
   display: grid;
   gap: var(--space-4);

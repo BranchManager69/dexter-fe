@@ -6,8 +6,8 @@ export default function SupportPage() {
       <section className="section">
         <div className={styles.wrapper}>
           <div>
-            <span className="eyebrow">Need something?</span>
-            <h1>Reach Branch.</h1>
+            <span className={styles.eyebrowAccent}>Need something?</span>
+            <h1>Reach Branch</h1>
             <p>
               No ticket systems, no bots—just send a note or a DM and I&apos;ll see it when I can.
             </p>
