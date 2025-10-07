@@ -7,7 +7,7 @@
   border: none;
   background: transparent;
   color: #d13f00;
-  font-size: 0.64rem;
+  font-size: clamp(0.7rem, 0.9vw, 0.88rem);
   letter-spacing: 0.06em;
   cursor: pointer;
   transition: color 0.2s ease;
@@ -23,10 +23,10 @@
 .value {
   font-family: 'JetBrains Mono', 'SFMono-Regular', monospace;
   font-size: 0.64rem;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.1em;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: clamp(220px, 65vw, 360px);
+  max-width: clamp(220px, 65vw, 520px);
   white-space: nowrap;
 }
 
