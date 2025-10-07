@@ -21,7 +21,6 @@ export function DexterMintBadge() {
   return (
     <div className={styles.wrapper}>
       <button type="button" className={styles.badge} onClick={handleCopy} aria-label="Copy Dexter mint address">
-        <span className={styles.label}>Mint</span>
         <span className={styles.value}>{PLACEHOLDER_MINT}</span>
         <svg className={styles.icon} width="14" height="14" viewBox="0 0 14 14" aria-hidden="true">
           <rect x="2" y="2" width="8" height="8" rx="1.5" fill="none" stroke="currentColor" strokeWidth="1.2" opacity="0.65" />

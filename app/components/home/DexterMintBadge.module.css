@@ -1,40 +1,34 @@
 .badge {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   margin: 12px auto 0;
-  padding: 5px 14px;
+  padding: 5px 15px;
   border-radius: 999px;
-  border: 1px solid rgba(0, 0, 0, 0.12);
-  background: rgba(255, 255, 255, 0.78);
-  color: #0b0603;
+  border: 1px solid rgba(255, 244, 232, 0.18);
+  background: rgba(11, 6, 3, 0.88);
+  color: #fff4e8;
   font-size: 0.64rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  letter-spacing: 0.04em;
   cursor: pointer;
-  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
-  max-width: min(92vw, 420px);
+  transition: background 0.2s ease, border-color 0.2s ease;
+  max-width: min(92vw, 440px);
 }
 
 .badge:hover,
 .badge:focus-visible {
   outline: none;
-  border-color: rgba(0, 0, 0, 0.24);
-  background: rgba(255, 255, 255, 0.92);
-}
-
-.label {
-  font-weight: 600;
-  letter-spacing: 0.18em;
+  border-color: rgba(255, 244, 232, 0.38);
+  background: rgba(11, 6, 3, 0.95);
 }
 
 .value {
   font-family: 'JetBrains Mono', 'SFMono-Regular', monospace;
   font-size: 0.64rem;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.06em;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: clamp(200px, 60vw, 340px);
+  max-width: clamp(220px, 65vw, 360px);
   white-space: nowrap;
 }
 
@@ -48,7 +42,7 @@
   font-size: 0.56rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: rgba(0, 0, 0, 0.55);
+  color: rgba(255, 244, 232, 0.6);
   min-height: 12px;
   text-align: center;
 }
