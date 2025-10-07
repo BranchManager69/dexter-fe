@@ -31,6 +31,29 @@ const resetAnimation = (setKey: (updater: (k: number) => number) => void) => {
   setKey((key) => key + 1);
 };
 
+const withTransformReset = async (node: HTMLElement, cb: () => Promise<void>) => {
+  const mutated: Array<{ element: HTMLElement; transform: string; origin: string }> = [];
+  let current: HTMLElement | null = node;
+  while (current && current !== document.body) {
+    const computed = window.getComputedStyle(current);
+    if (computed.transform && computed.transform !== 'none') {
+      mutated.push({ element: current, transform: current.style.transform, origin: current.style.transformOrigin });
+      current.style.transform = 'none';
+      current.style.transformOrigin = 'top left';
+    }
+    current = current.parentElement;
+  }
+
+  try {
+    await cb();
+  } finally {
+    mutated.forEach(({ element, transform, origin }) => {
+      element.style.transform = transform;
+      element.style.transformOrigin = origin;
+    });
+  }
+};
+
 export function BrandingStudio() {
   const headerRef = useRef<HTMLDivElement | null>(null);
   const avatarRef = useRef<HTMLDivElement | null>(null);
@@ -42,46 +65,48 @@ export function BrandingStudio() {
 
   const exportNode = useCallback(async (node: HTMLElement | null, filename: string, format: 'png' | 'webp' | 'jpeg') => {
     if (!node) return;
-    const width = node.offsetWidth;
-    const height = node.offsetHeight;
+    const width = Number(node.getAttribute('data-width')) || node.getBoundingClientRect().width;
+    const height = Number(node.getAttribute('data-height')) || node.getBoundingClientRect().height;
     const options = {
       width,
       height,
       pixelRatio: 1,
-      style: {
-        transform: 'scale(1)',
-        transformOrigin: 'top left',
-      } as Partial<CSSStyleDeclaration>,
+      canvasWidth: width,
+      canvasHeight: height,
     };
 
-    try {
-      if (format === 'png') {
-        const dataUrl = await toPng(node, options);
-        downloadDataUrl(dataUrl, `${filename}.png`);
-      } else if (format === 'jpeg') {
-        const dataUrl = await toJpeg(node, { ...options, quality: 0.92 });
-        downloadDataUrl(dataUrl, `${filename}.jpg`);
-      } else {
-        const pngDataUrl = await toPng(node, options);
-        const img = new Image();
-        await new Promise((resolve, reject) => {
-          img.onload = resolve;
-          img.onerror = reject;
-          img.src = pngDataUrl;
-        });
-        const canvas = document.createElement('canvas');
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext('2d');
-        if (!ctx) throw new Error('Unable to export WEBP');
-        ctx.drawImage(img, 0, 0, width, height);
-        const webpDataUrl = canvas.toDataURL('image/webp', 0.95);
-        downloadDataUrl(webpDataUrl, `${filename}.webp`);
+    const run = async () => {
+      try {
+        if (format === 'png') {
+          const dataUrl = await toPng(node, options);
+          downloadDataUrl(dataUrl, `${filename}.png`);
+        } else if (format === 'jpeg') {
+          const dataUrl = await toJpeg(node, { ...options, quality: 0.92 });
+          downloadDataUrl(dataUrl, `${filename}.jpg`);
+        } else {
+          const pngDataUrl = await toPng(node, options);
+          const img = new Image();
+          await new Promise((resolve, reject) => {
+            img.onload = resolve;
+            img.onerror = reject;
+            img.src = pngDataUrl;
+          });
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) throw new Error('Unable to export WEBP');
+          ctx.drawImage(img, 0, 0, width, height);
+          const webpDataUrl = canvas.toDataURL('image/webp', 0.95);
+          downloadDataUrl(webpDataUrl, `${filename}.webp`);
+        }
+      } catch (error) {
+        console.error('Export failed', error);
+        alert('Unable to export image. Try in desktop Chrome or disable blockers.');
       }
-    } catch (error) {
-      console.error('Export failed', error);
-      alert('Unable to export image. Try in desktop Chrome or disable blockers.');
-    }
+    };
+
+    await withTransformReset(node, run);
   }, []);
 
   const handleRecordWebM = useCallback(async () => {
@@ -155,6 +180,8 @@ export function BrandingStudio() {
               key={headerKey}
               ref={headerRef}
               className={`${styles.headerCanvas}`}
+              data-width={BRAND_CANVAS.twitterHeader.width}
+              data-height={BRAND_CANVAS.twitterHeader.height}
               style={{ width: BRAND_CANVAS.twitterHeader.width, height: BRAND_CANVAS.twitterHeader.height }}
             >
               <div className={styles.bannerBackground} />
@@ -189,6 +216,8 @@ export function BrandingStudio() {
             <div
               ref={avatarRef}
               className={styles.avatarCanvas}
+              data-width={BRAND_CANVAS.twitterAvatar.width}
+              data-height={BRAND_CANVAS.twitterAvatar.height}
               style={{ width: BRAND_CANVAS.twitterAvatar.width, height: BRAND_CANVAS.twitterAvatar.height }}
             >
               <div className={styles.avatarBackground} />
@@ -220,6 +249,8 @@ export function BrandingStudio() {
               key={tokenKey}
               ref={tokenRef}
               className={styles.tokenCanvas}
+              data-width={BRAND_CANVAS.tokenAnimation.width}
+              data-height={BRAND_CANVAS.tokenAnimation.height}
               style={{ width: BRAND_CANVAS.tokenAnimation.width, height: BRAND_CANVAS.tokenAnimation.height }}
             >
               <div className={styles.tokenBackground} />
