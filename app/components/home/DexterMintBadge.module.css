@@ -3,29 +3,27 @@
   align-items: center;
   gap: 8px;
   margin: 12px auto 0;
-  padding: 5px 15px;
-  border-radius: 999px;
-  border: 1px solid rgba(255, 244, 232, 0.18);
-  background: rgba(11, 6, 3, 0.88);
-  color: #fff4e8;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: #d13f00;
   font-size: 0.64rem;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.06em;
   cursor: pointer;
-  transition: background 0.2s ease, border-color 0.2s ease;
+  transition: color 0.2s ease;
   max-width: min(92vw, 440px);
 }
 
 .badge:hover,
 .badge:focus-visible {
   outline: none;
-  border-color: rgba(255, 244, 232, 0.38);
-  background: rgba(11, 6, 3, 0.95);
+  color: #ff6b00;
 }
 
 .value {
   font-family: 'JetBrains Mono', 'SFMono-Regular', monospace;
   font-size: 0.64rem;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: clamp(220px, 65vw, 360px);
@@ -37,19 +35,33 @@
   height: 14px;
 }
 
-.status {
-  margin-top: 2px;
-  font-size: 0.56rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: rgba(255, 244, 232, 0.6);
-  min-height: 12px;
-  text-align: center;
-}
-
 .wrapper {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 4px;
+  position: relative;
+}
+
+.toast {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translate(-50%, -6px);
+  margin-top: 10px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(11, 6, 3, 0.88);
+  color: #fff4e8;
+  font-size: 0.58rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  opacity: 0;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  pointer-events: none;
+}
+
+.toastVisible {
+  opacity: 1;
+  transform: translate(-50%, 0);
 }

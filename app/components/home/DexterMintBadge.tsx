@@ -1,18 +1,30 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import styles from './DexterMintBadge.module.css';
 
 const PLACEHOLDER_MINT = 'So1anaMintAddressGoesHere111111111111111111111111';
 
 export function DexterMintBadge() {
-  const [copied, setCopied] = useState(false);
+  const [showToast, setShowToast] = useState(false);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
 
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(PLACEHOLDER_MINT);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1500);
+      setShowToast(true);
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+      timeoutRef.current = setTimeout(() => setShowToast(false), 3200);
     } catch (error) {
       console.error('Failed to copy mint address', error);
     }
@@ -27,9 +39,9 @@ export function DexterMintBadge() {
           <rect x="4" y="4" width="8" height="8" rx="1.5" fill="none" stroke="currentColor" strokeWidth="1.2" />
         </svg>
       </button>
-      <span className={styles.status} aria-live="polite">
-        {copied ? 'Copied' : ''}
-      </span>
+      <div role="status" aria-live="polite" className={`${styles.toast} ${showToast ? styles.toastVisible : ''}`.trim()}>
+        Address copied.
+      </div>
     </div>
   );
 }
