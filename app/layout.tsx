@@ -4,6 +4,7 @@ import { AuthProvider } from './auth-context';
 import { Header } from './header';
 import { Footer } from './footer';
 import { FlexFill } from './components/FlexFill';
+import { BreakingNewsBanner } from './components/BreakingNewsBanner';
 import { activeThemeVariables, sunrisePalette } from '../lib/theme/palette';
 import { orbitron, russoOne } from './fonts';
 
@@ -80,6 +81,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <AuthProvider>
           <div className="page-shell">
             <Header />
+            <BreakingNewsBanner
+              active
+              severity="info"
+              eyebrow="pre-launch"
+              headline="Dexter is pre-launch. All information is subject to change ahead of token and product release."
+            />
             <main className="main-content">{children}</main>
             <Footer />
           </div>

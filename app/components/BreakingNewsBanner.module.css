@@ -1,0 +1,69 @@
+.banner {
+  position: relative;
+  z-index: 160;
+  background: linear-gradient(90deg, rgba(255, 84, 0, 0.95), rgba(200, 28, 0, 0.95));
+  color: #fff7ee;
+  padding: clamp(0.4rem, 1vw, 0.65rem) clamp(1.4rem, 4vw, 2.4rem);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: clamp(0.62rem, 0.8vw, 0.72rem);
+  box-shadow: 0 12px 30px rgba(90, 20, 0, 0.35);
+}
+
+.inner {
+  max-width: 1280px;
+  margin: 0 auto;
+  display: flex;
+  gap: clamp(0.6rem, 1.4vw, 1.4rem);
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.eyebrow {
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  display: inline-flex;
+  align-items: center;
+}
+
+.headline {
+  margin: 0;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: none;
+  text-align: center;
+}
+
+.cta {
+  margin-left: auto;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-decoration: none;
+  color: inherit;
+  border-bottom: 1px solid rgba(255, 240, 224, 0.6);
+  padding-bottom: 2px;
+}
+
+.info {
+  background: linear-gradient(90deg, rgba(255, 120, 0, 0.95), rgba(240, 64, 0, 0.95));
+}
+
+.positive {
+  background: linear-gradient(90deg, rgba(10, 160, 110, 0.95), rgba(12, 200, 130, 0.95));
+}
+
+.negative {
+  background: linear-gradient(90deg, rgba(210, 0, 40, 0.96), rgba(150, 0, 24, 0.96));
+}
+
+@media (max-width: 720px) {
+  .inner {
+    justify-content: flex-start;
+    gap: 0.8rem;
+  }
+
+  .cta {
+    margin-left: 0;
+  }
+}
