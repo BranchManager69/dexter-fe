@@ -78,7 +78,7 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" style={activeThemeVariables}>
-      <body className={`${orbitron.variable} ${russoOne.variable} ${satoshi.variable}`}>
+      <body className={`${orbitron.variable} ${russoOne.variable} ${satoshi.variable} ${satoshi.className}`}>
         <AuthProvider>
           <div className="page-shell">
             <Header />
