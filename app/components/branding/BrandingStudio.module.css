@@ -71,13 +71,12 @@
   padding: clamp(1rem, 2vw, 1.5rem);
   background: rgba(10, 6, 4, 0.75);
   display: flex;
-  justify-content: center;
+  justify-content: flex-start;
   overflow: auto;
 }
 
-.scaledCanvas {
+.canvasWrapper {
   position: relative;
-  transform-origin: top left;
   box-shadow: 0 24px 70px rgba(12, 5, 3, 0.5);
   border-radius: 18px;
   overflow: hidden;
@@ -87,27 +86,13 @@
   width: 1500px;
   height: 500px;
 }
-
-.headerScaled {
-  transform: scale(0.3);
-}
-
 .avatarCanvas {
   width: 400px;
   height: 400px;
 }
-
-.avatarScaled {
-  transform: scale(0.6);
-}
-
 .tokenCanvas {
   width: 600px;
   height: 600px;
-}
-
-.tokenScaled {
-  transform: scale(0.45);
 }
 
 .bannerBackground {
@@ -246,15 +231,31 @@
     justify-content: center;
   }
 
-  .headerScaled {
-    transform: scale(0.18);
+}
+
+@media (min-width: 1400px) {
+  .previewFrame {
+    justify-content: center;
   }
 
-  .avatarScaled {
-    transform: scale(0.45);
+  .canvasWrapper.headerCanvas {
+    transform: scale(0.32);
+    transform-origin: top left;
   }
 
-  .tokenScaled {
-    transform: scale(0.3);
+  .canvasWrapper.avatarCanvas {
+    transform: scale(0.75);
+    transform-origin: top left;
+  }
+
+  .canvasWrapper.tokenCanvas {
+    transform: scale(0.6);
+    transform-origin: top left;
+  }
+
+  .previewFrame:has(.canvasWrapper.headerCanvas),
+  .previewFrame:has(.canvasWrapper.avatarCanvas),
+  .previewFrame:has(.canvasWrapper.tokenCanvas) {
+    overflow: hidden;
   }
 }

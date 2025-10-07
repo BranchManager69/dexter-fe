@@ -175,25 +175,23 @@ export function BrandingStudio() {
         <p className={styles.warning}>Tip: For animation capture, select the browser tab in the screen-share picker. Recording auto-stops after 3.5s.</p>
         <span className={styles.previewScaleNote}>Preview scaled for display. Exports render at full 1500×500.</span>
         <div className={styles.previewFrame}>
-          <div className={`${styles.scaledCanvas} ${styles.headerScaled}`}>
-            <div
-              key={headerKey}
-              ref={headerRef}
-              className={`${styles.headerCanvas}`}
-              data-width={BRAND_CANVAS.twitterHeader.width}
-              data-height={BRAND_CANVAS.twitterHeader.height}
-              style={{ width: BRAND_CANVAS.twitterHeader.width, height: BRAND_CANVAS.twitterHeader.height }}
-            >
-              <div className={styles.bannerBackground} />
-              <div className={styles.bannerGlow} />
-              <div className={styles.bannerContent}>
-                <DexterAnimatedCrest size={220} />
-                <div className={styles.bannerCopy}>
-                  <DexterWordmark animate ariaLabel="Dexter banner wordmark" />
-                  <p>Realtime agents for trading desks, broadcast crews, and command centers.</p>
-                </div>
-                <span className={styles.bannerCTA}>Launch Sequence ↗</span>
+          <div
+            key={headerKey}
+            ref={headerRef}
+            className={`${styles.canvasWrapper} ${styles.headerCanvas}`}
+            data-width={BRAND_CANVAS.twitterHeader.width}
+            data-height={BRAND_CANVAS.twitterHeader.height}
+            style={{ width: BRAND_CANVAS.twitterHeader.width, height: BRAND_CANVAS.twitterHeader.height }}
+          >
+            <div className={styles.bannerBackground} />
+            <div className={styles.bannerGlow} />
+            <div className={styles.bannerContent}>
+              <DexterAnimatedCrest size={220} />
+              <div className={styles.bannerCopy}>
+                <DexterWordmark animate ariaLabel="Dexter banner wordmark" />
+                <p>Realtime agents for trading desks, broadcast crews, and command centers.</p>
               </div>
+              <span className={styles.bannerCTA}>Launch Sequence ↗</span>
             </div>
           </div>
         </div>
@@ -212,19 +210,17 @@ export function BrandingStudio() {
         </div>
         <span className={styles.previewScaleNote}>Preview scaled for display. Exports render at full 400×400.</span>
         <div className={styles.previewFrame}>
-          <div className={`${styles.scaledCanvas} ${styles.avatarScaled}`}>
-            <div
-              ref={avatarRef}
-              className={styles.avatarCanvas}
-              data-width={BRAND_CANVAS.twitterAvatar.width}
-              data-height={BRAND_CANVAS.twitterAvatar.height}
-              style={{ width: BRAND_CANVAS.twitterAvatar.width, height: BRAND_CANVAS.twitterAvatar.height }}
-            >
-              <div className={styles.avatarBackground} />
-              <div className={styles.avatarContent}>
-                <DexterAnimatedCrest size={220} />
-                <p className={styles.avatarTagline}>DEXTER AGENTS</p>
-              </div>
+          <div
+            ref={avatarRef}
+            className={`${styles.canvasWrapper} ${styles.avatarCanvas}`}
+            data-width={BRAND_CANVAS.twitterAvatar.width}
+            data-height={BRAND_CANVAS.twitterAvatar.height}
+            style={{ width: BRAND_CANVAS.twitterAvatar.width, height: BRAND_CANVAS.twitterAvatar.height }}
+          >
+            <div className={styles.avatarBackground} />
+            <div className={styles.avatarContent}>
+              <DexterAnimatedCrest size={220} />
+              <p className={styles.avatarTagline}>DEXTER AGENTS</p>
             </div>
           </div>
         </div>
@@ -244,19 +240,17 @@ export function BrandingStudio() {
         </div>
         <span className={styles.previewScaleNote}>Animation loops every 4s. For animated WebP, record via the header capture flow.</span>
         <div className={styles.previewFrame}>
-          <div className={`${styles.scaledCanvas} ${styles.tokenScaled}`}>
-            <div
-              key={tokenKey}
-              ref={tokenRef}
-              className={styles.tokenCanvas}
-              data-width={BRAND_CANVAS.tokenAnimation.width}
-              data-height={BRAND_CANVAS.tokenAnimation.height}
-              style={{ width: BRAND_CANVAS.tokenAnimation.width, height: BRAND_CANVAS.tokenAnimation.height }}
-            >
-              <div className={styles.tokenBackground} />
-              <div className={styles.tokenContent}>
-                <TokenOrbit />
-              </div>
+          <div
+            key={tokenKey}
+            ref={tokenRef}
+            className={`${styles.canvasWrapper} ${styles.tokenCanvas}`}
+            data-width={BRAND_CANVAS.tokenAnimation.width}
+            data-height={BRAND_CANVAS.tokenAnimation.height}
+            style={{ width: BRAND_CANVAS.tokenAnimation.width, height: BRAND_CANVAS.tokenAnimation.height }}
+          >
+            <div className={styles.tokenBackground} />
+            <div className={styles.tokenContent}>
+              <TokenOrbit />
             </div>
           </div>
         </div>
