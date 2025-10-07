@@ -1,34 +1,21 @@
 .wrapper {
-  margin: clamp(3.2rem, 10vh, 5rem) auto clamp(1.8rem, 6vh, 3rem);
+  margin: clamp(1.6rem, 6vh, 3rem) auto clamp(0.9rem, 4vh, 1.6rem);
   padding: 0 var(--space-7);
   width: 100%;
   max-width: var(--max-width);
   display: flex;
   justify-content: center;
-}
-
-.inner {
-  display: inline-flex;
-  align-items: center;
-  gap: clamp(1.4rem, 4vw, 2.8rem);
   pointer-events: none;
-}
-
-.crest {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  filter: drop-shadow(0 0 26px rgba(242, 108, 24, 0.35));
 }
 
 .wordmark {
   margin: 0;
   font-family: var(--font-orbitron, var(--font-display));
   font-weight: 800;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.01em;
   display: inline-flex;
   align-items: flex-end;
-  gap: clamp(0.02em, 0.4vw, 0.12em);
+  gap: clamp(0em, 0.16vw, 0.05em);
   text-transform: uppercase;
   font-size: clamp(2.8rem, 11vw, 5.4rem);
   background: linear-gradient(130deg, #d13f00 0%, #ff6b00 40%, #ffb42c 100%);
@@ -42,11 +29,12 @@
 .letter {
   display: inline-block;
   transform-origin: center;
+  margin-right: -0.012em;
 }
 
 .leadLetter {
   font-family: var(--font-russo-one, var(--font-orbitron, var(--font-display)));
-  letter-spacing: -0.05em;
+  letter-spacing: -0.025em;
 }
 
 .tailLetter {
@@ -56,10 +44,7 @@
 @media (max-width: 720px) {
   .wrapper {
     padding: 0 var(--space-4);
-    margin-top: clamp(2.4rem, 12vw, 3.2rem);
-  }
-
-  .inner {
-    gap: clamp(1rem, 6vw, 1.8rem);
+    margin-top: clamp(1.4rem, 14vw, 2.6rem);
+    margin-bottom: clamp(0.8rem, 8vw, 1.2rem);
   }
 }
