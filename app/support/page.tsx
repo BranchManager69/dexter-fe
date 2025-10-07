@@ -25,6 +25,11 @@ export default function SupportPage() {
               </a>
               <p>DMs are open if you&apos;re already scrolling.</p>
             </div>
+            <div className={styles.brandingHint}>
+              <a href="/branding" className={styles.brandingLink}>
+                Dexter branding
+              </a>
+            </div>
           </div>
         </div>
       </section>

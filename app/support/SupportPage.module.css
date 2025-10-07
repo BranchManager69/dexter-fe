@@ -59,3 +59,25 @@
     padding: 14px 16px;
   }
 }
+
+.brandingHint {
+  margin-top: 8px;
+}
+
+.brandingLink {
+  display: inline-flex;
+  align-items: center;
+  color: rgba(24, 132, 98, 0.92);
+  text-decoration: none;
+  font-size: 0.68rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  border-bottom: 1px solid rgba(24, 132, 98, 0.35);
+  padding-bottom: 2px;
+}
+
+.brandingLink:hover,
+.brandingLink:focus-visible {
+  text-decoration: none;
+  border-bottom-color: rgba(24, 132, 98, 0.6);
+}
