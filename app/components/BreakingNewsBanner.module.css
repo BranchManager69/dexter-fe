@@ -3,7 +3,7 @@
   --banner-pad-y: clamp(0.4rem, 1vw, 0.65rem);
   --crest-offset: clamp(26px, 5vw, 36px);
   position: sticky;
-  top: clamp(70px, 15vw, 112px);
+  top: env(safe-area-inset-top, 0px);
   z-index: 90;
   background: linear-gradient(90deg, rgba(8, 120, 86, 0.95), rgba(14, 174, 126, 0.95));
   color: #f2fff8;
