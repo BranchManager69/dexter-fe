@@ -6,20 +6,21 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 80;
+  z-index: 360;
   padding: clamp(12px, 4vw, 28px);
   animation: fadeIn 0.2s ease;
 }
 
 .dialog {
   width: min(960px, 92vw);
-  max-height: calc(100vh - clamp(48px, 10vh, 120px));
+  max-height: calc(100vh - clamp(96px, 16vh, 180px));
   display: grid;
   gap: clamp(8px, 2vw, 16px);
   background: transparent;
   border: none;
   box-shadow: none;
   overflow: hidden;
+  position: relative;
 }
 
 .title {
@@ -32,9 +33,9 @@
 }
 
 .closeButton {
-  position: fixed;
-  top: clamp(12px, 4vw, 24px);
-  right: clamp(12px, 4vw, 24px);
+  position: absolute;
+  top: clamp(4px, 3vw, 18px);
+  right: clamp(4px, 3vw, 18px);
   border: none;
   background: rgba(252, 244, 236, 0.84);
   color: rgb(24, 12, 6);
@@ -60,7 +61,7 @@
 
 .video {
   width: 100%;
-  height: min(70vh, 54vw);
+  height: min(60vh, 52vw);
   background: rgb(var(--color-surface-base));
   border-radius: clamp(14px, 3vw, 22px);
   object-fit: contain;
@@ -79,6 +80,6 @@
 @media (max-width: 600px) {
   .video {
     height: auto;
-    max-height: calc(100vh - 140px);
+    max-height: calc(100vh - 120px);
   }
 }

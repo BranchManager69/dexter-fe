@@ -54,9 +54,6 @@ export function VideoLightbox({ open, onClose, title, sources, poster }: VideoLi
 
   return (
     <div className={styles.backdrop} role="presentation" onClick={handleBackdropClick}>
-      <button ref={closeButtonRef} type="button" onClick={onClose} className={styles.closeButton} aria-label="Close video">
-        ×
-      </button>
       <div
         className={styles.dialog}
         role="dialog"
@@ -64,6 +61,9 @@ export function VideoLightbox({ open, onClose, title, sources, poster }: VideoLi
         aria-label={`${title} video playback expanded view`}
         onClick={handleContentClick}
       >
+        <button ref={closeButtonRef} type="button" onClick={onClose} className={styles.closeButton} aria-label="Close video">
+          ×
+        </button>
         {title && <div className={styles.title}>{title}</div>}
         <video className={styles.video} controls autoPlay playsInline poster={poster}>
           {sources.map((source) => (
