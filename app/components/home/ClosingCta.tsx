@@ -47,7 +47,7 @@ export function ClosingCta() {
         tabIndex={collapsed ? 0 : -1}
         aria-label="Reopen Dexter Voice beta callout"
       >
-        Dexter Voice beta ↗
+        Voice beta ↗
       </button>
     </aside>
   );
