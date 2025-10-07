@@ -102,10 +102,10 @@ export function PortraitDemo({ demos, activeIndex, onSelect }: PortraitDemoProps
   return (
     <section className={styles.section}>
       <div className={styles.copy}>
-        <h3>Hands-free to hands-off.</h3>
+        <h3>Bring Dexter into ChatGPT and Claude.</h3>
         <p>
-          A single voice command hands the desk to Dexter. Watch the call flow as it jumps from transcription to execution and
-          finishes with proof on every channel.
+          Drop our connector URL into your chat assistant, type the command, and Dexter delivers the same quotes, execution, and
+          proof—no voice UI required.
         </p>
       </div>
       <div className={styles.visualGroup}>

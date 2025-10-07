@@ -14,16 +14,16 @@ const DEMOS: Demo[] = [
     placeholder: 'Add ChatGPT portrait demo assets',
     points: [
       {
-        title: 'Route orders right inside ChatGPT',
-        body: 'Voice relay hands Dexter the instructions without leaving the GPT thread.',
+        title: 'Stay inside ChatGPT',
+        body: 'Type or paste the instruction; Dexter carries out the swap right inside the conversation.',
       },
       {
-        title: 'Stay focused while Dexter talks fills',
-        body: 'You stay in the conversation while Dexter narrates every execution in real time.',
+        title: 'Live trade updates',
+        body: 'Route choice, fills, and timing show up as messages as the swap runs.',
       },
       {
-        title: 'Compliance packet shows up instantly',
-        body: 'Transcript, receipts, and approvals file themselves the moment the trade lands.',
+        title: 'Proof on the spot',
+        body: 'Dexter posts the transaction signature and recap the moment the trade clears.',
       },
     ],
   },
@@ -36,16 +36,16 @@ const DEMOS: Demo[] = [
     placeholder: 'Add Claude portrait demo assets',
     points: [
       {
-        title: 'Claude drafts, Dexter confirms',
-        body: 'Claude tees up the execution plan while Dexter reads back size, venue, and guardrails aloud.',
+        title: 'Claude drafts, Dexter verifies',
+        body: 'Claude plans the move while Dexter confirms symbols, size, and guardrails before execution.',
       },
       {
-        title: 'Updates hit every channel',
-        body: 'Slack, email, and the blotter light up the moment the swap completes.',
+        title: 'Updates stay in chat',
+        body: 'Each step of the trade streams back into the Claude conversation as it happens.',
       },
       {
-        title: 'Return to research with proof attached',
-        body: 'Claude stays in flow while Dexter drops the transcript, fills, and receipts back into the chat.',
+        title: 'Keep researching',
+        body: 'Claude keeps working while Dexter files transcripts and receipts right in the thread.',
       },
     ],
   },

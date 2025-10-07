@@ -15,7 +15,7 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.startsWith('http')
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
-  title: 'Dexter • Intelligent agents at your fingertips',
+  title: 'Dexter • Crypto agent that talks back',
   description: 'Dexter brings realtime voice, multi-agent chat, and MCP tools into one adaptive workspace.',
   applicationName: 'Dexter',
   category: 'technology',
@@ -34,7 +34,7 @@ export const metadata: Metadata = {
     canonical: '/',
   },
   openGraph: {
-    title: 'Dexter • Intelligent agents at your fingertips',
+    title: 'Dexter • Crypto agent that talks back',
     description: 'Realtime voice, multi-agent chat, and MCP tooling in a single adaptive crypto workspace.',
     url: siteUrl,
     siteName: 'Dexter',
@@ -51,15 +51,15 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Dexter • Intelligent agents at your fingertips',
+    title: 'Dexter • Crypto agent that talks back',
     description: 'Realtime voice, multi-agent chat, and MCP tooling in a single adaptive crypto workspace.',
     site: '@dexter',
     creator: '@dexter',
     images: ['/assets/og/dexter-default.png'],
   },
   icons: {
-    icon: '/assets/logos/logo_orange.png',
-    apple: '/assets/logos/logo_orange.png',
+    icon: '/assets/logos/logo.svg',
+    apple: '/assets/logos/logo.svg',
   },
   robots: {
     index: true,

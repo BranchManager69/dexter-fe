@@ -282,7 +282,7 @@ export default function ToolsPage() {
         onToggleGroup={toggleGroup}
       />
 
-      <div style={{ marginTop: 24 }}>
+      {/* <div style={{ marginTop: 24 }}>
         <Collapsible title="Developers · View raw JSON" defaultOpen={false}>
           <pre style={{
             whiteSpace: 'pre-wrap',
@@ -296,7 +296,7 @@ export default function ToolsPage() {
             {safeStringify(raw)}
           </pre>
         </Collapsible>
-      </div>
+      </div> */}
 
     </div>
   );

@@ -38,7 +38,7 @@ export function PortraitHighlights({ points }: PortraitHighlightsProps) {
 
   return (
     <section className={styles.section} aria-label="Dexter portrait highlights">
-      <h3>What Dexter handles for you</h3>
+      <h3>Dexter covers the critical steps for you.</h3>
       <div className={styles.deck}>
         {deck.map(card => (
           <article key={card.key} className={styles.card} data-slot={card.slot}>

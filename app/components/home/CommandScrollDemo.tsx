@@ -7,16 +7,16 @@ import { VideoLoadingOverlay } from './VideoLoadingOverlay';
 
 const STEPS = [
   {
-    title: 'Voice intent captured',
-    body: 'Operator speaks a single directive. Dexter transcripts, tags assets, and confirms the plan.'
+    title: 'Understands you instantly',
+    body: 'Dexter turns your sentence into a transcript, recognising tickers and intent without extra prompts.'
   },
   {
-    title: 'Execution in motion',
-    body: 'Routes across connected venues, reports fills aloud, and keeps every side-channel in sync.'
+    title: 'Confirms and executes in seconds',
+    body: 'It echoes the plan back, pulls the best Solana route, and finishes the swap before you reach for the keyboard.'
   },
   {
-    title: 'Receipts delivered',
-    body: 'Trade packet, compliance log, and notifications dispatch instantly to your workspace.'
+    title: 'Proof arrives right away',
+    body: 'Signature, summary, and follow-up notes land in the console the moment the trade settles.'
   }
 ];
 
@@ -180,10 +180,14 @@ export function CommandScrollDemo() {
         {!isVideoReady && <VideoLoadingOverlay label="Command demo loading" />}
       </div>
       <div className={styles.copy}>
-        <h2>Watch a trade execute in real time.</h2>
+        <h2>See how fast realtime voice trading feels.</h2>
         <p>
-          The full command runs end-to-end—Dexter hears the instruction, routes the work across desks, and returns proof without
-          the dashboards.
+          Say the move in plain language—Dexter picks up the symbols, repeats them for trust, and kicks off the swap almost
+          immediately.
+        </p>
+        <p>
+          Dexter verifies the tokens, executes from your Solana account, and drops the receipts automatically so you never break
+          flow.
         </p>
         <div className={styles.steps}>{stepElements}</div>
       </div>
