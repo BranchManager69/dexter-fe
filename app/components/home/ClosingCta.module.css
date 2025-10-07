@@ -39,6 +39,7 @@
   background: linear-gradient(160deg, rgb(var(--color-surface-base) / 0.7) 0%, rgb(var(--color-background) / 0.58) 100%);
   box-shadow: 0 22px 70px rgba(12, 5, 3, 0.26);
   backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   width: min(640px, 100%);
   flex-wrap: nowrap;
 }
