@@ -4,10 +4,10 @@ import { motion } from 'framer-motion';
 import styles from './DexterWordmark.module.css';
 import { DexterAnimatedCrest } from '../DexterAnimatedCrest';
 
-const letterDelays = [0.18, 0.26, 0.32, 0.38, 0.44];
+const letters = ['D', 'E', 'X', 'T', 'E', 'R'];
+const letterDelays = [0.05, 0.18, 0.26, 0.34, 0.42, 0.5];
 
 export function DexterWordmark() {
-  const letters = ['E', 'X', 'T', 'E', 'R'];
 
   return (
     <motion.section
@@ -28,21 +28,13 @@ export function DexterWordmark() {
         </motion.span>
 
         <motion.h1 className={styles.wordmark}>
-          <motion.span
-            className={styles.leadLetter}
-            initial={{ opacity: 0, scale: 1.4, y: -18 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            transition={{ duration: 0.55, ease: [0.19, 1.0, 0.22, 1.0] }}
-          >
-            D
-          </motion.span>
           {letters.map((letter, index) => (
             <motion.span
               key={letter + index}
-              className={styles.tailLetter}
-              initial={{ opacity: 0, y: 18 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: letterDelays[index], ease: [0.19, 1.0, 0.22, 1.0] }}
+              className={`${styles.letter} ${index === 0 ? styles.leadLetter : styles.tailLetter}`}
+              initial={{ opacity: 0, y: index === 0 ? -18 : 18, scale: index === 0 ? 1.4 : 1 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ duration: index === 0 ? 0.55 : 0.4, delay: letterDelays[index], ease: [0.19, 1.0, 0.22, 1.0] }}
             >
               {letter}
             </motion.span>

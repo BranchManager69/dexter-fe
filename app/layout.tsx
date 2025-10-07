@@ -5,6 +5,7 @@ import { Header } from './header';
 import { Footer } from './footer';
 import { FlexFill } from './components/FlexFill';
 import { activeThemeVariables, sunrisePalette } from '../lib/theme/palette';
+import { orbitron, russoOne } from './fonts';
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.startsWith('http')
   ? process.env.NEXT_PUBLIC_SITE_URL
@@ -75,7 +76,7 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" style={activeThemeVariables}>
-      <body>
+      <body className={`${orbitron.variable} ${russoOne.variable}`}>
         <AuthProvider>
           <div className="page-shell">
             <Header />
