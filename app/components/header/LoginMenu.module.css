@@ -212,7 +212,6 @@
 
 .turnstileOuter {
   position: relative;
-  min-height: 78px;
 }
 
 .turnstile {
@@ -239,8 +238,6 @@
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: #111;
-  background: rgba(255, 244, 232, 0.85);
-  border: 1px solid rgba(242, 108, 24, 0.18);
   pointer-events: none;
   z-index: 0;
 }
