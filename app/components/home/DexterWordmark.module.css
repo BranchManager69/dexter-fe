@@ -1,5 +1,5 @@
 .wrapper {
-  margin: clamp(1.6rem, 6vh, 3rem) auto clamp(0.9rem, 4vh, 1.6rem);
+  margin: clamp(0.6rem, 3vh, 1.4rem) auto clamp(0.4rem, 2vh, 0.9rem);
   padding: 0 var(--space-7);
   width: 100%;
   max-width: var(--max-width);
@@ -32,11 +32,7 @@
   margin-right: -0.012em;
 }
 
-.leadLetter {
-  font-family: var(--font-russo-one, var(--font-orbitron, var(--font-display)));
-  letter-spacing: -0.025em;
-}
-
+.leadLetter,
 .tailLetter {
   font-family: var(--font-orbitron, var(--font-display));
 }
@@ -44,7 +40,7 @@
 @media (max-width: 720px) {
   .wrapper {
     padding: 0 var(--space-4);
-    margin-top: clamp(1.4rem, 14vw, 2.6rem);
-    margin-bottom: clamp(0.8rem, 8vw, 1.2rem);
+    margin-top: clamp(0.6rem, 10vw, 1.4rem);
+    margin-bottom: clamp(0.4rem, 8vw, 0.9rem);
   }
 }
