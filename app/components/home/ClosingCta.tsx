@@ -23,10 +23,11 @@ export function ClosingCta() {
           ×
         </button>
         <div className={styles.copy}>
+          <span className={styles.subtitle}>Realtime desk companion</span>
           <h2>
             Dexter Voice <span className={styles.betaMarker}>beta</span>
           </h2>
-          <p>Crypto's first talking agent.</p>
+          <p>Spin up the voice operator that routes trades, logs receipts, and updates every channel without dashboards.</p>
         </div>
         <div className={styles.actions}>
           <Link
@@ -35,7 +36,15 @@ export function ClosingCta() {
             target="_blank"
             rel="noreferrer"
           >
-            Try now
+            <span className={styles.ctaIcon} aria-hidden="true">
+              <svg width="18" height="12" viewBox="0 0 18 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M1 6H3" stroke="currentColor" strokeWidth="1.5"/>
+                <path d="M5 6H7" stroke="currentColor" strokeWidth="1.5"/>
+                <path d="M9 6H11" stroke="currentColor" strokeWidth="1.5"/>
+                <path d="M13 6H17" stroke="currentColor" strokeWidth="1.5"/>
+              </svg>
+            </span>
+            <span>Try now</span>
           </Link>
         </div>
       </div>

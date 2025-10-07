@@ -7,6 +7,7 @@ import { FlexFill } from './components/FlexFill';
 import { BreakingNewsBanner } from './components/BreakingNewsBanner';
 import { activeThemeVariables, sunrisePalette } from '../lib/theme/palette';
 import { orbitron, russoOne } from './fonts';
+import { satoshi } from './fonts/satoshi';
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.startsWith('http')
   ? process.env.NEXT_PUBLIC_SITE_URL
@@ -77,7 +78,7 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" style={activeThemeVariables}>
-      <body className={`${orbitron.variable} ${russoOne.variable}`}>
+      <body className={`${orbitron.variable} ${russoOne.variable} ${satoshi.variable}`}>
         <AuthProvider>
           <div className="page-shell">
             <Header />
