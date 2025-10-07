@@ -7,57 +7,64 @@
   align-items: center;
   justify-content: center;
   z-index: 80;
-  padding: var(--space-6);
+  padding: clamp(12px, 4vw, 28px);
   animation: fadeIn 0.2s ease;
 }
 
 .dialog {
-  width: min(960px, 100%);
+  width: min(960px, 92vw);
+  max-height: calc(100vh - clamp(48px, 10vh, 120px));
   display: grid;
-  gap: var(--space-3);
-  background: rgba(18, 9, 6, 0.92);
-  border: 1px solid rgba(255, 121, 0, 0.45);
-  border-radius: 28px;
-  box-shadow: 0 40px 120px rgba(160, 50, 0, 0.5);
+  gap: clamp(8px, 2vw, 16px);
+  background: transparent;
+  border: none;
+  box-shadow: none;
   overflow: hidden;
 }
 
-.header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: var(--space-3) var(--space-4) 0;
-  color: rgb(var(--color-neutral-100));
-  font-size: 0.85rem;
-  letter-spacing: 0.2em;
+.title {
+  color: rgba(255, 246, 236, 0.92);
+  font-size: clamp(0.78rem, 1.2vw, 0.92rem);
+  letter-spacing: 0.18em;
   text-transform: uppercase;
+  text-align: center;
+  pointer-events: none;
 }
 
 .closeButton {
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  background: transparent;
-  color: rgb(var(--color-neutral-100));
-  font-size: 0.75rem;
-  padding: 6px 16px;
+  position: fixed;
+  top: clamp(12px, 4vw, 24px);
+  right: clamp(12px, 4vw, 24px);
+  border: none;
+  background: rgba(252, 244, 236, 0.84);
+  color: rgb(24, 12, 6);
+  font-size: clamp(1.6rem, 4vw, 2.2rem);
+  line-height: 1;
+  width: clamp(32px, 6vw, 44px);
+  height: clamp(32px, 6vw, 44px);
   border-radius: 999px;
   cursor: pointer;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  transition: background 0.2s ease, border-color 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.18s ease, background 0.18s ease;
+  z-index: 81;
 }
 
 .closeButton:hover,
 .closeButton:focus-visible {
   outline: none;
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.45);
+  transform: scale(1.05);
+  background: rgba(252, 244, 236, 0.95);
 }
 
 .video {
   width: 100%;
-  height: auto;
-  border-radius: 0 0 28px 28px;
+  height: min(70vh, 54vw);
   background: rgb(var(--color-surface-base));
+  border-radius: clamp(14px, 3vw, 22px);
+  object-fit: contain;
+  box-shadow: 0 36px 90px rgba(10, 5, 3, 0.5);
 }
 
 @keyframes fadeIn {
@@ -70,11 +77,8 @@
 }
 
 @media (max-width: 600px) {
-  .dialog {
-    border-radius: 22px;
-  }
-
   .video {
-    border-radius: 0 0 22px 22px;
+    height: auto;
+    max-height: calc(100vh - 140px);
   }
 }
