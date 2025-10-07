@@ -17,13 +17,13 @@ type ExternalNavItem = {
 type NavItem = InternalNavItem | ExternalNavItem;
 
 const navigation = [
-  { label: 'MCP', href: '/tools' satisfies Route },
-  { label: 'Link', href: '/link' satisfies Route },
-  { label: 'Docs', href: 'https://docs.dexter.cash', external: true },
+  { label: 'Tools', href: '/tools' satisfies Route },
+  { label: 'Connect', href: '/link' satisfies Route },
 ] satisfies NavItem[];
 
 const footerLinks = [
   { label: 'Status', href: '/status' satisfies Route },
+  { label: 'Docs', href: 'https://docs.dexter.cash', external: true },
   { label: 'Roadmap', href: '/roadmap' satisfies Route },
   { label: 'Support', href: '/support' satisfies Route },
 ] satisfies NavItem[];

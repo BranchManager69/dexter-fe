@@ -24,8 +24,9 @@ export function Header() {
       <div className="site-header__inner">
         <div className="site-header__left-tray">
           <nav className="site-header__nav" aria-label="Primary">
-            {navItems.map((item) =>
-              item.external ? (
+            {navItems.map((item) => {
+              const isExternal = 'external' in item && item.external;
+              return isExternal ? (
                 <a
                   key={item.href}
                   href={item.href}
@@ -39,8 +40,8 @@ export function Header() {
                 <Link key={item.href} href={item.href} className={navClass(item.href)}>
                   {item.label}
                 </Link>
-              ),
-            )}
+              );
+            })}
           </nav>
         </div>
 

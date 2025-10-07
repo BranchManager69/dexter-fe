@@ -1,25 +1,4 @@
-import type { Route } from 'next';
-import Link from 'next/link';
-import GradientPanel from '../components/GradientPanel';
 import styles from './SupportPage.module.css';
-
-type ExternalQuickLink = {
-  label: string;
-  href: string;
-  external: true;
-};
-
-type InternalQuickLink = {
-  label: string;
-  href: Route;
-  external?: false;
-};
-
-const quickLinks: Array<ExternalQuickLink | InternalQuickLink> = [
-  { label: 'Open a ticket', href: 'mailto:support@dexter.tools', external: true },
-  { label: 'Status page', href: '/status' satisfies Route },
-  { label: 'Roadmap', href: '/roadmap' satisfies Route },
-];
 
 export default function SupportPage() {
   return (
@@ -27,34 +6,25 @@ export default function SupportPage() {
       <section className="section">
         <div className={styles.wrapper}>
           <div>
-            <span className="eyebrow">Need help?</span>
-            <h1>Dexter support.</h1>
+            <span className="eyebrow">Need something?</span>
+            <h1>Reach Branch.</h1>
             <p>
-              Reach us anytime for account changes, incident reports, or bespoke trading desks. We reply within one business day (faster for holders).
+              No ticket systems, no bots—just send a note or a DM and I&apos;ll see it when I can.
             </p>
           </div>
-          <GradientPanel className={styles.card}>
-            <h2>Fastest path: email</h2>
-            <p>
-              Send context, wallet IDs, and screenshots to <a href="mailto:support@dexter.tools">support@dexter.tools</a>. Urgent production blockers should include “SEV1” in the subject line.
-            </p>
-            <p>
-              We’re available 08:00–22:00 ET on weekdays, and on-call teams monitor voice incidents 24/7.
-            </p>
-          </GradientPanel>
-          <div className={styles.links}>
-            {quickLinks.map((link) =>
-              link.external ? (
-                <a key={link.href} href={link.href} rel="noreferrer" className={styles.linkChip}>
-                  {link.label}
-                  <span aria-hidden>↗</span>
-                </a>
-              ) : (
-                <Link key={link.href} href={link.href} className={styles.linkChip}>
-                  {link.label}
-                </Link>
-              ),
-            )}
+          <div className={styles.contacts}>
+            <div className={styles.contactCard}>
+              <h2>Email</h2>
+              <a href="mailto:branch@branch.bet">branch@branch.bet</a>
+              <p>Anything goes. Screenshots help, but not required.</p>
+            </div>
+            <div className={styles.contactCard}>
+              <h2>X (Twitter)</h2>
+              <a href="https://x.com/branchmanager69" rel="noreferrer" target="_blank">
+                @branchmanager69
+              </a>
+              <p>DMs are open if you&apos;re already scrolling.</p>
+            </div>
           </div>
         </div>
       </section>

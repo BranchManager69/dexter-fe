@@ -1,11 +1,23 @@
-import GradientPanel from '../components/GradientPanel';
 import styles from './RoadmapPage.module.css';
 
-const roadmap = [
+type Milestone = {
+  title: string;
+  description: string;
+};
+
+type TimelineEntry = {
+  id: string;
+  label: string;
+  summary: string;
+  milestones: Milestone[];
+};
+
+const timeline: TimelineEntry[] = [
   {
-    phase: 'Now',
-    meta: 'In active development · Target October 2025',
-    items: [
+    id: 'oct-2025',
+    label: 'October 2025',
+    summary: 'Launch month. Core co-pilots and voice proof land during the token debut week.',
+    milestones: [
       {
         title: 'Agent co-pilots in chat',
         description: 'Let multiple Dexter agents collaborate in a single thread with role-specific tools.',
@@ -14,26 +26,55 @@ const roadmap = [
         title: 'Voice session transcripts',
         description: 'Ship recording, summary, and ledger receipts to your ops stack within minutes.',
       },
+      {
+        title: 'Launch checklist + token visibility',
+        description: 'Add swap links, circuit breakers, and homepage callouts tied to the DEXTER token rollout.',
+      },
     ],
   },
   {
-    phase: 'Next',
-    meta: 'Planning · Target Q4 2025',
-    items: [
+    id: 'nov-2025',
+    label: 'November 2025',
+    summary: 'Stabilize the desks, add guardrails, and tighten the feedback loops after launch.',
+    milestones: [
       {
         title: 'Portfolio guardrails',
         description: 'Policy-based controls that cap position sizing, slippage, and counterparty risk per wallet.',
       },
       {
         title: 'Realtime status subscriptions',
-        description: 'Webhook + email digests any time a service blips or maintenance window is scheduled.',
+        description: 'Webhook + digest pings any time a service blips or maintenance window is scheduled.',
+      },
+      {
+        title: 'Feedback heatmap',
+        description: 'Lightweight voting on prompts + tool combos so we know what to double down on.',
       },
     ],
   },
   {
-    phase: 'Later',
-    meta: 'Exploration · Target 2026',
-    items: [
+    id: 'dec-2025',
+    label: 'December 2025',
+    summary: 'Year-end polish before the holidays—reporting kits and self-serve onboarding flows.',
+    milestones: [
+      {
+        title: 'Playbooks & starter packs',
+        description: 'Preset MCP tool bundles for common branches so new users can get live without DMing us.',
+      },
+      {
+        title: 'Year-end reporting kit',
+        description: 'Export ledger summaries, voice receipts, and token via onboarding-safe templates.',
+      },
+      {
+        title: 'Support backlog cleanup',
+        description: 'Catch up on DM + email threads, publish best-of answers straight into Docs.',
+      },
+    ],
+  },
+  {
+    id: '2026',
+    label: '2026',
+    summary: 'Longer-term bets once the launch dust settles.',
+    milestones: [
       {
         title: 'Marketplace tooling',
         description: 'Third-party agent packs with vetted MCP integrations and revenue share.',
@@ -41,6 +82,10 @@ const roadmap = [
       {
         title: 'Dexter mobile',
         description: 'Hands-free voice trading companion with biometric unlocks and on-device hotkeys.',
+      },
+      {
+        title: 'Pro tier experiments',
+        description: 'Pricing, analytics, and automation layers for the desks that stick around.',
       },
     ],
   },
@@ -52,28 +97,28 @@ export default function RoadmapPage() {
       <section className="section">
         <div className={styles.wrapper}>
           <div className={styles.intro}>
-            <span className="eyebrow">What&apos;s coming</span>
-            <h1>Dexter roadmap.</h1>
-            <p>
-              Here’s how we’re sequencing the next wave of automation: what’s shipping now, what’s queued next, and what’s still in research.
-            </p>
+            <span className={styles.eyebrowAccent}>What&apos;s planned</span>
+            <h1>Dexter Roadmap</h1>
           </div>
-          <div className={styles.columns}>
-            {roadmap.map((bucket) => (
-              <GradientPanel key={bucket.phase} className={styles.column} tight>
-                <header className={styles.header}>
-                  <span className={styles.phase}>{bucket.phase}</span>
-                  <span className={styles.meta}>{bucket.meta}</span>
+
+          <div className={styles.timeline}>
+            {timeline.map((entry) => (
+              <article key={entry.id} className={styles.entry} aria-labelledby={`${entry.id}-label`}>
+                <header className={styles.entryHeader}>
+                  <div>
+                    <h2 id={`${entry.id}-label`}>{entry.label}</h2>
+                    <p className={styles.summary}>{entry.summary}</p>
+                  </div>
                 </header>
-                <div className={styles.list}>
-                  {bucket.items.map((item) => (
-                    <div key={item.title} className={styles.item}>
-                      <strong>{item.title}</strong>
-                      <p>{item.description}</p>
-                    </div>
+                <ul className={styles.milestones}>
+                  {entry.milestones.map((milestone) => (
+                    <li key={milestone.title} className={styles.milestone}>
+                      <strong>{milestone.title}</strong>
+                      <p>{milestone.description}</p>
+                    </li>
                   ))}
-                </div>
-              </GradientPanel>
+                </ul>
+              </article>
             ))}
           </div>
         </div>
