@@ -38,11 +38,7 @@
 
 .entry {
   position: relative;
-  padding: clamp(18px, 3vw, 26px) clamp(18px, 3vw, 26px) clamp(18px, 3vw, 24px);
-  border-radius: var(--radius-md);
-  background: rgba(255, 248, 240, 0.6);
-  border: 1px solid rgba(242, 108, 24, 0.28);
-  box-shadow: 0 18px 36px rgba(242, 108, 24, 0.16);
+  padding: clamp(12px, 2.5vw, 22px) clamp(18px, 3vw, 26px) clamp(12px, 2.5vw, 20px);
 }
 
 .entry::before {
@@ -83,6 +79,7 @@
   list-style: none;
   display: grid;
   gap: var(--space-3);
+  margin-left: clamp(14px, 2.4vw, 24px);
 }
 
 .milestone {
