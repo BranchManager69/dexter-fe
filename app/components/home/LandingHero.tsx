@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import styles from './LandingHero.module.css';
 import { StartConversationButton } from '../StartConversationButton';
 import { DexterAnimatedCrest } from '../DexterAnimatedCrest';
+import { useState } from 'react';
 
 const metrics = [
   {
@@ -23,6 +24,18 @@ const metrics = [
 
 export function LandingHero() {
   const router = useRouter();
+  const [copied, setCopied] = useState(false);
+  const mintPlaceholder = 'So1anaMintAddressGoesHere111111111111111111111111';
+
+  const handleCopyMint = async () => {
+    try {
+      await navigator.clipboard.writeText(mintPlaceholder);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1600);
+    } catch (error) {
+      console.error('Mint copy failed', error);
+    }
+  };
 
   return (
     <section className={`section ${styles.hero}`}>
@@ -33,6 +46,16 @@ export function LandingHero() {
             <span className={styles.badge}>Realtime beta</span>
           </div>
           <h1>Issue one command. Dexter does the rest.</h1>
+          <button type="button" className={styles.mintCopy} onClick={handleCopyMint} aria-label="Copy Dexter mint address">
+            <span>{mintPlaceholder}</span>
+            <svg className={styles.mintCopyIcon} width="14" height="14" viewBox="0 0 14 14" aria-hidden="true">
+              <rect x="2" y="2" width="8" height="8" rx="1.5" fill="none" stroke="currentColor" strokeWidth="1.2" opacity="0.6" />
+              <rect x="4" y="4" width="8" height="8" rx="1.5" fill="none" stroke="currentColor" strokeWidth="1.2" />
+            </svg>
+            <span className={styles.mintCopyStatus} aria-live="polite">
+              {copied ? 'Copied' : ''}
+            </span>
+          </button>
           <p>
             Dexter is the desk operator that never sleeps: it joins your huddle, captures intent, executes across chains,
             and drops receipts back where your team already lives.
