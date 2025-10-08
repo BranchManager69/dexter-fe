@@ -46,7 +46,8 @@ npm run dexter-stream:stop
 ## Notes
 
 - Overlay URL defaults to `https://dexter.cash/overlay/live?layout=compact`. Edit `config.json` if you prefer another layout.
-- FFmpeg uses a silent audio source (`anullsrc`) so downstream players stay happy; swap in real audio later if needed.
+- Audio defaults to silence. Populate `audio.directory` (folder of MP3/M4A/AAC/WAV/OGG files) or `audio.playlist` in `config.local.json` and the runner will loop through those tracks, shuffling if `audio.shuffle` is `true`.
+- Use `videoFilter` to override the default crop/zoom filter (defaults to `crop=in_w:in_h-240:0:200,scale=1920:1080`).
 - Process exits if any child (Xvfb, Chromium, FFmpeg) dies—PM2 restarts it automatically.
 - When HLS is enabled the runner triggers a LiveKit room-composite egress. The log line `🎯 HLS playlist → …` surfaces the playback URL; stop the PM2 process to halt the egress (the runner calls `StopEgress` during shutdown).
 - Keep an eye on the playlist via a simple probe (e.g. `curl -I <playlist>.m3u8`) if you need automated monitoring.

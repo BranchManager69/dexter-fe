@@ -81,6 +81,10 @@ body.overlay-mode .site-footer {
   display: none !important;
 }
 
+body.overlay-mode [class*='BreakingNewsBanner_banner'] {
+  display: none !important;
+}
+
 body.overlay-mode .main-content {
   padding: 0 !important;
 }

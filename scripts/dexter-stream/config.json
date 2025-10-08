@@ -8,6 +8,14 @@
   "fps": 30,
   "videoBitrate": "5000k",
   "audioBitrate": "128k",
+  "videoFilter": "",
+  "audio": {
+    "directory": "",
+    "playlist": [],
+    "extensions": ["mp3", "m4a", "aac", "wav", "ogg"],
+    "shuffle": false,
+    "mode": "playlist"
+  },
   "livekit": {
     "enableHls": false,
     "host": "https://your-project.livekit.cloud",

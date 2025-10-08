@@ -1,7 +1,8 @@
 import { spawn } from 'node:child_process';
-import { readFile, rm, access } from 'node:fs/promises';
+import { readFile, rm, access, writeFile, readdir, stat } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
+import os from 'node:os';
 import { chromium } from 'playwright';
 import livekitSdk from 'livekit-server-sdk';
 
@@ -28,6 +29,15 @@ const DEFAULT_CONFIG = {
   fps: 30,
   videoBitrate: '5000k',
   audioBitrate: '128k',
+  videoFilter: '',
+};
+
+const DEFAULT_AUDIO_CONFIG = {
+  directory: '',
+  playlist: [],
+  extensions: ['.mp3', '.m4a', '.aac', '.wav', '.ogg'],
+  shuffle: false,
+  mode: 'playlist',
 };
 
 const DEFAULT_LIVEKIT_CONFIG = {
@@ -56,6 +66,151 @@ const DEFAULT_LIVEKIT_CONFIG = {
     videoPreset: 'H264_1080P_30FPS_1_LAYER',
   },
 };
+
+function toAbsolutePath(targetPath) {
+  if (!targetPath || typeof targetPath !== 'string') return null;
+  const trimmed = targetPath.trim();
+  if (!trimmed) return null;
+  if (path.isAbsolute(trimmed)) return trimmed;
+  return path.resolve(__dirname, trimmed);
+}
+
+function escapeForConcat(filePath) {
+  return filePath.replace(/'/g, "'\\''");
+}
+
+function shuffleArray(array) {
+  for (let i = array.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+  return array;
+}
+
+function normalizeAudioConfig(base = {}, override = {}) {
+  if (!base && !override) return null;
+
+  const baseList = Array.isArray(base?.playlist) ? base.playlist : [];
+  const overrideList = Array.isArray(override?.playlist) ? override.playlist : [];
+
+  const merged = {
+    ...DEFAULT_AUDIO_CONFIG,
+    ...(base ?? {}),
+    ...(override ?? {}),
+  };
+
+  merged.mode = typeof merged.mode === 'string' ? merged.mode.trim().toLowerCase() : DEFAULT_AUDIO_CONFIG.mode;
+
+  merged.playlist = [...baseList, ...overrideList]
+    .map((item) => (typeof item === 'string' ? item.trim() : ''))
+    .filter((item) => item.length > 0);
+
+  if (!Array.isArray(merged.extensions) || merged.extensions.length === 0) {
+    merged.extensions = [...DEFAULT_AUDIO_CONFIG.extensions];
+  }
+  merged.extensions = merged.extensions
+    .map((ext) => {
+      const normalized = String(ext || '').trim().toLowerCase();
+      if (!normalized) return null;
+      return normalized.startsWith('.') ? normalized : `.${normalized}`;
+    })
+    .filter(Boolean);
+
+  merged.shuffle = Boolean(merged.shuffle);
+  merged.directory = typeof merged.directory === 'string' ? merged.directory.trim() : '';
+
+  if (
+    merged.mode === 'silence'
+    || (merged.playlist.length === 0 && !merged.directory)
+  ) {
+    return null;
+  }
+
+  return merged;
+}
+
+async function resolveAudioInput(audioConfig, cleanupTasks = []) {
+  if (!audioConfig) {
+    return {
+      args: ['-f', 'lavfi', '-i', 'anullsrc=channel_layout=stereo:sample_rate=44100'],
+      description: 'silence',
+    };
+  }
+
+  const tracks = [];
+  const seen = new Set();
+
+  const pushTrack = async (candidate) => {
+    const absPath = toAbsolutePath(candidate);
+    if (!absPath || seen.has(absPath)) return;
+    try {
+      const stats = await stat(absPath);
+      if (stats.isFile()) {
+        seen.add(absPath);
+        tracks.push(absPath);
+      }
+    } catch (error) {
+      console.warn('[dexter-stream] unable to include audio file', candidate, error.message || error);
+    }
+  };
+
+  for (const entry of audioConfig.playlist || []) {
+    await pushTrack(entry);
+  }
+
+  if (audioConfig.directory) {
+    const absDir = toAbsolutePath(audioConfig.directory);
+    if (absDir) {
+      try {
+        const entries = await readdir(absDir);
+        const lowerExts = new Set(audioConfig.extensions);
+        for (const entryName of entries) {
+          const fullPath = path.join(absDir, entryName);
+          const ext = path.extname(entryName).toLowerCase();
+          if (lowerExts.has(ext)) {
+            await pushTrack(fullPath);
+          }
+        }
+      } catch (error) {
+        console.warn('[dexter-stream] failed to read audio directory', audioConfig.directory, error.message || error);
+      }
+    }
+  }
+
+  if (!tracks.length) {
+    return {
+      args: ['-f', 'lavfi', '-i', 'anullsrc=channel_layout=stereo:sample_rate=44100'],
+      description: 'silence',
+    };
+  }
+
+  if (audioConfig.shuffle) {
+    shuffleArray(tracks);
+  }
+
+  const playlistContent = tracks
+    .map((filePath) => `file '${escapeForConcat(filePath)}'`)
+    .join('\n');
+
+  const playlistPath = path.join(
+    os.tmpdir(),
+    `dexter-audio-playlist-${Date.now()}-${Math.random().toString(36).slice(2)}.txt`,
+  );
+
+  await writeFile(playlistPath, playlistContent, 'utf-8');
+  cleanupTasks.push(async () => {
+    try {
+      await rm(playlistPath, { force: true });
+    } catch {}
+  });
+
+  console.log(`[dexter-stream] audio playlist loaded (${tracks.length} tracks)`);
+
+  return {
+    args: ['-stream_loop', '-1', '-f', 'concat', '-safe', '0', '-i', playlistPath],
+    description: `playlist (${tracks.length} tracks)`,
+  };
+}
 
 function normalizeLivekitConfig(base = {}, override = {}) {
   const merged = {
@@ -223,8 +378,12 @@ async function loadConfig() {
 
   const baseLivekit = baseConfig?.livekit;
   const localLivekit = localConfig?.livekit;
+  const baseAudio = baseConfig?.audio;
+  const localAudio = localConfig?.audio;
   delete baseConfig.livekit;
   delete localConfig.livekit;
+  delete baseConfig.audio;
+  delete localConfig.audio;
 
   const merged = {
     ...DEFAULT_CONFIG,
@@ -233,6 +392,7 @@ async function loadConfig() {
   };
 
   merged.livekit = normalizeLivekitConfig(baseLivekit, localLivekit);
+  merged.audio = normalizeAudioConfig(baseAudio, localAudio);
 
   const rtmpUrl = merged.rtmpUrl
     ? merged.rtmpUrl
@@ -361,10 +521,21 @@ async function main() {
       '--no-sandbox',
       '--disable-dev-shm-usage',
       '--use-gl=swiftshader',
+      '--no-first-run',
+      '--no-default-browser-check',
+      '--disable-infobars',
+      '--disable-notifications',
+      '--disable-component-update',
+      '--disable-background-networking',
+      '--disable-session-crashed-bubble',
+      '--disable-extensions',
+      '--kiosk',
+      '--start-fullscreen',
+      '--hide-scrollbars',
       `--window-size=${config.width},${config.height}`,
       `--app=${config.overlayUrl}`,
       '--disable-translate',
-      '--disable-features=HardwareMediaKeyHandling,MediaRouter',
+      '--disable-features=HardwareMediaKeyHandling,TranslateUI,AutomationControlled,MediaRouter',
     ],
   });
   cleanupTasks.push(async () => {
@@ -379,18 +550,39 @@ async function main() {
     page = await browser.newPage();
   }
   if (page) {
+    await page.bringToFront().catch(() => {});
     await page.setViewportSize({ width: config.width, height: config.height });
     if (!page.url() || page.url() === 'about:blank') {
       await page.goto(config.overlayUrl, { waitUntil: 'networkidle' });
     } else {
       await page.waitForLoadState('networkidle');
     }
+    await page.evaluate(() => {
+      const html = document.documentElement;
+      const body = document.body;
+      if (html) {
+        html.style.backgroundColor = '#000';
+      }
+      if (body) {
+        body.style.backgroundColor = '#000';
+        body.style.zoom = '1';
+        body.style.margin = '0';
+      }
+      if (document.documentElement && document.documentElement.requestFullscreen) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      }
+    }).catch((error) => {
+      console.warn('[dexter-stream] failed to apply overlay zoom', error);
+    });
+    await page.keyboard.press('F11').catch(() => {});
     console.log('[dexter-stream] overlay page loaded');
   } else {
     console.warn('[dexter-stream] unable to access page handle; continuing');
   }
 
   console.log('[dexter-stream] starting ffmpeg pipeline');
+  const audioInput = await resolveAudioInput(config.audio, cleanupTasks);
+  console.log(`[dexter-stream] audio source → ${audioInput.description}`);
   const ffmpegArgs = [
     '-hide_banner',
     '-loglevel', 'info',
@@ -399,8 +591,7 @@ async function main() {
     '-video_size', `${config.width}x${config.height}`,
     '-framerate', String(config.fps),
     '-i', display,
-    '-f', 'lavfi',
-    '-i', `anullsrc=channel_layout=stereo:sample_rate=44100`,
+    ...audioInput.args,
     '-c:v', 'libx264',
     '-pix_fmt', 'yuv420p',
     '-preset', 'veryfast',
@@ -417,14 +608,20 @@ async function main() {
     '-shortest',
   ];
 
+  const videoFilterChain =
+    typeof config.videoFilter === 'string' && config.videoFilter.trim().length
+      ? config.videoFilter.trim()
+      : 'crop=in_w:in_h-240:0:200,scale=1920:1080';
+
+  ffmpegArgs.push('-vf', videoFilterChain);
+  ffmpegArgs.push('-map', '0:v:0', '-map', '1:a:0');
+
   const livekitIngress = await ensureLivekitIngress(config.livekit);
 
   const teeOutputs = [];
   const safeOutputs = [];
 
   const maskUrl = (rawUrl) => rawUrl.replace(/\/(?!.*\/).*/, '/•••');
-
-  ffmpegArgs.push('-map', '0:v:0', '-map', '1:a:0');
 
   if (config.rtmpUrl) {
     teeOutputs.push(`[f=flv:onfail=ignore]${config.rtmpUrl}`);
@@ -444,7 +641,7 @@ async function main() {
   }
 
   if (teeOutputs.length === 1) {
-    const single = teeOutputs[0].replace('[f=flv]', '');
+    const single = teeOutputs[0].replace(/^\[[^\]]+\]/, '');
     ffmpegArgs.push('-f', 'flv', single);
   } else {
     ffmpegArgs.push('-f', 'tee', teeOutputs.join('|'));
