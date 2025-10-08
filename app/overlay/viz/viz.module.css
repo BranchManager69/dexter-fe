@@ -5,18 +5,32 @@
   align-items: center;
   justify-content: center;
   padding: 0;
-  background: radial-gradient(circle at 20% 20%, rgba(111, 76, 255, 0.45), transparent 55%),
-    radial-gradient(circle at 80% 25%, rgba(0, 194, 255, 0.35), transparent 60%),
-    radial-gradient(circle at 50% 78%, rgba(255, 90, 196, 0.45), transparent 65%),
-    linear-gradient(135deg, #05071a 0%, #090b2f 55%, #111334 100%);
-  color: #f5f6ff;
+  background: radial-gradient(circle at 18% 14%, rgba(120, 190, 255, 0.42), transparent 58%),
+    radial-gradient(circle at 82% 20%, rgba(255, 140, 70, 0.35), transparent 60%),
+    radial-gradient(circle at 48% 82%, rgba(162, 92, 255, 0.36), transparent 68%),
+    linear-gradient(135deg, #07031a 0%, #10123a 52%, #1c0911 100%);
+  color: #fdf9f4;
   overflow: hidden;
+}
+
+.stage::before {
+  content: '';
+  position: absolute;
+  inset: -28%;
+  background: conic-gradient(from 90deg at 50% 50%, rgba(255, 145, 72, 0.16), rgba(105, 220, 255, 0.2), rgba(186, 112, 255, 0.14), rgba(255, 145, 72, 0.16));
+  filter: blur(120px);
+  opacity: 0.55;
+  animation: stageWave 18s linear infinite;
+  mix-blend-mode: screen;
+  pointer-events: none;
 }
 
 .glowOverlay {
   position: absolute;
   inset: 0;
-  background: radial-gradient(circle at 50% 65%, rgba(255, 255, 255, 0.12), transparent 70%);
+  background:
+    radial-gradient(circle at 50% 60%, rgba(255, 188, 110, 0.24), transparent 72%),
+    radial-gradient(circle at 28% 80%, rgba(110, 102, 255, 0.18), transparent 70%);
   mix-blend-mode: screen;
   pointer-events: none;
 }
@@ -105,17 +119,17 @@
   transform-origin: bottom;
   transform: scaleY(var(--bar-scale));
   transition: transform 120ms ease-out;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.9) 0%, rgba(86, 171, 255, 0.6) 45%, rgba(111, 76, 255, 0.55) 100%);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.94) 0%, rgba(134, 186, 255, 0.72) 42%, rgba(138, 98, 255, 0.62) 100%);
   box-shadow:
-    0 0 18px rgba(91, 180, 255, 0.35),
-    0 12px 24px rgba(19, 25, 73, 0.45);
+    0 0 22px rgba(120, 176, 255, 0.42),
+    0 12px 26px rgba(20, 26, 66, 0.48);
 }
 
 .bar:nth-child(odd) {
-  background: linear-gradient(180deg, rgba(255, 204, 248, 0.9) 0%, rgba(255, 109, 183, 0.55) 65%, rgba(162, 76, 255, 0.55) 100%);
+  background: linear-gradient(180deg, rgba(255, 246, 232, 0.92) 0%, rgba(255, 175, 80, 0.68) 55%, rgba(255, 98, 0, 0.56) 100%);
   box-shadow:
-    0 0 18px rgba(255, 109, 215, 0.4),
-    0 12px 24px rgba(24, 0, 54, 0.42);
+    0 0 20px rgba(255, 175, 80, 0.4),
+    0 12px 24px rgba(80, 28, 6, 0.46);
 }
 
 .footer {
@@ -124,8 +138,8 @@
   gap: 1.5rem;
   padding: 1.6rem 2rem;
   border-radius: 18px;
-  background: rgba(6, 8, 30, 0.58);
-  border: 1px solid rgba(132, 143, 255, 0.12);
+  background: rgba(18, 9, 34, 0.6);
+  border: 1px solid rgba(138, 88, 255, 0.22);
   backdrop-filter: blur(10px);
   text-transform: uppercase;
   letter-spacing: 0.16em;
@@ -139,13 +153,13 @@
 
 .footerLabel {
   font-size: 0.72rem;
-  color: rgba(214, 221, 255, 0.62);
+  color: rgba(195, 205, 255, 0.7);
 }
 
 .footerValue {
   font-size: 0.95rem;
   font-weight: 600;
-  color: rgba(249, 251, 255, 0.88);
+  color: rgba(234, 228, 255, 0.9);
 }
 
 @media (max-width: 900px) {

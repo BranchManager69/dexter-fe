@@ -532,6 +532,23 @@ async function main() {
       '--kiosk',
       '--start-fullscreen',
       '--hide-scrollbars',
+      '--disable-desktop-notifications',
+      '--disable-features=BlockInsecurePrivateNetworkRequests,TranslateUI,AutomationControlled,MediaRouter',
+      '--check-for-update-interval=31536000',
+      '--cursor-blink-interval=0',
+      '--force-color-profile=srgb',
+      '--app-auto-launched',
+      '--ash-force-desktop',
+      '--disable-smooth-scrolling',
+      '--enable-features=OverlayScrollbar',
+      '--hide-crash-restore-bubble',
+      '--noerrdialogs',
+      '--overscroll-history-navigation=0',
+      '--window-position=0,0',
+      '--disable-popup-blocking',
+      '--disable-translate',
+      '--disable-features=HardwareMediaKeyHandling,TranslateUI,AutomationControlled,MediaRouter',
+    ],
       `--window-size=${config.width},${config.height}`,
       `--app=${config.overlayUrl}`,
       '--disable-translate',
@@ -562,11 +579,13 @@ async function main() {
       const body = document.body;
       if (html) {
         html.style.backgroundColor = '#000';
+        html.style.cursor = 'none';
       }
       if (body) {
         body.style.backgroundColor = '#000';
         body.style.zoom = '1';
         body.style.margin = '0';
+        body.style.cursor = 'none';
       }
       if (document.documentElement && document.documentElement.requestFullscreen) {
         document.documentElement.requestFullscreen().catch(() => {});
