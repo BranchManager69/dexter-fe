@@ -93,14 +93,15 @@
 
 .dismiss {
   position: absolute;
-  top: 8px;
-  right: 10px;
-  width: 24px;
-  height: 24px;
+  top: 6px;
+  right: 8px;
+  width: 36px;
+  height: 36px;
   border: none;
   background: transparent;
-  color: rgba(24, 12, 4, 0.72);
-  font-size: 0.92rem;
+  color: #ff4d4d;
+  font-size: 1.4rem;
+  font-weight: 700;
   line-height: 1;
   cursor: pointer;
   transition: color 0.18s ease, transform 0.18s ease;
@@ -109,8 +110,8 @@
 
 .dismiss:hover,
 .dismiss:focus-visible {
-  color: rgba(12, 6, 2, 0.92);
-  transform: scale(1.08);
+  color: #ff2d2d;
+  transform: scale(1.15);
 }
 
 .chip {
@@ -195,6 +196,7 @@
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
+  color: #0b1d3a;
 }
 
 .subtitle {
@@ -202,7 +204,7 @@
   font-size: clamp(0.82rem, 1.1vw, 0.94rem);
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: rgba(255, 244, 232, 0.68);
+  color: #1a4f3a;
 }
 
 .betaMarker {
@@ -222,7 +224,7 @@
 
 .copy p {
   margin: 0;
-  color: rgba(255, 244, 232, 0.72);
+  color: #2d180a;
   font-size: clamp(0.92rem, 1.4vw, 1.05rem);
   line-height: 1.65;
 }
@@ -375,5 +377,12 @@
 
   .actions .button {
     width: auto;
+  }
+}
+
+@media (max-width: 520px) {
+  .actions .button {
+    padding-inline: 1rem 1.1rem;
+    gap: 0.4rem;
   }
 }

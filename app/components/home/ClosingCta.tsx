@@ -1,11 +1,21 @@
 "use client";
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import styles from './ClosingCta.module.css';
 
 export function ClosingCta() {
   const [collapsed, setCollapsed] = useState(false);
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => setReady(true), 1400);
+    return () => window.clearTimeout(timer);
+  }, []);
+
+  if (!ready) {
+    return null;
+  }
 
   return (
     <aside
@@ -35,6 +45,8 @@ export function ClosingCta() {
             className={`button ${styles.primaryButton}`}
             target="_blank"
             rel="noreferrer"
+            data-label-desktop="Go"
+            data-label-mobile="Go"
           >
             <span className={styles.ctaIcon} aria-hidden="true">
               <svg width="18" height="14" viewBox="0 0 18 14" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -47,7 +59,7 @@ export function ClosingCta() {
                 />
               </svg>
             </span>
-            <span>Launch beta</span>
+            <span className={styles.ctaText}>Go</span>
           </Link>
         </div>
       </div>
