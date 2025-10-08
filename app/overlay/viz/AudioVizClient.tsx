@@ -29,6 +29,20 @@ export function AudioVizClient() {
     [],
   );
 
+  const basePalette = useMemo(
+    () =>
+      Array.from({ length: BAR_COUNT }, (_, index) => {
+        const ratio = index / Math.max(1, BAR_COUNT - 1);
+        const baseHue = 122 - ratio * 14;
+        return {
+          hue: baseHue,
+          accent: baseHue - (12 + ratio * 4),
+          depth: baseHue - (26 + ratio * 6),
+        };
+      }),
+    [],
+  );
+
   useEffect(() => {
     const handleEvent = (event: Event) => {
       const detail = (event as CustomEvent<AudioReactivePayload>).detail;
@@ -97,6 +111,20 @@ export function AudioVizClient() {
         const baseline = hasFreshData ? 0.005 : 0.015;
         const span = 0.995 - baseline;
         bar.style.setProperty('--bar-scale', (baseline + finalHeight * span).toFixed(3));
+
+        const palette = basePalette[index];
+        const energy = finalHeight;
+        const hue = Math.max(24, palette.hue - energy * 78);
+        const accentHue = Math.max(18, palette.accent - energy * 72);
+        const depthHue = Math.max(12, palette.depth - energy * 68);
+        const saturation = Math.min(100, 82 + energy * 10);
+        const topLight = Math.min(92, 74 - energy * 4);
+        const midLight = Math.max(26, 52 - energy * 20);
+        const bottomLight = Math.max(20, 38 - energy * 22);
+        bar.style.setProperty('--bar-color-top', `hsl(${hue.toFixed(1)} ${saturation}% ${topLight}%)`);
+        bar.style.setProperty('--bar-color-mid', `hsl(${accentHue.toFixed(1)} ${Math.min(100, saturation + 8)}% ${midLight}%)`);
+        bar.style.setProperty('--bar-color-bottom', `hsl(${depthHue.toFixed(1)} ${Math.min(100, saturation + 12)}% ${bottomLight}%)`);
+        bar.style.setProperty('--bar-glow', `hsla(${(hue + 4).toFixed(1)}, ${Math.min(100, saturation + 6)}%, ${Math.min(60, 44 + energy * 20)}%, 0.36)`);
       });
 
       frameId = requestAnimationFrame(animate);
@@ -114,6 +142,11 @@ export function AudioVizClient() {
           ref={(element) => {
             if (element) {
               barRefs.current[index] = element;
+              const palette = basePalette[index];
+              element.style.setProperty('--bar-color-top', `hsl(${palette.hue.toFixed(1)} 78% 68%)`);
+              element.style.setProperty('--bar-color-mid', `hsl(${palette.accent.toFixed(1)} 82% 46%)`);
+              element.style.setProperty('--bar-color-bottom', `hsl(${palette.depth.toFixed(1)} 86% 34%)`);
+              element.style.setProperty('--bar-glow', `hsla(${palette.hue.toFixed(1)}, 82%, 42%, 0.34)`);
             }
           }}
           className={styles.bar}
