@@ -196,7 +196,13 @@ const SOCIAL_LINKS = [
 
 export function FooterSimple() {
   const [showToast, setShowToast] = useState(false);
+  const [tokenSymbol, setTokenSymbol] = useState<string | null>(null);
+  const [tokenMint, setTokenMint] = useState<string | null>(null);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const normalisedSymbol = tokenSymbol ? tokenSymbol.trim().toLowerCase() : null;
+  const jupiterUrl = normalisedSymbol === 'dexter' && tokenMint
+    ? `https://jup.ag/swap/SOL-${tokenMint}`
+    : null;
 
   useEffect(() => {
     return () => {
@@ -206,7 +212,7 @@ export function FooterSimple() {
     };
   }, []);
 
-  const handleToast = () => {
+  const triggerToast = () => {
     setShowToast(true);
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
@@ -214,12 +220,47 @@ export function FooterSimple() {
     timeoutRef.current = setTimeout(() => setShowToast(false), 4000);
   };
 
-  const handleToastKey = (event: KeyboardEvent<HTMLSpanElement>) => {
+  const handleCenterpieceActivate = () => {
+    if (jupiterUrl) {
+      window.open(jupiterUrl, '_blank', 'noopener,noreferrer');
+      return;
+    }
+    triggerToast();
+  };
+
+  const handleCenterpieceKey = (event: KeyboardEvent<HTMLSpanElement>) => {
     if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault();
-      handleToast();
+      handleCenterpieceActivate();
     }
   };
+
+  useEffect(() => {
+    let cancelled = false;
+    const loadTokenConfig = async () => {
+      try {
+        const response = await fetch('/api/token/config', { cache: 'no-store' });
+        if (!response.ok) return;
+        const data = await response.json();
+        if (cancelled) return;
+        const symbol = typeof data?.token?.symbol === 'string' ? data.token.symbol : null;
+        const mint = typeof data?.token?.mintAddress === 'string' ? data.token.mintAddress : null;
+        setTokenSymbol(symbol);
+        if (symbol && symbol.trim().toLowerCase() === 'dexter' && mint) {
+          setTokenMint(mint);
+        } else {
+          setTokenMint(null);
+        }
+      } catch {
+        if (cancelled) return;
+        setTokenMint(null);
+      }
+    };
+    loadTokenConfig();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   return (
     <div className={styles.wrapper}>
@@ -243,8 +284,8 @@ export function FooterSimple() {
           role="button"
           tabIndex={0}
           className={styles.centerpieceTrigger}
-          onClick={handleToast}
-          onKeyDown={handleToastKey}
+          onClick={handleCenterpieceActivate}
+          onKeyDown={handleCenterpieceKey}
         >
           <span className="sr-only">Jupiter token status</span>
           <JupiterIcon />

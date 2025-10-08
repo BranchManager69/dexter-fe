@@ -5,11 +5,6 @@ import styles from './PortraitDemo.module.css';
 import { VideoLightbox } from './VideoLightbox';
 import { VideoLoadingOverlay } from './VideoLoadingOverlay';
 
-export type DemoPoint = {
-  title: string;
-  body: string;
-};
-
 export type Demo = {
   id: string;
   label: string;
@@ -17,7 +12,6 @@ export type Demo = {
   webm?: string;
   poster: string;
   placeholder: string;
-  points: DemoPoint[];
 };
 
 type PortraitDemoProps = {
@@ -101,53 +95,60 @@ export function PortraitDemo({ demos, activeIndex, onSelect }: PortraitDemoProps
 
   return (
     <section className={styles.section}>
-      <div className={styles.copy}>
-        <h3>Bring Dexter into ChatGPT and Claude.</h3>
-        <p>
-          Drop our connector URL into your chat assistant, type the command, and Dexter delivers the same quotes, execution, and
-          proof—no voice UI required.
-        </p>
-      </div>
-      <div className={styles.visualGroup}>
-        <div className={styles.tabs} role="tablist" aria-label="Portrait demo selector">
-          {demos.map((item, index) => (
-            <button
-              key={item.id}
-              type="button"
-              role="tab"
-              aria-selected={index === activeIndex}
-              className={`${styles.tab} ${index === activeIndex ? styles.tabActive : ''}`}
-              onClick={() => onSelect(index)}
-            >
-              {item.label}
-            </button>
-          ))}
+      <header className={styles.sectionHeader}>
+        <h2>Dexter Connectors (MCP)</h2>
+      </header>
+      <div className={styles.sectionGrid}>
+        <div className={styles.copy}>
+          <p className={styles.lead}>
+            <strong>Bring Dexter into ChatGPT and Claude.</strong>
+          </p>
+          <p>
+            Drop our connector URL into your chat assistant, type the command, and Dexter delivers the same quotes, execution, and
+            proof—no voice UI required.
+          </p>
         </div>
-        <div
-          className={styles.visual}
-          role="button"
-          tabIndex={0}
-          aria-label={`Expand ${demo.label} demo`}
-          onClick={handleExpand}
-          onKeyDown={handleKeyDown}
-          data-interactive
-        >
-          <video
-            key={demo.id}
-            ref={handleVideoRef}
-            className={ready ? styles.video : styles.hiddenVideo}
-            playsInline
-            muted
-            loop
-            preload="auto"
-            poster={demo.poster}
-            onLoadedMetadata={() => setReady(true)}
-            onError={() => setReady(false)}
+        <div className={styles.visualGroup}>
+          <div className={styles.tabs} role="tablist" aria-label="Portrait demo selector">
+            {demos.map((item, index) => (
+              <button
+                key={item.id}
+                type="button"
+                role="tab"
+                aria-selected={index === activeIndex}
+                className={`${styles.tab} ${index === activeIndex ? styles.tabActive : ''}`}
+                onClick={() => onSelect(index)}
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
+          <div
+            className={styles.visual}
+            role="button"
+            tabIndex={0}
+            aria-label={`Expand ${demo.label} demo`}
+            onClick={handleExpand}
+            onKeyDown={handleKeyDown}
+            data-interactive
           >
-            <source src={demo.mp4} type="video/mp4" />
-            {demo.webm && <source src={demo.webm} type="video/webm" />}
-          </video>
-          {!ready && <VideoLoadingOverlay label={`${demo.label} demo loading`} />}
+            <video
+              key={demo.id}
+              ref={handleVideoRef}
+              className={ready ? styles.video : styles.hiddenVideo}
+              playsInline
+              muted
+              loop
+              preload="auto"
+              poster={demo.poster}
+              onLoadedMetadata={() => setReady(true)}
+              onError={() => setReady(false)}
+            >
+              <source src={demo.mp4} type="video/mp4" />
+              {demo.webm && <source src={demo.webm} type="video/webm" />}
+            </video>
+            {!ready && <VideoLoadingOverlay label={`${demo.label} demo loading`} />}
+          </div>
         </div>
       </div>
       <VideoLightbox

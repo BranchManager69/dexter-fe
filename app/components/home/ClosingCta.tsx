@@ -27,7 +27,7 @@ export function ClosingCta() {
           <h2>
             Dexter Voice <span className={styles.betaMarker}>beta</span>
           </h2>
-          <p>Talk in plain language—Dexter answers back in under a second and moves the trade while you’re still mid-sentence.</p>
+          <p>Talk in plain language—Dexter answers back in under a second and makes the trade plus the follow-up proof.</p>
         </div>
         <div className={styles.actions}>
           <Link

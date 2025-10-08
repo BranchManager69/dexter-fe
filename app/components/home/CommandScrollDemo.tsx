@@ -154,42 +154,49 @@ export function CommandScrollDemo() {
 
   return (
     <section className={styles.section}>
-      <div
-        className={styles.frame}
-        role="button"
-        tabIndex={0}
-        aria-label="Expand command demo video"
-        onClick={handleExpand}
-        onKeyDown={handleKeyDown}
-        data-interactive
-      >
-        <video
-          ref={videoRef}
-          className={isVideoReady ? styles.video : styles.videoHidden}
-          playsInline
-          muted
-          loop
-          preload="auto"
-          poster="/assets/video/command-demo-poster.jpg"
-          onLoadedMetadata={onLoadedMetadata}
-          onError={onVideoError}
+      <header className={styles.sectionHeader}>
+        <h2>Dexter Voice</h2>
+      </header>
+      <div className={styles.sectionGrid}>
+        <div
+          className={styles.frame}
+          role="button"
+          tabIndex={0}
+          aria-label="Expand command demo video"
+          onClick={handleExpand}
+          onKeyDown={handleKeyDown}
+          data-interactive
         >
-          <source src="/assets/video/command-demo.mp4" type="video/mp4" />
-          <source src="/assets/video/command-demo.webm" type="video/webm" />
-        </video>
-        {!isVideoReady && <VideoLoadingOverlay label="Command demo loading" />}
-      </div>
-      <div className={styles.copy}>
-        <h2>See how fast realtime voice trading feels.</h2>
-        <p>
-          Say the move in plain language—Dexter picks up the symbols, repeats them for trust, and kicks off the swap almost
-          immediately.
-        </p>
-        <p>
-          Dexter verifies the tokens, executes from your Solana account, and drops the receipts automatically so you never break
-          flow.
-        </p>
-        <div className={styles.steps}>{stepElements}</div>
+          <video
+            ref={videoRef}
+            className={isVideoReady ? styles.video : styles.videoHidden}
+            playsInline
+            muted
+            loop
+            preload="auto"
+            poster="/assets/video/command-demo-poster.jpg"
+            onLoadedMetadata={onLoadedMetadata}
+            onError={onVideoError}
+          >
+            <source src="/assets/video/command-demo.mp4" type="video/mp4" />
+            <source src="/assets/video/command-demo.webm" type="video/webm" />
+          </video>
+          {!isVideoReady && <VideoLoadingOverlay label="Command demo loading" />}
+        </div>
+        <div className={styles.copy}>
+          <p className={styles.lead}>
+            <strong>See how fast realtime voice trading feels.</strong>
+          </p>
+          <p>
+            Say the move in plain language—Dexter picks up the symbols, repeats them for trust, and kicks off the swap almost
+            immediately.
+          </p>
+          <p>
+            Dexter verifies the tokens, executes from your Solana account, and drops the receipts automatically so you never break
+            flow.
+          </p>
+          <div className={styles.steps}>{stepElements}</div>
+        </div>
       </div>
       <VideoLightbox
         open={isLightboxOpen}
