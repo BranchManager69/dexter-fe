@@ -1,15 +1,12 @@
+
 .container {
   padding: clamp(2rem, 4vw, 3.5rem) var(--space-7) clamp(3rem, 6vw, 5rem);
   display: grid;
-  gap: clamp(2.5rem, 4vw, 3.5rem);
+  gap: clamp(3rem, 5vw, 4.5rem);
 }
 
 .section {
-  background: rgba(9, 6, 4, 0.65);
-  border: 1px solid rgba(255, 244, 232, 0.08);
-  border-radius: 24px;
-  box-shadow: 0 20px 60px rgba(12, 5, 3, 0.4);
-  padding: clamp(1.8rem, 3vw, 2.6rem);
+  padding: clamp(1.6rem, 3vw, 2.4rem);
   display: grid;
   gap: clamp(1.4rem, 2vw, 1.8rem);
 }
@@ -65,15 +62,14 @@
   outline: none;
 }
 
+
 .previewFrame {
-  border: 1px solid rgba(255, 244, 232, 0.14);
-  border-radius: 20px;
-  padding: clamp(1rem, 2vw, 1.5rem);
-  background: rgba(10, 6, 4, 0.75);
+  padding: clamp(0.75rem, 2vw, 1.25rem);
   display: flex;
   justify-content: flex-start;
   overflow: auto;
 }
+
 
 .canvasWrapper {
   position: relative;
