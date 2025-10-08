@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import os from 'node:os';
 import { chromium } from 'playwright';
+import FFT from 'fft.js';
 import livekitSdk from 'livekit-server-sdk';
 
 const {
@@ -134,6 +135,7 @@ async function resolveAudioInput(audioConfig, cleanupTasks = []) {
     return {
       args: ['-f', 'lavfi', '-i', 'anullsrc=channel_layout=stereo:sample_rate=44100'],
       description: 'silence',
+      analysis: null,
     };
   }
 
@@ -181,6 +183,7 @@ async function resolveAudioInput(audioConfig, cleanupTasks = []) {
     return {
       args: ['-f', 'lavfi', '-i', 'anullsrc=channel_layout=stereo:sample_rate=44100'],
       description: 'silence',
+      analysis: null,
     };
   }
 
@@ -206,9 +209,29 @@ async function resolveAudioInput(audioConfig, cleanupTasks = []) {
 
   console.log(`[dexter-stream] audio playlist loaded (${tracks.length} tracks)`);
 
+  const inputArgs = ['-stream_loop', '-1', '-f', 'concat', '-safe', '0', '-i', playlistPath];
+
   return {
-    args: ['-stream_loop', '-1', '-f', 'concat', '-safe', '0', '-i', playlistPath],
+    args: inputArgs,
     description: `playlist (${tracks.length} tracks)`,
+    analysis: {
+      command: 'ffmpeg',
+      args: [
+        '-hide_banner',
+        '-loglevel', 'error',
+        '-re',
+        ...inputArgs,
+        '-vn',
+        '-ac', '1',
+        '-ar', '44100',
+        '-af', 'aformat=sample_rates=44100:channel_layouts=mono',
+        '-f', 'f32le',
+        'pipe:1',
+      ],
+      sampleRate: 44100,
+      fftSize: 1024,
+      barCount: 48,
+    },
   };
 }
 
@@ -439,6 +462,224 @@ async function waitForSocket(socketPath, timeoutMs) {
   return false;
 }
 
+const AUDIO_DEFAULTS = {
+  bars: 48,
+  fftSize: 1024,
+  sampleRate: 44100,
+};
+
+function createLogBands(sampleRate, fftSize, barCount) {
+  const nyquist = sampleRate / 2;
+  const minFreq = 30;
+  const maxFreq = Math.min(16000, nyquist);
+  const minLog = Math.log10(minFreq);
+  const maxLog = Math.log10(maxFreq);
+  const resolution = sampleRate / fftSize;
+
+  const bands = [];
+  for (let index = 0; index < barCount; index += 1) {
+    const startFreq = 10 ** (minLog + ((maxLog - minLog) * index) / barCount);
+    const endFreq = 10 ** (minLog + ((maxLog - minLog) * (index + 1)) / barCount);
+    let startBin = Math.max(1, Math.floor(startFreq / resolution));
+    let endBin = Math.max(startBin + 1, Math.ceil(endFreq / resolution));
+    if (endBin > fftSize / 2) {
+      endBin = Math.floor(fftSize / 2);
+    }
+    if (index === barCount - 1) {
+      endBin = Math.floor(fftSize / 2);
+    }
+    bands.push({ start: startBin, end: endBin });
+  }
+
+  return bands;
+}
+
+function createBandWeights(logBands, sampleRate, fftSize) {
+  const nyquist = sampleRate / 2;
+  const minWeight = 0.25;
+  const maxWeight = 3.0;
+  const logMin = Math.log10(80);
+  const logMax = Math.log10(Math.max(8000, nyquist));
+
+  return logBands.map(({ start, end }) => {
+    const centerBin = (start + end) / 2;
+    const centerFreq = (centerBin * sampleRate) / fftSize;
+    const clampedFreq = Math.max(80, Math.min(centerFreq, nyquist));
+    const normalized = Math.max(0, Math.min(1, (Math.log10(clampedFreq) - logMin) / (logMax - logMin)));
+    const tilt = Math.pow(normalized, 1.05);
+    return Math.min(maxWeight, minWeight + tilt * (maxWeight - minWeight));
+  });
+}
+
+function barIndexToRatio(index, total) {
+  if (total <= 1) return 0;
+  return Math.max(0, Math.min(1, index / (total - 1)));
+}
+
+function startAudioReactive(page, analysisConfig, cleanupTasks = []) {
+  if (!page) return;
+
+  const barCount = analysisConfig?.barCount ?? AUDIO_DEFAULTS.bars;
+  const fftSize = analysisConfig?.fftSize ?? AUDIO_DEFAULTS.fftSize;
+  const sampleRate = analysisConfig?.sampleRate ?? AUDIO_DEFAULTS.sampleRate;
+
+  const dispatchIntervalMs = 50;
+  const fallbackBars = Array.from({ length: barCount }, () => 0);
+  let active = true;
+
+  const dispatchPayload = (payload) => {
+    if (!page) return;
+    if (typeof page.isClosed === 'function' && page.isClosed()) return;
+    page.evaluate((data) => {
+      window.dispatchEvent(new CustomEvent('dexter:audio-reactive', { detail: data }));
+    }, payload).catch(() => {});
+  };
+
+  if (!analysisConfig) {
+    const timer = setInterval(() => {
+      dispatchPayload({
+        bars: fallbackBars,
+        level: 0,
+        timestamp: Date.now(),
+        stale: true,
+      });
+    }, 200);
+    cleanupTasks.push(async () => clearInterval(timer));
+    return;
+  }
+
+  const fft = new FFT(fftSize);
+  const frameBytes = fftSize * Float32Array.BYTES_PER_ELEMENT;
+  const windowShape = new Float32Array(fftSize);
+  for (let i = 0; i < fftSize; i += 1) {
+    windowShape[i] = 0.5 * (1 - Math.cos((2 * Math.PI * i) / (fftSize - 1)));
+  }
+
+  const fftInput = new Float32Array(fftSize);
+  const fftOut = fft.createComplexArray();
+  const magnitudes = new Float32Array(fftSize / 2);
+  const logBands = createLogBands(sampleRate, fftSize, barCount);
+  const bandWeights = createBandWeights(logBands, sampleRate, fftSize);
+  const smoothedBars = new Float32Array(barCount);
+  let smoothedLevel = 0;
+  let lastFrameAt = 0;
+  let analyser = null;
+  let buffer = Buffer.alloc(0);
+
+  const handleChunk = (chunk) => {
+    buffer = buffer.length ? Buffer.concat([buffer, chunk]) : chunk;
+    while (buffer.length >= frameBytes) {
+      const frame = buffer.subarray(0, frameBytes);
+      buffer = buffer.slice(frameBytes);
+
+      const samples = new Float32Array(frame.buffer, frame.byteOffset, fftSize);
+      let sumSquares = 0;
+      for (let i = 0; i < fftSize; i += 1) {
+        const sample = samples[i];
+        sumSquares += sample * sample;
+        fftInput[i] = sample * windowShape[i];
+      }
+
+      fft.realTransform(fftOut, fftInput);
+      const normFactor = 1 / (fftSize / 2);
+      for (let bin = 0; bin < magnitudes.length; bin += 1) {
+        const real = fftOut[2 * bin];
+        const imag = fftOut[2 * bin + 1];
+        const magnitude = Math.sqrt(real * real + imag * imag) * normFactor;
+        magnitudes[bin] = magnitude;
+      }
+
+      for (let bandIndex = 0; bandIndex < barCount; bandIndex += 1) {
+        const { start, end } = logBands[bandIndex];
+        let sum = 0;
+        for (let bin = start; bin < end; bin += 1) {
+          sum += magnitudes[bin] || 0;
+        }
+        const width = Math.max(1, end - start);
+        const average = sum / width;
+        const position = barIndexToRatio(bandIndex, barCount);
+        const balance = 0.42 + position * 1.45;
+        const weighted = average * (bandWeights[bandIndex] ?? 1) * balance * 9.5;
+        const exponent = 0.58 + position * 0.26;
+        const shaped = Math.pow(Math.min(1, weighted), exponent);
+        const release = smoothedBars[bandIndex] > shaped ? 0.22 : 0.62;
+        smoothedBars[bandIndex] = smoothedBars[bandIndex] * (1 - release) + shaped * release;
+      }
+
+      const rms = Math.sqrt(sumSquares / fftSize);
+      const instantLevel = Math.min(1, Math.pow(rms * 5.2, 0.95));
+      const levelRelease = smoothedLevel > instantLevel ? 0.18 : 0.58;
+      smoothedLevel = smoothedLevel * (1 - levelRelease) + instantLevel * levelRelease;
+      lastFrameAt = Date.now();
+    }
+  };
+
+  const launchAnalyser = (attempt = 0) => {
+    if (!active) return;
+    buffer = Buffer.alloc(0);
+    try {
+      analyser = spawn(analysisConfig.command, analysisConfig.args, {
+        stdio: ['ignore', 'pipe', 'ignore'],
+      });
+    } catch (error) {
+      console.error('[dexter-stream] audio analyzer spawn error', error);
+      const delay = Math.min(2000, 250 * (attempt + 1));
+      setTimeout(() => launchAnalyser(attempt + 1), delay).unref?.();
+      return;
+    }
+
+    analyser.stdout.on('data', handleChunk);
+
+    analyser.on('error', (error) => {
+      console.error('[dexter-stream] audio analyzer error', error);
+    });
+
+    analyser.on('exit', (code, signal) => {
+      if (!active) return;
+      console.warn(`[dexter-stream] audio analyzer exited (code=${code} signal=${signal})`);
+      buffer = Buffer.alloc(0);
+      lastFrameAt = 0;
+      for (let i = 0; i < barCount; i += 1) {
+        smoothedBars[i] *= 0.4;
+      }
+      smoothedLevel *= 0.5;
+      const decay = Math.min(2000, 250 * (attempt + 1));
+      setTimeout(() => launchAnalyser(code === 0 ? 0 : attempt + 1), decay).unref?.();
+    });
+  };
+
+  launchAnalyser(0);
+
+  const sendInterval = setInterval(() => {
+    const nowTs = Date.now();
+    const delta = nowTs - lastFrameAt;
+
+    if (delta > dispatchIntervalMs * 1.5) {
+      const decay = delta > 700 ? 0.45 : 0.75;
+      for (let i = 0; i < barCount; i += 1) {
+        smoothedBars[i] *= decay;
+      }
+      smoothedLevel *= decay;
+    }
+
+    const payload = {
+      bars: Array.from(smoothedBars, (value) => Number(Math.max(0, Math.min(1, value)).toFixed(4))),
+      level: Number(Math.max(0, Math.min(1, smoothedLevel)).toFixed(4)),
+      timestamp: nowTs,
+      stale: delta > 600,
+    };
+    dispatchPayload(payload);
+  }, dispatchIntervalMs);
+
+  cleanupTasks.push(async () => clearInterval(sendInterval));
+  cleanupTasks.push(async () => {
+    active = false;
+    try {
+      analyser?.kill('SIGTERM');
+    } catch {}
+  });
+}
+
 async function main() {
   const config = await loadConfig();
   const screenSpec = `${config.width}x${config.height}x24`;
@@ -591,6 +832,12 @@ async function main() {
   console.log('[dexter-stream] starting ffmpeg pipeline');
   const audioInput = await resolveAudioInput(config.audio, cleanupTasks);
   console.log(`[dexter-stream] audio source → ${audioInput.description}`);
+  try {
+    startAudioReactive(page, audioInput.analysis, cleanupTasks);
+    console.log('[dexter-stream] audio-reactive analyzer ready');
+  } catch (error) {
+    console.warn('[dexter-stream] failed to initialise audio-reactive analyzer', error);
+  }
   const ffmpegArgs = [
     '-hide_banner',
     '-loglevel', 'info',
