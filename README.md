@@ -1,5 +1,11 @@
 <p align="center">
-  <img src="https://docs.dexter.cash/previews/dexter-stack-wordmark.svg" alt="Dexter Stack wordmark" width="360">
+  <img src="./public/wordmarks/dexter-wordmark.svg" alt="Dexter wordmark" width="360">
+</p>
+
+<p align="center">
+  <a href="https://nodejs.org/en/download"><img src="https://img.shields.io/badge/node-%3E=20-green.svg" alt="Node >= 20"></a>
+  <a href="https://nextjs.org/"><img src="https://img.shields.io/badge/framework-Next.js%2014-black.svg" alt="Next.js 14"></a>
+  <a href="#"><img src="https://img.shields.io/badge/status-alpha-orange.svg" alt="Alpha"></a>
 </p>
 
 <p align="center">
@@ -8,14 +14,6 @@
   · <a href="https://github.com/BranchManager69/dexter-mcp">Dexter MCP</a>
   · <a href="https://github.com/BranchManager69/dexter-ops">Dexter Ops</a>
   · <a href="https://github.com/BranchManager69/pumpstreams">PumpStreams</a>
-</p>
-
-<h1 align="center">Dexter FE</h1>
-
-<p align="center">
-  <a href="https://nodejs.org/en/download"><img src="https://img.shields.io/badge/node-%3E=20-green.svg" alt="Node >= 20"></a>
-  <a href="https://nextjs.org/"><img src="https://img.shields.io/badge/framework-Next.js%2014-black.svg" alt="Next.js 14"></a>
-  <a href="#"><img src="https://img.shields.io/badge/status-alpha-orange.svg" alt="Alpha"></a>
 </p>
 
 Next.js frontend for the Dexter stack. It wires OpenAI’s Realtime APIs into a browser UI, handles Supabase auth,
