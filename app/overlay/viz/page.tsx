@@ -1,5 +1,6 @@
 import { OverlayBodyClass } from '../live/OverlayBodyClass';
 import { DexterWordmark } from '../../components/home/DexterWordmark';
+import { DexterMintBadge } from '../../components/home/DexterMintBadge';
 import { AudioVizClient } from './AudioVizClient';
 import styles from './viz.module.css';
 
@@ -14,6 +15,7 @@ export default function AudioVizOverlayPage() {
           <div className={styles.wordmark}>
             <DexterWordmark animate={false} ariaLabel="Dexter wordmark" />
           </div>
+          <DexterMintBadge />
         </header>
 
         <AudioVizClient />
